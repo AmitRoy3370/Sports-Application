@@ -1,0 +1,14 @@
+package com.example.demo700.ENUMS;
+
+public enum Role {
+	
+	ROLE_USER,
+	ROLE_OWNER,
+	ROLE_ATHLETE,
+	ROLE_SCOUT,
+	ROLE_ORGANIZER,
+	ROLE_COACH,
+	ROLE_ADMIN,
+	ROLE_TEAM_OWNER
+
+}
