@@ -15,6 +15,7 @@ import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
+import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Models.Turf.Booking;
@@ -22,6 +23,7 @@ import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
+import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
@@ -54,6 +56,8 @@ public class MatchServiceImpl implements MatchService {
 
 	@Autowired
 	private ScoutsRepository scoutsRepository;
+
+	private TeamOwnerRepository teamOwnerRepository;
 
 	private URLValidator urlValidator = new URLValidator();
 
@@ -235,13 +239,27 @@ public class MatchServiceImpl implements MatchService {
 						throw new Exception();
 
 					}
-					
-					if(!team.getMatches().contains(match.getId())) {
-						
+
+					if (!team.getMatches().contains(match.getId())) {
+
 						team.getMatches().add(match.getId());
-						
+
 						teamRepository.save(team);
-						
+
+					}
+
+					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
+
+					if (teamOwner != null) {
+
+						if (!teamOwner.getMatches().contains(match.getId())) {
+
+							teamOwner.getMatches().add(match.getId());
+
+							teamOwnerRepository.save(teamOwner);
+
+						}
+
 					}
 
 					for (String j : team.getAtheletes()) {
@@ -503,16 +521,28 @@ public class MatchServiceImpl implements MatchService {
 					throw new Exception();
 
 				}
-				
 
-				if(!team.getMatches().contains(match.getId())) {
-					
+				if (!team.getMatches().contains(match.getId())) {
+
 					team.getMatches().add(match.getId());
-					
+
 					teamRepository.save(team);
-					
+
 				}
 
+				TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
+
+				if (teamOwner != null) {
+
+					if (!teamOwner.getMatches().contains(match.getId())) {
+
+						teamOwner.getMatches().add(match.getId());
+
+						teamOwnerRepository.save(teamOwner);
+
+					}
+
+				}
 
 				for (String j : team.getAtheletes()) {
 
@@ -683,7 +713,7 @@ public class MatchServiceImpl implements MatchService {
 					throw new Exception();
 
 				}
-				
+
 				for (String j : team.getAtheletes()) {
 
 					Athelete athelete = atheleteRepository.findById(j).get();
@@ -733,7 +763,7 @@ public class MatchServiceImpl implements MatchService {
 
 	@Override
 	public List<Match> findByPriceGreaterThan(double price) {
-		
+
 		return matchRepository.findByPriceGreaterThan(price);
 	}
 
