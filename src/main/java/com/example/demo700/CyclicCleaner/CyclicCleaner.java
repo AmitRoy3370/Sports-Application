@@ -426,6 +426,90 @@ public class CyclicCleaner {
 
 					}
 
+					try {
+
+						List<String> coaches = team.getCoaches();
+
+						if (!coaches.isEmpty()) {
+
+							for (String i : coaches) {
+
+								Coach coach = coachRepository.findById(i).get();
+
+								coach.setTeamName("");
+
+								coachRepository.save(coach);
+
+								Athelete athelete = atheleteRepository.findById(coach.getAtheleteId()).get();
+
+								athelete.setPresentTeam("");
+
+								atheleteRepository.save(athelete);
+
+								try {
+
+									List<Match> list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
+
+									if (!list.isEmpty()) {
+
+										for (Match j : list) {
+
+											removeMatch(j.getId());
+
+										}
+
+									}
+
+								} catch (Exception e) {
+
+								}
+
+							}
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						List<String> list = team.getScouts();
+
+						for (String i : list) {
+
+							Scouts scouts = scoutsRepository.findById(i).get();
+
+							Athelete athelete = atheleteRepository.findById(scouts.getAtheleteId()).get();
+
+							athelete.setPresentTeam("");
+
+							atheleteRepository.save(athelete);
+
+							try {
+
+								List<Match> _list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
+
+								if (!_list.isEmpty()) {
+
+									for (Match j : _list) {
+
+										removeMatch(j.getId());
+
+									}
+
+								}
+
+							} catch (Exception e) {
+
+							}
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
 					List<Match> matches = matchRepository.findByTeamsContainingIgnoreCase(team.getId());
 
 					if (!matches.isEmpty()) {
