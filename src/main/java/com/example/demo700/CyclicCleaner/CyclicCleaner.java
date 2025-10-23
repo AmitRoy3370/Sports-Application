@@ -68,10 +68,10 @@ public class CyclicCleaner {
 
 	@Autowired
 	private GroupBookingRepository groupBookingRepository;
-	
+
 	@Autowired
 	private OwnerRepository ownerRepository;
-	
+
 	@Autowired
 	private VenueRepository venueReposiotry;
 
@@ -161,19 +161,19 @@ public class CyclicCleaner {
 				} catch (Exception exceptione) {
 
 				}
-				
+
 				try {
-					
+
 					Owner owner = ownerRepository.searchByUserId(userId);
-					
-					if(owner != null) {
-						
+
+					if (owner != null) {
+
 						removeVenueOwner(owner.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
 
 				List<Discount> discounts = discoutnRepository.findByOwnerId(userId);
@@ -480,33 +480,43 @@ public class CyclicCleaner {
 
 					}
 
-					List<Scouts> _list = scoutsRepository.findByMatchesContainingIgnoreCase(matchId);
+					try {
 
-					if (!_list.isEmpty()) {
+						List<Scouts> _list = scoutsRepository.findByMatchesContainingIgnoreCase(matchId);
 
-						for (Scouts scout : _list) {
+						if (!_list.isEmpty()) {
 
-							scout.getMatches().remove(matchId);
+							for (Scouts scout : _list) {
 
-							scoutsRepository.save(scout);
+								scout.getMatches().remove(matchId);
+
+								scoutsRepository.save(scout);
+
+							}
 
 						}
+
+					} catch (Exception e) {
 
 					}
 
-					_list.clear();
+					try {
 
-					_list = scoutsRepository.findByEventsContainingIgnoreCase(matchId);
+						List<Scouts> _list = scoutsRepository.findByEventsContainingIgnoreCase(matchId);
 
-					if (!_list.isEmpty()) {
+						if (!_list.isEmpty()) {
 
-						for (Scouts scout : _list) {
+							for (Scouts scout : _list) {
 
-							scout.getEvents().remove(matchId);
+								scout.getEvents().remove(matchId);
 
-							scoutsRepository.save(scout);
+								scoutsRepository.save(scout);
+
+							}
 
 						}
+
+					} catch (Exception e) {
 
 					}
 
@@ -514,7 +524,15 @@ public class CyclicCleaner {
 
 					for (String i : teams) {
 
-						Team _team = teamRepository.findById(i).get();
+						Team _team = null;
+
+						try {
+
+							_team = teamRepository.findById(i).get();
+
+						} catch (Exception e) {
+
+						}
 
 						if (_team != null) {
 
@@ -524,27 +542,54 @@ public class CyclicCleaner {
 
 							String teamId = _team.getId();
 
-							TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
+							try {
 
-							if (teamOwner != null) {
+								TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
 
-								teamOwner.getMatches().remove(teamId);
+								if (teamOwner != null) {
 
-								teamOwnerRepository.save(teamOwner);
+									teamOwner.getMatches().remove(teamId);
 
-							}
+									teamOwnerRepository.save(teamOwner);
 
-							Athelete _athelte = atheleteRepository.findById(teamOwner.getAtheleteId()).get();
+									try {
 
-							User user = userRepository.findById(_athelte.getUserId()).get();
+										Athelete _athelte = atheleteRepository.findById(teamOwner.getAtheleteId())
+												.get();
 
-							EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(user.getId());
+										if (_athelte != null) {
 
-							if (eventOrganaizer != null) {
+											try {
 
-								eventOrganaizer.getMatches().remove(matchId);
+												User user = userRepository.findById(_athelte.getUserId()).get();
 
-								eventOrganaizerRepository.save(eventOrganaizer);
+												if (user != null) {
+
+													EventOrganaizer eventOrganaizer = eventOrganaizerRepository
+															.findByUserId(user.getId());
+
+													if (eventOrganaizer != null) {
+
+														eventOrganaizer.getMatches().remove(matchId);
+
+														eventOrganaizerRepository.save(eventOrganaizer);
+
+													}
+
+												}
+											} catch (Exception exception) {
+
+											}
+
+										}
+
+									} catch (Exception exception) {
+
+									}
+
+								}
+
+							} catch (Exception exception) {
 
 							}
 
@@ -613,30 +658,30 @@ public class CyclicCleaner {
 			}
 
 			long count = bookingRepository.count();
-			
+
 			bookingRepository.deleteById(booking.getId());
-			
-			if(count != bookingRepository.count()) {
-				
+
+			if (count != bookingRepository.count()) {
+
 				EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(booking.getUserId());
-				
-				if(eventOrganaizer != null) {
-					
+
+				if (eventOrganaizer != null) {
+
 					List<Match> list = matchRepository.findByOrganaizerId(eventOrganaizer.getId());
-					
-					for(Match i : list) {
-						
-						if(i.getMatchEndTime().isBefore(booking.getEndTime()) && i.getMatchStartTime().isAfter(booking.getStartTime()) ) {
-							
+
+					for (Match i : list) {
+
+						if (i.getMatchEndTime().isBefore(booking.getEndTime())
+								&& i.getMatchStartTime().isAfter(booking.getStartTime())) {
+
 							removeMatch(i.getId());
-							
+
 						}
-						
+
 					}
-					
-					
+
 				}
-				
+
 			}
 
 		} catch (Exception e) {
@@ -682,98 +727,97 @@ public class CyclicCleaner {
 		}
 
 	}
-	
+
 	public void removeVenueOwner(String venueOwnerId) {
-		
+
 		try {
-			
+
 			Owner owner = ownerRepository.findById(venueOwnerId).get();
-			
-			if(owner == null) {
-				
+
+			if (owner == null) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			long count = ownerRepository.count();
-			
+
 			ownerRepository.deleteById(venueOwnerId);
-			
-			if(count != ownerRepository.count()) {
-				
+
+			if (count != ownerRepository.count()) {
+
 				List<Venue> list = venueReposiotry.findByOwnerId(venueOwnerId);
-				
-				if(!list.isEmpty()) {
-					
-					for(Venue venue : list) {
-						
+
+				if (!list.isEmpty()) {
+
+					for (Venue venue : list) {
+
 						removeVenue(venue.getId());
-						
+
 					}
-					
+
 				}
-				
+
 			}
-			
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 	public void removeVenue(String venueId) {
-		
+
 		try {
-			
+
 			Venue venue = venueReposiotry.findById(venueId).get();
-			
-			if(venue != null) {
-				
+
+			if (venue != null) {
+
 				long count = venueReposiotry.count();
-				
+
 				venueReposiotry.deleteById(venueId);
-				
-				if(count != venueReposiotry.count()) {
-					
+
+				if (count != venueReposiotry.count()) {
+
 					try {
-						
+
 						List<Booking> list = bookingRepository.findByVenueId(venueId);
-						
-						if(!list.isEmpty()) {
-							
-							for(Booking i : list) {
-								
+
+						if (!list.isEmpty()) {
+
+							for (Booking i : list) {
+
 								removeBooking(i.getId());
-								
+
 								List<GroupBooking> groupBookings = groupBookingRepository.findByBookingId(i.getId());
-								
-								if(!groupBookings.isEmpty()) {
-									
-									for(GroupBooking j : groupBookings) {
-										
+
+								if (!groupBookings.isEmpty()) {
+
+									for (GroupBooking j : groupBookings) {
+
 										removeGroupBooking(j.getId());
-										
+
 									}
-									
+
 								}
-								
+
 							}
-							
+
 						}
-						
-					} catch(Exception e) {
-						
+
+					} catch (Exception e) {
+
 					}
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
 
 }
