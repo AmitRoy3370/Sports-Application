@@ -3,6 +3,7 @@ package com.example.demo700.Controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,6 +41,31 @@ public class AuthController {
 	public ResponseEntity<JwtResponse> login(@Validated @RequestBody LoginRequest request) {
 		JwtResponse resp = authService.login(request);
 		return ResponseEntity.ok(resp);
+	}
+	
+	@DeleteMapping("/delete")
+	public ResponseEntity<?> deleteUser(@RequestParam String userId, @RequestParam String userTryingToDelete) {
+		
+		try {
+			
+			boolean yes = authService.removeUser(userId, userTryingToDelete);
+			
+			if(yes) {
+				
+				return ResponseEntity.status(200).body("USER deleted successfully...");
+				
+			} else {
+				
+				return ResponseEntity.status(500).body("User is not deleted...");
+				
+			}
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(400).body(e.getMessage());
+			
+		}
+		
 	}
 
 }

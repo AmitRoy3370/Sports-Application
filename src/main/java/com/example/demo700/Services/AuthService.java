@@ -8,4 +8,7 @@ public interface AuthService {
 	JwtResponse register(RegisterRequest request);
 	
 	JwtResponse login(LoginRequest request);
+	
+	boolean removeUser(String userId, String userTryingToDelete);
+	
 }

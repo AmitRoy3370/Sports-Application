@@ -11,5 +11,6 @@ import com.example.demo700.Models.Turf.Venue;
 public interface VenueRepository extends MongoRepository<Venue, String> {
 
 	List<Venue> findByAddressContainingIgnoreCase(String address);
+	List<Venue> findByOwnerId(String ownerId);
 
 }

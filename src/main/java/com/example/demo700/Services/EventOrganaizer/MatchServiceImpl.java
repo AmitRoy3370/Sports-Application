@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.BookingStatus;
 
 import com.example.demo700.ENUMS.Role;
@@ -57,9 +58,13 @@ public class MatchServiceImpl implements MatchService {
 	@Autowired
 	private ScoutsRepository scoutsRepository;
 
+	@Autowired
 	private TeamOwnerRepository teamOwnerRepository;
 
 	private URLValidator urlValidator = new URLValidator();
+
+	@Autowired
+	private CyclicCleaner cyclicCleaner;
 
 	@Override
 	public Match createMatch(Match match, String userId) {
@@ -204,6 +209,8 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
+				System.out.println("team :- " + team.toString());
+
 			}
 
 		} catch (Exception e) {
@@ -212,7 +219,43 @@ public class MatchServiceImpl implements MatchService {
 
 		}
 
+		try {
+
+			List<Match> list = matchRepository.findAll();
+
+			boolean conflicted = false;
+
+			if (!list.isEmpty()) {
+
+				for (Match i : list) {
+
+					if (!(i.getMatchEndTime().isBefore(match.getMatchStartTime())
+							&& match.getMatchStartTime().isBefore(match.getMatchEndTime()))) {
+
+						conflicted = true;
+						break;
+
+					}
+
+				}
+
+			}
+
+			if (conflicted) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("Match time slots are conflicted...");
+
+		}
+
 		match = matchRepository.save(match);
+
+		System.out.println(match.toString());
 
 		if (match != null) {
 
@@ -248,20 +291,6 @@ public class MatchServiceImpl implements MatchService {
 
 					}
 
-					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
-
-					if (teamOwner != null) {
-
-						if (!teamOwner.getMatches().contains(match.getId())) {
-
-							teamOwner.getMatches().add(match.getId());
-
-							teamOwnerRepository.save(teamOwner);
-
-						}
-
-					}
-
 					for (String j : team.getAtheletes()) {
 
 						Athelete athelete = atheleteRepository.findById(j).get();
@@ -291,6 +320,44 @@ public class MatchServiceImpl implements MatchService {
 						scouts.getMatches().add(match.getId());
 
 						scoutsRepository.save(scouts);
+
+					}
+
+					EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(userId);
+
+					if (eventOrganaizer != null) {
+
+						if (!eventOrganaizer.getMatches().contains(match.getId())) {
+
+							eventOrganaizer.getMatches().add(match.getId());
+
+							eventOrganaizerRepository.save(eventOrganaizer);
+
+						}
+
+					}
+
+					try {
+
+						TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
+
+						System.out.println("teamOwner :- " + teamOwner.toString());
+
+						if (teamOwner != null) {
+
+							if (!teamOwner.getMatches().contains(match.getId())) {
+
+								teamOwner.getMatches().add(match.getId());
+
+								teamOwnerRepository.save(teamOwner);
+
+							}
+
+						}
+
+					} catch (Exception exception) {
+
+						System.out.println(exception.getMessage());
 
 					}
 
@@ -530,20 +597,6 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
-				TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
-
-				if (teamOwner != null) {
-
-					if (!teamOwner.getMatches().contains(match.getId())) {
-
-						teamOwner.getMatches().add(match.getId());
-
-						teamOwnerRepository.save(teamOwner);
-
-					}
-
-				}
-
 				for (String j : team.getAtheletes()) {
 
 					Athelete athelete = atheleteRepository.findById(j).get();
@@ -644,9 +697,15 @@ public class MatchServiceImpl implements MatchService {
 
 			if (user.getRoles().contains(Role.ROLE_ADMIN)) {
 
+				System.out.println("Trying to delete...");
+
 				long count = matchRepository.count();
 
-				matchRepository.deleteById(matchId);
+				System.out.println("prev Count :- " + count);
+
+				cyclicCleaner.removeMatch(matchId);
+
+				System.out.println("now count :- " + matchRepository.count());
 
 				return count != matchRepository.count();
 
@@ -746,6 +805,44 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
+				EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(userId);
+
+				if (eventOrganaizer != null) {
+
+					if (!eventOrganaizer.getMatches().contains(match.getId())) {
+
+						eventOrganaizer.getMatches().add(match.getId());
+
+						eventOrganaizerRepository.save(eventOrganaizer);
+
+					}
+
+				}
+
+				try {
+
+					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
+
+					System.out.println("teamOwner :- " + teamOwner.toString());
+
+					if (teamOwner != null) {
+
+						if (!teamOwner.getMatches().contains(match.getId())) {
+
+							teamOwner.getMatches().add(match.getId());
+
+							teamOwnerRepository.save(teamOwner);
+
+						}
+
+					}
+
+				} catch (Exception exception) {
+
+					System.out.println(exception.getMessage());
+
+				}
+
 			}
 
 		} catch (Exception e1) {
@@ -756,7 +853,7 @@ public class MatchServiceImpl implements MatchService {
 
 		long count = matchRepository.count();
 
-		matchRepository.deleteById(matchId);
+		cyclicCleaner.removeMatch(matchId);
 
 		return count != matchRepository.count();
 	}

@@ -417,5 +417,18 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		return list;
 	}
+	
+	@Override
+	public TeamOwner findByTeamsContainingIgnoreCase(String teamId) {
+		if (teamId == null) {
+
+			throw new NullPointerException("False request...");
+
+		}
+
+		TeamOwner list = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
+
+		return list;
+	}
 
 }

@@ -13,5 +13,6 @@ public interface TeamOwnerService {
 	boolean deleteTeamOwner(String teamOwnerId, String userId);
 	List<TeamOwner> findByAchivementsContainingIgnoreCase(String achivement);
 	List<TeamOwner> findByMatchesContainingIgnoreCase(String matchId);
+	public TeamOwner findByTeamsContainingIgnoreCase(String teamId);
 	
 }
