@@ -142,6 +142,8 @@ public class MatchServiceImpl implements MatchService {
 			}
 
 			if (!find) {
+				
+				System.out.println("Not find any valid schedule...");
 
 				throw new Exception();
 
@@ -229,12 +231,23 @@ public class MatchServiceImpl implements MatchService {
 
 				for (Match i : list) {
 
-					if (!(i.getMatchEndTime().isBefore(match.getMatchStartTime())
-							&& match.getMatchStartTime().isBefore(match.getMatchEndTime()))) {
+					if ((i.getMatchStartTime().isBefore(match.getMatchStartTime())
+							&& match.getMatchStartTime().isBefore(i.getMatchEndTime()))) {
 
 						conflicted = true;
 						break;
 
+					} else if((i.getMatchStartTime().isBefore(match.getMatchEndTime())
+							&& match.getMatchEndTime().isBefore(i.getMatchEndTime()))) {
+						
+						conflicted = true;
+						break;
+						
+					} else if(i.getMatchEndTime().equals(match.getMatchEndTime()) && i.getMatchStartTime().equals(match.getMatchStartTime())) {
+						
+						conflicted = true;
+						break;
+						
 					}
 
 				}
@@ -827,9 +840,9 @@ public class MatchServiceImpl implements MatchService {
 
 					if (teamOwner != null) {
 
-						if (!teamOwner.getMatches().contains(match.getId())) {
+						if (teamOwner.getMatches().contains(match.getId())) {
 
-							teamOwner.getMatches().add(match.getId());
+							teamOwner.getMatches().remove(match.getId());
 
 							teamOwnerRepository.save(teamOwner);
 

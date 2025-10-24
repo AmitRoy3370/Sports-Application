@@ -279,7 +279,7 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 								}
 
-								teamRepository.deleteById(team.getId());
+								cleaner.removeTeam(team.getId());
 
 							}
 

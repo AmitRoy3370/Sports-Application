@@ -58,6 +58,8 @@ public class BookingServiceImpl implements BookingService {
 		
 		if(user == null) {
 			
+			System.out.println("User not find...");
+			
 			return null;
 			
 		}
@@ -70,6 +72,8 @@ public class BookingServiceImpl implements BookingService {
 		System.out.println("request group :- " + request.isGroup());
 		
 		if(request.getStartTime().isAfter(request.getEndTime())) {
+			System.out.println("Wrong time scheduled...");
+			
 			
 			return null;
 			
@@ -79,6 +83,9 @@ public class BookingServiceImpl implements BookingService {
 				request.getVenueId(), request.getStartTime(), request.getEndTime());
 
 		if (!overlapped.isEmpty()) {
+			
+			System.out.println("over lapped...");
+			
 			return null;
 		}
 
