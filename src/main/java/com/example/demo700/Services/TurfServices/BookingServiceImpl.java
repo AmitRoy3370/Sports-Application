@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.DTOFiles.BookingRequestDto;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
@@ -40,6 +41,9 @@ public class BookingServiceImpl implements BookingService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@Override
 	public Booking createBooking(BookingRequestDto request) {
@@ -323,7 +327,7 @@ public class BookingServiceImpl implements BookingService {
 
 					long count = groupBookingRepository.count();
 
-					groupBookingRepository.deleteById(id);
+					cleaner.removeGroupBooking(id);
 
 					if (count != groupBookingRepository.count()) {
 
@@ -347,7 +351,7 @@ public class BookingServiceImpl implements BookingService {
 
 				long count = groupBookingRepository.count();
 
-				groupBookingRepository.deleteById(id);
+				cleaner.removeGroupBooking(id);
 
 				if (count != groupBookingRepository.count()) {
 
@@ -387,9 +391,9 @@ public class BookingServiceImpl implements BookingService {
 
 					long count = bookingRepository.count();
 
-					bookingRepository.deleteById(id);
+					cleaner.removeBooking(id);
 
-					if (count != groupBookingRepository.count()) {
+					if (count != bookingRepository.count()) {
 
 						return true;
 
@@ -403,9 +407,9 @@ public class BookingServiceImpl implements BookingService {
 
 					long count = bookingRepository.count();
 
-					bookingRepository.deleteById(id);
+					cleaner.removeBooking(id);
 
-					if (count != groupBookingRepository.count()) {
+					if (count != bookingRepository.count()) {
 
 						return true;
 
