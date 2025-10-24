@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
@@ -20,6 +21,9 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@Override
 	public EventOrganaizer addEventOrganaizer(EventOrganaizer eventOrganaizer, String userId) {
@@ -311,7 +315,7 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 		long count = eventOrganaizerRepository.count();
 		
-		eventOrganaizerRepository.deleteById(eventOrganaizerId);
+		cleaner.removeEventOrganaizer(eventOrganaizerId);
 
 		return count != eventOrganaizerRepository.count();
 	}

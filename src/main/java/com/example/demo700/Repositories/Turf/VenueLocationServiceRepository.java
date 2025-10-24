@@ -10,5 +10,6 @@ public interface VenueLocationServiceRepository extends MongoRepository<VenueLoc
 	
 	List<VenueLocation> findByLocationName(String locationName);
 	VenueLocation findByLatitudeAndLongitude(double latitude, double longitude);
+	VenueLocation findByVenueId(String venueId);
 
 }

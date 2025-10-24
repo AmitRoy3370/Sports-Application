@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Turf.Owner;
@@ -20,6 +21,9 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@Override
 	public Owner addOwner(Owner owner) {
@@ -138,11 +142,11 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 			long count = ownerRepository.count();
 
-			ownerRepository.deleteById(id);
+			cleaner.removeVenueOwner(id);
 
 			if (ownerRepository.count() != count) {
 
-				userRepository.deleteById(user.getId());
+				//cleaner.removeUser(user.getId());
 
 				return true;
 
@@ -152,11 +156,11 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 			long count = ownerRepository.count();
 
-			ownerRepository.deleteById(id);
+			cleaner.removeVenueOwner(id);
 
 			if (ownerRepository.count() != count) {
 
-				userRepository.deleteById(user.getId());
+				//cleaner.removeUser(user.getId());
 
 				return true;
 

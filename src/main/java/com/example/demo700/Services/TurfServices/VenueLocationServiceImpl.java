@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Turf.Venue;
@@ -25,6 +26,9 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 	@Autowired
 	VenueRepository venueRepository;
 
+	@Autowired
+	CyclicCleaner cleaner;
+	
 	@Override
 	public VenueLocation addVenueLocation(VenueLocation venueLocation, String userId) {
 

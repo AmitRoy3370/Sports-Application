@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -35,6 +36,9 @@ public class ScoutServiceImpl implements ScoutService {
 
 	@Autowired
 	private MatchRepository matchRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@Override
 	public Scouts addScout(Scouts scout, String userId) {
@@ -354,7 +358,7 @@ public class ScoutServiceImpl implements ScoutService {
 
 		long count = scoutsRepository.count();
 
-		scoutsRepository.deleteById(scoutId);
+		cleaner.removeScout(scoutId);
 
 		boolean yes = count != scoutsRepository.count();
 

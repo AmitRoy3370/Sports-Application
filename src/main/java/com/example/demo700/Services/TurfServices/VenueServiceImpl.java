@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 
@@ -28,6 +29,9 @@ public class VenueServiceImpl implements VenueService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	URLValidator urlValidator = new URLValidator();
 	AddressValidator adressValidator = new AddressValidator();
@@ -220,7 +224,7 @@ public class VenueServiceImpl implements VenueService {
 
 			long count = venueRepository.count();
 
-			venueRepository.deleteById(id);
+			cleaner.removeVenue(id);
 
 			if (venueRepository.count() != count) {
 
@@ -232,7 +236,7 @@ public class VenueServiceImpl implements VenueService {
 
 			long count = venueRepository.count();
 
-			venueRepository.deleteById(id);
+			cleaner.removeVenue(id);
 
 			if (venueRepository.count() != count) {
 

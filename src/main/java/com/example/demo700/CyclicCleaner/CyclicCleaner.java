@@ -19,6 +19,7 @@ import com.example.demo700.Models.Turf.Discount;
 import com.example.demo700.Models.Turf.GroupBooking;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Models.Turf.Venue;
+import com.example.demo700.Models.Turf.VenueLocation;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
@@ -31,6 +32,7 @@ import com.example.demo700.Repositories.Turf.BookingRepository;
 import com.example.demo700.Repositories.Turf.DiscountRepository;
 import com.example.demo700.Repositories.Turf.GroupBookingRepository;
 import com.example.demo700.Repositories.Turf.OwnerRepository;
+import com.example.demo700.Repositories.Turf.VenueLocationServiceRepository;
 import com.example.demo700.Repositories.Turf.VenueRepository;
 
 @Service
@@ -74,6 +76,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private VenueRepository venueReposiotry;
+
+	@Autowired
+	private VenueLocationServiceRepository venueLocationRepository;
 
 	public void removeUser(String userId) {
 
@@ -632,9 +637,17 @@ public class CyclicCleaner {
 
 								if (teamOwner != null) {
 
-									teamOwner.getMatches().remove(teamId);
+									System.out.println("teamOwner :- " + teamOwner.toString());
 
-									teamOwnerRepository.save(teamOwner);
+									if (teamOwner.getMatches().contains(match.getId())) {
+
+										teamOwner.getMatches().remove(match.getId());
+
+										teamOwnerRepository.save(teamOwner);
+
+									}
+
+									System.out.println("After refresh :- " + teamOwner.toString());
 
 									try {
 
@@ -674,6 +687,8 @@ public class CyclicCleaner {
 								}
 
 							} catch (Exception exception) {
+
+								System.out.println("Exception in team owner :- " + exception.getMessage());
 
 							}
 
@@ -874,15 +889,22 @@ public class CyclicCleaner {
 
 								removeBooking(i.getId());
 
-								List<GroupBooking> groupBookings = groupBookingRepository.findByBookingId(i.getId());
+								try {
 
-								if (!groupBookings.isEmpty()) {
+									List<GroupBooking> groupBookings = groupBookingRepository
+											.findByBookingId(i.getId());
 
-									for (GroupBooking j : groupBookings) {
+									if (!groupBookings.isEmpty()) {
 
-										removeGroupBooking(j.getId());
+										for (GroupBooking j : groupBookings) {
+
+											removeGroupBooking(j.getId());
+
+										}
 
 									}
+
+								} catch (Exception exception) {
 
 								}
 
@@ -891,6 +913,14 @@ public class CyclicCleaner {
 						}
 
 					} catch (Exception e) {
+
+					}
+
+					VenueLocation venueLocation = venueLocationRepository.findByVenueId(venue.getId());
+
+					if (venueLocation != null) {
+
+						venueLocationRepository.deleteById(venueLocation.getId());
 
 					}
 

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -46,6 +47,9 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 	@Autowired
 	private CoachRepository coachRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@Override
 	public TeamOwner addTeamOwner(TeamOwner teamOwner) {
@@ -305,87 +309,7 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		long count = teamOwnerRepository.count();
 
-		teamOwnerRepository.deleteById(teamOwnerId);
-
-		if (teamOwnerRepository.count() != count) {
-
-			for (String i : teamOwner.getTeams()) {
-
-				try {
-
-					Team team = teamRepository.findById(i).get();
-
-					if (team != null) {
-
-						List<Match> list = matchRepository.findByTeamsContainingIgnoreCase(team.getId());
-
-						if (list != null) {
-
-							for (Match j : list) {
-
-								Match match = matchRepository.findById(j.getId()).get();
-
-								if (match != null) {
-
-									matchRepository.deleteById(j.getId());
-
-									List<Athelete> atheletes = atheleteRepository.findBypresentTeam(team.getTeamName());
-
-									for (Athelete _athelete : atheletes) {
-
-										_athelete.getEventAttendence().remove(team.getId());
-										_athelete.setPresentTeam("");
-
-										atheleteRepository.save(_athelete);
-
-									}
-
-									for (String _scout : team.getScouts()) {
-
-										Scouts scout = scoutsRepository.findById(_scout).get();
-
-										if (scout != null) {
-
-											scout.getEvents().remove(match.getId());
-											scout.getMatches().remove(match.getId());
-
-											scoutsRepository.save(scout);
-
-										}
-
-									}
-
-									for (String _coach : team.getCoaches()) {
-
-										Coach coach = coachRepository.findById(_coach).get();
-
-										if (coach != null) {
-
-											coach.setTeamName("");
-
-											coachRepository.save(coach);
-
-										}
-
-									}
-
-								}
-
-							}
-
-						}
-
-						teamRepository.deleteById(team.getId());
-
-					}
-
-				} catch (Exception e) {
-
-				}
-
-			}
-
-		}
+		cleaner.removeTeamOwner(teamOwnerId);
 
 		return teamOwnerRepository.count() != count;
 	}

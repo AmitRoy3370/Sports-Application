@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -27,11 +28,14 @@ public class CoachServiceImpl implements CoachService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private TeamRepository teamRepository;
 
 	private URLValidator urlValidator = new URLValidator();
+
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@Override
 	public Coach addCoach(Coach coach, String userId) {
@@ -107,11 +111,11 @@ public class CoachServiceImpl implements CoachService {
 			}
 
 		}
-		
-		if(coach.getTeamName() != null) {
-			
+
+		if (coach.getTeamName() != null) {
+
 			throw new ArithmeticException("No coach can join in any team in time of creation...");
-			
+
 		}
 
 		coach = coachRepository.save(coach);
@@ -240,25 +244,25 @@ public class CoachServiceImpl implements CoachService {
 			}
 
 		}
-		
-		if(coach.getTeamName() != null) {
-			
+
+		if (coach.getTeamName() != null) {
+
 			try {
-				
+
 				Team team = teamRepository.findByCoachesContainingIgnoreCase(coachId);
-				
-				if(!team.getCoaches().contains(coachId)) {
-					
+
+				if (!team.getCoaches().contains(coachId)) {
+
 					throw new Exception();
-					
+
 				}
-				
-			} catch(Exception e) {
-				
+
+			} catch (Exception e) {
+
 				throw new ArithmeticException("In valid team information...");
-				
+
 			}
-			
+
 		}
 
 		coach.setId(coachId);
@@ -303,6 +307,11 @@ public class CoachServiceImpl implements CoachService {
 
 			}
 
+			long count = coachRepository.count();
+
+			cleaner.removeCoach(coachId);
+
+			return count != coachRepository.count();
 
 		} catch (Exception e) {
 
@@ -310,7 +319,6 @@ public class CoachServiceImpl implements CoachService {
 
 		}
 
-		return false;
 	}
 
 	@Override

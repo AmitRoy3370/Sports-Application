@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -45,6 +46,9 @@ public class TeamServiceImpl implements TeamService {
 
 	@Autowired
 	private MatchRepository matchRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@Override
 	public Team addTeam(Team team, String userId) {
@@ -534,7 +538,7 @@ public class TeamServiceImpl implements TeamService {
 
 		long count = teamRepository.count();
 
-		teamRepository.deleteById(teamId);
+		cleaner.removeTeam(teamId);
 
 		return count != teamRepository.count();
 	}

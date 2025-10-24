@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -34,6 +35,9 @@ public class AtheleteServiceImpl implements AtheleteService {
 	MatchRepository matchRepository;
 
 	URLValidator urlValidator = new URLValidator();
+	
+	@Autowired
+	CyclicCleaner cleaner;
 
 	@Override
 	public Athelete addAthelete(Athelete athelete, String userId) {
@@ -350,7 +354,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 			long count = autheleteRepository.count();
 
-			autheleteRepository.deleteById(atheleteId);
+			cleaner.removeAthelete(atheleteId);
 
 			boolean yes = count != autheleteRepository.count();
 
@@ -558,7 +562,9 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		long count = autheleteRepository.count();
 
-		boolean yes = count != autheleteRepository.deleteByUserId(userId);
+		cleaner.removeAthelete(athelete.getId());
+		
+		boolean yes = count != autheleteRepository.count();
 
 		return yes;
 	}
