@@ -82,7 +82,7 @@ public class CyclicCleaner {
 
 	@Autowired
 	private VenueLocationServiceRepository venueLocationRepository;
-	
+
 	@Autowired
 	private MatchVenueRepository matchVenueRepository;
 
@@ -553,6 +553,20 @@ public class CyclicCleaner {
 
 			if (match != null) {
 
+				try {
+
+					MatchVenue matchVenues = matchVenueRepository.findByMatchId(match.getId());
+
+					if (matchVenues != null) {
+
+						removeMatchVenue(matchVenues.getId());
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
 				long count = matchRepository.count();
 
 				matchRepository.deleteById(matchId);
@@ -785,10 +799,10 @@ public class CyclicCleaner {
 
 								removeMatch(i.getId());
 
-							} else if(now.isBefore(i.getMatchStartTime())) {
-								
+							} else if (now.isBefore(i.getMatchStartTime())) {
+
 								removeMatch(i.getId());
-								
+
 							}
 
 						}
@@ -897,6 +911,18 @@ public class CyclicCleaner {
 
 					try {
 
+						List<MatchVenue> matchVenues = matchVenueRepository.findByVenueId(venue.getId());
+
+						if (!matchVenues.isEmpty()) {
+
+							for (MatchVenue i : matchVenues) {
+
+								removeMatchVenue(i.getId());
+
+							}
+
+						}
+
 						List<Booking> list = bookingRepository.findByVenueId(venueId);
 
 						if (!list.isEmpty()) {
@@ -949,35 +975,34 @@ public class CyclicCleaner {
 		}
 
 	}
-	
+
 	public void removeMatchVenue(String matchVenueId) {
-		
+
 		try {
-			
 
 			MatchVenue matchVenue = matchVenueRepository.findById(matchVenueId).get();
-			
-			if(matchVenue == null) {
-				
+
+			if (matchVenue == null) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			long count = matchVenueRepository.count();
-			
+
 			matchVenueRepository.deleteById(matchVenue.getId());
-			
-			if(count != matchVenueRepository.count()) {
-				
+
+			if (count != matchVenueRepository.count()) {
+
 				removeMatch(matchVenue.getMatchId());
 				removeVenue(matchVenue.getVenueId());
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
 
 }
