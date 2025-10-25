@@ -234,16 +234,22 @@ public class MatchServiceImpl implements MatchService {
 					if ((i.getMatchStartTime().isBefore(match.getMatchStartTime())
 							&& match.getMatchStartTime().isBefore(i.getMatchEndTime()))) {
 
+						System.out.println("Stacked at first...");
+						
 						conflicted = true;
 						break;
 
 					} else if((i.getMatchStartTime().isBefore(match.getMatchEndTime())
 							&& match.getMatchEndTime().isBefore(i.getMatchEndTime()))) {
 						
+						System.out.println("Stacked at second...");
+						
 						conflicted = true;
 						break;
 						
 					} else if(i.getMatchEndTime().equals(match.getMatchEndTime()) && i.getMatchStartTime().equals(match.getMatchStartTime())) {
+						
+						System.out.println("Stacked at third...");
 						
 						conflicted = true;
 						break;
@@ -255,6 +261,8 @@ public class MatchServiceImpl implements MatchService {
 			}
 
 			if (conflicted) {
+				
+				System.out.println("Conflicted...");
 
 				throw new Exception();
 

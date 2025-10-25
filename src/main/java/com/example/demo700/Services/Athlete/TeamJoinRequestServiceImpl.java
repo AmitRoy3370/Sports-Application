@@ -157,7 +157,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findByAtheletesContainingIgnoreCase(coach.getAtheleteId());
+				Team team = teamRepository.findByCoachesContainingIgnoreCase(coach.getId());
 
 				if (team != null) {
 
@@ -175,7 +175,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findByAtheletesContainingIgnoreCase(scout.getAtheleteId());
+				Team team = teamRepository.findByScoutsContainingIgnoreCase(scout.getId());
 
 				if (team != null) {
 
@@ -184,11 +184,11 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				}
 
 			}
-			
-			if(teamJoinRequest.getRequestStartTime().isAfter(teamJoinRequest.getRequestEndTime())) {
-				
+
+			if (teamJoinRequest.getRequestStartTime().isAfter(teamJoinRequest.getRequestEndTime())) {
+
 				throw new Exception();
-				
+
 			}
 
 		} catch (Exception e) {
@@ -322,7 +322,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findByAtheletesContainingIgnoreCase(coach.getAtheleteId());
+				Team team = teamRepository.findByCoachesContainingIgnoreCase(coach.getId());
 
 				if (team != null) {
 
@@ -340,7 +340,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findByAtheletesContainingIgnoreCase(scout.getAtheleteId());
+				Team team = teamRepository.findByScoutsContainingIgnoreCase(scout.getId());
 
 				if (team != null) {
 
@@ -371,14 +371,12 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 			throw new ArithmeticException("This join request is approved already...");
 
 		}
-		
 
-		if(teamJoinRequest.getRequestStartTime().isAfter(teamJoinRequest.getRequestEndTime())) {
-			
+		if (teamJoinRequest.getRequestStartTime().isAfter(teamJoinRequest.getRequestEndTime())) {
+
 			throw new ArithmeticException("Request time schedule is not valid...");
-			
-		}
 
+		}
 
 		teamJoinRequest.setId(teamJoinRequestId);
 
@@ -566,6 +564,88 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				teamJoinRequestRepository.deleteById(teamJoinRequestId);
 
+				User user = userRepository.findById(userId).get();
+
+				Team team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
+
+				if (team == null) {
+
+					throw new Exception();
+
+				}
+
+				if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)) {
+
+					Athelete athelete = atheleteRepository.findByUserId(userId).get();
+
+					if (athelete == null) {
+
+						throw new Exception();
+
+					}
+
+					athelete.setPresentTeam(team.getTeamName());
+
+					atheleteRepository.save(athelete);
+
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)) {
+
+					Athelete athelete = atheleteRepository.findByUserId(userId).get();
+
+					if (athelete == null) {
+
+						throw new Exception();
+
+					}
+
+					Coach coach = coachRepository.findByAtheleteId(athelete.getId());
+
+					if (coach == null) {
+
+						throw new Exception();
+
+					}
+
+					coach.setTeamName(team.getTeamName());
+
+					coachRepository.save(coach);
+
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)) {
+
+					Athelete athelete = atheleteRepository.findByUserId(userId).get();
+
+					if (athelete == null) {
+
+						throw new Exception();
+
+					}
+
+					Scouts scouts = scoutsRepository.findByAtheleteId(athelete.getId());
+
+					if (scouts == null) {
+
+						throw new Exception();
+
+					}
+
+					if (athelete.getPresentTeam() != null) {
+
+						if (!athelete.getPresentTeam().equals(team.getTeamName())) {
+
+							throw new Exception();
+
+						}
+
+					} else {
+
+						athelete.setPresentTeam(team.getTeamName());
+
+						atheleteRepository.save(athelete);
+
+					}
+
+				}
+
 				return false;
 
 			}
@@ -629,6 +709,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)) {
 
+				System.out.println("Athelete join request sending...");
+
 				Athelete athelete = atheleteRepository.findByUserId(userId).get();
 
 				if (athelete == null) {
@@ -636,6 +718,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					throw new Exception();
 
 				}
+
+				System.out.println("Athelete find...");
 
 				if (!teamJoinRequest.getReceiverId().equals(athelete.getId())) {
 
@@ -749,15 +833,19 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
+					System.out.println("Coach find...");
+
 					if (!teamJoinRequest.getReceiverId().equals(coach.getId())) {
 
 						throw new Exception();
 
 					}
 
+					System.out.println("Team Owner find...");
+
 					team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
-					if (!teamJoinRequest.getReceiverId().equals(athelete.getId())) {
+					if (!teamJoinRequest.getReceiverId().equals(coach.getId())) {
 
 						throw new Exception();
 
@@ -765,7 +853,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					athelete.setPresentTeam(team.getTeamName());
 
-					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getTeamName());
+					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
 
 					if (teamOwner == null) {
 
@@ -795,29 +883,37 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
+					System.out.println("Scouts find...");
+
 					if (!teamJoinRequest.getReceiverId().equals(scout.getId())) {
 
 						throw new Exception();
 
 					}
 
+					System.out.println("Scouts id match...");
+
 					team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
-					if (!teamJoinRequest.getReceiverId().equals(athelete.getId())) {
+					if (!teamJoinRequest.getReceiverId().equals(scout.getId())) {
 
 						throw new Exception();
 
 					}
 
+					System.out.println("This scout is requested...");
+
 					athelete.setPresentTeam(team.getTeamName());
 
-					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getTeamName());
+					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
 
 					if (teamOwner == null) {
 
 						throw new Exception();
 
 					}
+
+					System.out.println("Team owner find...");
 
 					team.getScouts().add(scout.getId());
 
@@ -842,7 +938,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 			}
 
 		} catch (Exception e) {
-			
+
 			System.out.println(e);
 
 			throw new ArithmeticException("Requested user can not respond any thing...");
