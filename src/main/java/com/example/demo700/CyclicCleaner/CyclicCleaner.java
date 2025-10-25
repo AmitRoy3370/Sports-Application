@@ -780,6 +780,10 @@ public class CyclicCleaner {
 
 								removeMatch(i.getId());
 
+							} else if(now.isBefore(i.getMatchStartTime())) {
+								
+								removeMatch(i.getId());
+								
 							}
 
 						}
