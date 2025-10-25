@@ -629,12 +629,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					}
 
 					if (athelete.getPresentTeam() != null) {
-
-						if (!athelete.getPresentTeam().equals(team.getTeamName())) {
-
-							throw new Exception();
-
-						}
+						
+						
 
 					} else {
 

@@ -1,5 +1,6 @@
 package com.example.demo700.CyclicCleaner;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -773,7 +774,13 @@ public class CyclicCleaner {
 						if (i.getMatchEndTime().isBefore(booking.getEndTime())
 								&& i.getMatchStartTime().isAfter(booking.getStartTime())) {
 
-							removeMatch(i.getId());
+							Instant now = Instant.now();
+
+							if (now.isAfter(i.getMatchStartTime()) && now.isBefore(i.getMatchEndTime())) {
+
+								removeMatch(i.getId());
+
+							}
 
 						}
 
