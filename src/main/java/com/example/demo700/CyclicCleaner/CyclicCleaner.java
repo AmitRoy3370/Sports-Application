@@ -15,6 +15,7 @@ import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchVenue;
 import com.example.demo700.Models.Turf.Booking;
 import com.example.demo700.Models.Turf.Discount;
 import com.example.demo700.Models.Turf.GroupBooking;
@@ -29,6 +30,7 @@ import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
 import com.example.demo700.Repositories.Turf.BookingRepository;
 import com.example.demo700.Repositories.Turf.DiscountRepository;
 import com.example.demo700.Repositories.Turf.GroupBookingRepository;
@@ -80,6 +82,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private VenueLocationServiceRepository venueLocationRepository;
+	
+	@Autowired
+	private MatchVenueRepository matchVenueRepository;
 
 	public void removeUser(String userId) {
 
@@ -943,6 +948,36 @@ public class CyclicCleaner {
 
 		}
 
+	}
+	
+	public void removeMatchVenue(String matchVenueId) {
+		
+		try {
+			
+
+			MatchVenue matchVenue = matchVenueRepository.findById(matchVenueId).get();
+			
+			if(matchVenue == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			long count = matchVenueRepository.count();
+			
+			matchVenueRepository.deleteById(matchVenue.getId());
+			
+			if(count != matchVenueRepository.count()) {
+				
+				removeMatch(matchVenue.getMatchId());
+				removeVenue(matchVenue.getVenueId());
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
 	}
 
 }

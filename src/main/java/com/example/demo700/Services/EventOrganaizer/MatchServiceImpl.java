@@ -1,7 +1,10 @@
 package com.example.demo700.Services.EventOrganaizer;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchVenue;
 import com.example.demo700.Models.Turf.Booking;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
@@ -61,6 +65,9 @@ public class MatchServiceImpl implements MatchService {
 	@Autowired
 	private TeamOwnerRepository teamOwnerRepository;
 
+	@Autowired
+	private MatchVenueService matchVenueService;
+
 	private URLValidator urlValidator = new URLValidator();
 
 	@Autowired
@@ -74,6 +81,8 @@ public class MatchServiceImpl implements MatchService {
 			throw new NullPointerException();
 
 		}
+
+		String matchVenueId = null;
 
 		try {
 
@@ -123,26 +132,58 @@ public class MatchServiceImpl implements MatchService {
 
 			List<Booking> bookings = bookingRepository.findByUserId(userId);
 
-			boolean find = false;
+			Map<String, List<Booking>> map = new HashMap<>();
 
 			for (Booking booking : bookings) {
 
-				if (booking.getStartTime().isBefore(match.getMatchStartTime())
-						&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
+				if (!map.containsKey(booking.getVenueId())) {
 
-					if (booking.getStatus() == BookingStatus.CONFIRMED) {
+					map.put(booking.getVenueId(), new ArrayList<>());
+					map.get(booking.getVenueId()).add(booking);
 
-						find = true;
-						break;
+				} else {
+
+					map.get(booking.getVenueId()).add(booking);
+
+				}
+
+			}
+
+			boolean find = false;
+
+			for (String i : map.keySet()) {
+
+				List<Booking> _bookings = map.get(i);
+
+				find = false;
+
+				for (Booking booking : _bookings) {
+
+					if (booking.getStartTime().isBefore(match.getMatchStartTime())
+							&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
+
+						if (booking.getStatus() == BookingStatus.CONFIRMED) {
+
+							find = true;
+							matchVenueId = booking.getVenueId();
+							break;
+
+						}
 
 					}
+
+				}
+
+				if (find) {
+
+					break;
 
 				}
 
 			}
 
 			if (!find) {
-				
+
 				System.out.println("Not find any valid schedule...");
 
 				throw new Exception();
@@ -235,25 +276,26 @@ public class MatchServiceImpl implements MatchService {
 							&& match.getMatchStartTime().isBefore(i.getMatchEndTime()))) {
 
 						System.out.println("Stacked at first...");
-						
+
 						conflicted = true;
 						break;
 
-					} else if((i.getMatchStartTime().isBefore(match.getMatchEndTime())
+					} else if ((i.getMatchStartTime().isBefore(match.getMatchEndTime())
 							&& match.getMatchEndTime().isBefore(i.getMatchEndTime()))) {
-						
+
 						System.out.println("Stacked at second...");
-						
+
 						conflicted = true;
 						break;
-						
-					} else if(i.getMatchEndTime().equals(match.getMatchEndTime()) && i.getMatchStartTime().equals(match.getMatchStartTime())) {
-						
+
+					} else if (i.getMatchEndTime().equals(match.getMatchEndTime())
+							&& i.getMatchStartTime().equals(match.getMatchStartTime())) {
+
 						System.out.println("Stacked at third...");
-						
+
 						conflicted = true;
 						break;
-						
+
 					}
 
 				}
@@ -261,7 +303,7 @@ public class MatchServiceImpl implements MatchService {
 			}
 
 			if (conflicted) {
-				
+
 				System.out.println("Conflicted...");
 
 				throw new Exception();
@@ -279,6 +321,16 @@ public class MatchServiceImpl implements MatchService {
 		System.out.println(match.toString());
 
 		if (match != null) {
+
+			try {
+				
+				MatchVenue matchVenue = new MatchVenue(matchVenueId, userId);
+
+				matchVenueService.addMatchVenue(matchVenue, userId);
+
+			} catch (Exception e) {
+
+			}
 
 			try {
 
