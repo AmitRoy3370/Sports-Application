@@ -323,7 +323,7 @@ public class MatchServiceImpl implements MatchService {
 		if (match != null) {
 
 			try {
-				
+
 				MatchVenue matchVenue = new MatchVenue(matchVenueId, userId);
 
 				matchVenueService.addMatchVenue(matchVenue, userId);
@@ -528,6 +528,8 @@ public class MatchServiceImpl implements MatchService {
 
 		}
 
+		String matchVenueId = null;
+
 		try {
 
 			User user = userRepository.findById(userId).get();
@@ -576,19 +578,51 @@ public class MatchServiceImpl implements MatchService {
 
 			List<Booking> bookings = bookingRepository.findByUserId(userId);
 
-			boolean find = false;
+			Map<String, List<Booking>> map = new HashMap<>();
 
 			for (Booking booking : bookings) {
 
-				if (booking.getStartTime().isBefore(match.getMatchStartTime())
-						&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
+				if (!map.containsKey(booking.getVenueId())) {
 
-					if (booking.getStatus() == BookingStatus.CONFIRMED) {
+					map.put(booking.getVenueId(), new ArrayList<>());
+					map.get(booking.getVenueId()).add(booking);
 
-						find = true;
-						break;
+				} else {
+
+					map.get(booking.getVenueId()).add(booking);
+
+				}
+
+			}
+
+			boolean find = false;
+
+			for (String i : map.keySet()) {
+
+				List<Booking> _bookings = map.get(i);
+
+				find = false;
+
+				for (Booking booking : _bookings) {
+
+					if (booking.getStartTime().isBefore(match.getMatchStartTime())
+							&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
+
+						if (booking.getStatus() == BookingStatus.CONFIRMED) {
+
+							find = true;
+							matchVenueId = booking.getVenueId();
+							break;
+
+						}
 
 					}
+
+				}
+
+				if (find) {
+
+					break;
 
 				}
 
@@ -729,6 +763,20 @@ public class MatchServiceImpl implements MatchService {
 		match.setId(matchId);
 
 		match = matchRepository.save(match);
+
+		if (match != null) {
+
+			try {
+
+				MatchVenue matchVenue = new MatchVenue(matchVenueId, userId);
+
+				matchVenueService.addMatchVenue(matchVenue, userId);
+
+			} catch (Exception e) {
+
+			}
+
+		}
 
 		return match;
 	}
