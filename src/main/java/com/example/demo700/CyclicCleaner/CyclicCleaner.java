@@ -1038,5 +1038,26 @@ public class CyclicCleaner {
 		}
 
 	}
+	
+	public void removeVenueLocation(String venueLocationId) {
+		
+		try {
+			
+			VenueLocation venueLocation = venueLocationRepository.findById(venueLocationId).get();
+
+			if (venueLocation != null) {
+
+				venueLocationRepository.deleteById(venueLocation.getId());
+				
+				removeVenue(venueLocation.getVenueId());
+
+			}
+			
+		} catch(Exception e) {
+			
+			
+		}
+		
+	}
 
 }

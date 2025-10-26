@@ -214,11 +214,11 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		if (user.getRoles().contains(Role.valueOf("ROLE_ADMIN"))) {
 
-			venueLocationRepository.deleteById(venueLocationId);
+			cleaner.removeVenueLocation(venueLocationId);
 
 		} else if (user.getRoles().contains("ROLE_OWNER") && venue.getOwnerId().equals(userId)) {
 
-			venueLocationRepository.deleteById(venueLocationId);
+			cleaner.removeVenueLocation(venueLocationId);
 
 		}
 
