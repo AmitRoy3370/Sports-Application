@@ -1,5 +1,6 @@
 package com.example.demo700.Services.EventOrganaizer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -58,6 +59,8 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 				throw new Exception();
 
 			}
+			
+			System.out.println("User find...");
 
 			EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(user.getId());
 
@@ -66,6 +69,8 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 				throw new Exception();
 
 			}
+			
+			System.out.println("event organaizer find...");
 
 			List<Match> matches = matchRepository.findByOrganaizerId(eventOrganaizer.getId());
 
@@ -74,16 +79,32 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 				throw new Exception();
 
 			}
+			
+			System.out.println("Matches find..." );
+			
+			System.out.println("matches :- " + matches.toString());
 
-			if (!matches.contains(matchVenue.getMatchId())) {
+			List<String> matchIds = new ArrayList<>();
+			
+			for(Match i : matches) {
+				
+				matchIds.add(i.getId());
+				
+			}
+			
+			if (!matchIds.contains(matchVenue.getMatchId())) {
 
 				throw new Exception();
 
 			}
+			
+			System.out.println("match contains in the evern organaizer's match list...");
 
 			Venue venue = venueRepository.findById(matchVenue.getVenueId()).get();
 
 			if (venue == null) {
+				
+				System.out.println("Venue not find...");
 
 				throw new Exception();
 
@@ -104,6 +125,8 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 				throw new ArithmeticException("Same match can't be organaize in multiple venue...");
 
 			}
+
+			//matchVenueRepository.save(_matchVenue);
 
 		} catch (ArithmeticException e) {
 
@@ -203,6 +226,8 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 				throw new Exception();
 
 			}
+
+			//matchVenueRepository.save(_matchVenue);
 
 		} catch (Exception e) {
 

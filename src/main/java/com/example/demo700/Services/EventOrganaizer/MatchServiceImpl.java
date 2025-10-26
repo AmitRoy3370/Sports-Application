@@ -32,6 +32,7 @@ import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
 import com.example.demo700.Repositories.Turf.BookingRepository;
 import com.example.demo700.Validator.URLValidator;
 
@@ -68,6 +69,9 @@ public class MatchServiceImpl implements MatchService {
 	@Autowired
 	private MatchVenueService matchVenueService;
 
+	@Autowired
+	private MatchVenueRepository matchVenueRepository;
+	
 	private URLValidator urlValidator = new URLValidator();
 
 	@Autowired
@@ -318,15 +322,19 @@ public class MatchServiceImpl implements MatchService {
 
 		match = matchRepository.save(match);
 
-		System.out.println(match.toString());
+		System.out.println("newly saved match :- " + match.toString());
 
 		if (match != null) {
 
 			try {
 
 				MatchVenue matchVenue = new MatchVenue(matchVenueId, match.getId());
+				
+				System.out.println("Going to saving match venue :- " + matchVenue.toString());
 
-				matchVenueService.addMatchVenue(matchVenue, userId);
+				matchVenue = matchVenueService.addMatchVenue(matchVenue, userId);
+				
+				System.out.println("Saved matche venue :- " + matchVenue.toString());
 
 			} catch (Exception e) {
 
@@ -770,7 +778,15 @@ public class MatchServiceImpl implements MatchService {
 
 				MatchVenue matchVenue = new MatchVenue(matchVenueId, match.getId());
 
-				matchVenueService.addMatchVenue(matchVenue, userId);
+				try {
+					
+					matchVenueService.addMatchVenue(matchVenue, userId);
+					
+				} catch(Exception e) {
+					
+					matchVenueRepository.save(matchVenue);
+					
+				}
 
 			} catch (Exception e) {
 
