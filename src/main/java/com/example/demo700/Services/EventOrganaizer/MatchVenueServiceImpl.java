@@ -35,7 +35,7 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 
 	@Autowired
 	private VenueRepository venueRepository;
-	
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -92,6 +92,24 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 		} catch (Exception e) {
 
 			throw new NoSuchElementException("Valid user not find to add a match venue at here...");
+
+		}
+
+		try {
+
+			MatchVenue _matchVenue = matchVenueRepository.findByMatchId(matchVenue.getMatchId());
+
+			if (_matchVenue != null) {
+
+				throw new ArithmeticException("Same match can't be organaize in multiple venue...");
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException(e.getMessage());
+
+		} catch (Exception e) {
 
 		}
 
@@ -192,6 +210,26 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 
 		}
 
+		try {
+
+			MatchVenue _matchVenue = matchVenueRepository.findByMatchId(matchVenue.getMatchId());
+
+			if (_matchVenue != null && !_matchVenue.getId().equals(matchVenueId)) {
+
+				throw new ArithmeticException("Same match can't be organaize in multiple venue...");
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException(e.getMessage());
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("No such match venue find to update...");
+
+		}
+
 		matchVenue.setId(matchVenueId);
 
 		matchVenue = matchVenueRepository.save(matchVenue);
@@ -234,15 +272,15 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 		}
 
 		try {
-			
+
 			MatchVenue matchVenue = matchVenueRepository.findById(matchVenueId).get();
-			
-			if(matchVenue == null) {
-				
+
+			if (matchVenue == null) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			User user = userRepository.findById(userId).get();
 
 			if (user == null) {
@@ -302,7 +340,7 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 		}
 
 		long count = matchVenueRepository.count();
-		
+
 		cleaner.removeMatchVenue(matchVenueId);
 
 		return count != matchVenueRepository.count();

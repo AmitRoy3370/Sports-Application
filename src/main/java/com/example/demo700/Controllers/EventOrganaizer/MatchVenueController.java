@@ -35,7 +35,7 @@ public class MatchVenueController {
         try {
             MatchVenue savedVenue = matchVenueService.addMatchVenue(matchVenue, userId);
             return new ResponseEntity<>(savedVenue, HttpStatus.CREATED);
-        } catch (NullPointerException | NoSuchElementException e) {
+        } catch (NullPointerException | NoSuchElementException | ArithmeticException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>("Unexpected error occurred while adding MatchVenue", HttpStatus.INTERNAL_SERVER_ERROR);
