@@ -324,7 +324,7 @@ public class MatchServiceImpl implements MatchService {
 
 			try {
 
-				MatchVenue matchVenue = new MatchVenue(matchVenueId, userId);
+				MatchVenue matchVenue = new MatchVenue(matchVenueId, match.getId());
 
 				matchVenueService.addMatchVenue(matchVenue, userId);
 
@@ -768,7 +768,7 @@ public class MatchServiceImpl implements MatchService {
 
 			try {
 
-				MatchVenue matchVenue = new MatchVenue(matchVenueId, userId);
+				MatchVenue matchVenue = new MatchVenue(matchVenueId, match.getId());
 
 				matchVenueService.addMatchVenue(matchVenue, userId);
 
