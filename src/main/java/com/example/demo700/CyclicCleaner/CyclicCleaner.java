@@ -782,6 +782,26 @@ public class CyclicCleaner {
 
 			if (count != bookingRepository.count()) {
 
+				try {
+
+					List<GroupBooking> groupBookings = groupBookingRepository.findByBookingId(bookingId);
+
+					if (groupBookings.isEmpty()) {
+
+						throw new Exception();
+
+					}
+
+					for (GroupBooking i : groupBookings) {
+
+						removeGroupBooking(i.getId());
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
 				EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(booking.getUserId());
 
 				String venueId = booking.getVenueId();
@@ -1038,26 +1058,25 @@ public class CyclicCleaner {
 		}
 
 	}
-	
+
 	public void removeVenueLocation(String venueLocationId) {
-		
+
 		try {
-			
+
 			VenueLocation venueLocation = venueLocationRepository.findById(venueLocationId).get();
 
 			if (venueLocation != null) {
 
 				venueLocationRepository.deleteById(venueLocation.getId());
-				
+
 				removeVenue(venueLocation.getVenueId());
 
 			}
-			
-		} catch(Exception e) {
-			
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
 
 }
