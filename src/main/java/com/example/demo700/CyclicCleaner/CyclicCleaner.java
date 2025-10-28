@@ -16,6 +16,7 @@ import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
+import com.example.demo700.Models.PaymentGateway.BkashTransaction;
 import com.example.demo700.Models.Turf.Booking;
 import com.example.demo700.Models.Turf.Discount;
 import com.example.demo700.Models.Turf.GroupBooking;
@@ -31,6 +32,7 @@ import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
+import com.example.demo700.Repositories.PaymentRepositories.BkashTransactionRepository;
 import com.example.demo700.Repositories.Turf.BookingRepository;
 import com.example.demo700.Repositories.Turf.DiscountRepository;
 import com.example.demo700.Repositories.Turf.GroupBookingRepository;
@@ -85,6 +87,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private MatchVenueRepository matchVenueRepository;
+	
+	@Autowired
+	private BkashTransactionRepository bkashTransactionRepository;
 
 	public void removeUser(String userId) {
 
@@ -781,6 +786,20 @@ public class CyclicCleaner {
 			bookingRepository.deleteById(booking.getId());
 
 			if (count != bookingRepository.count()) {
+				
+				try {
+					
+					List<BkashTransaction> list = bkashTransactionRepository.findByBookingId(bookingId);
+					
+					for(BkashTransaction i : list) {
+						
+						removeBikashTransaction(i.getId());
+						
+					}
+					
+				} catch(Exception e) {
+					
+				}
 
 				try {
 
@@ -1079,4 +1098,24 @@ public class CyclicCleaner {
 
 	}
 
+	public void removeBikashTransaction(String bkashTransactionId) {
+		
+		try {
+			
+			BkashTransaction bkashTransaction = bkashTransactionRepository.findById(bkashTransactionId).get();
+			
+			if(bkashTransaction == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			bkashTransactionRepository.deleteById(bkashTransactionId);
+			
+		} catch(Exception e) {
+			
+		}
+		
+	}
+	
 }
