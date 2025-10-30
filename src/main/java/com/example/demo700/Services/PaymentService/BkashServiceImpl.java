@@ -34,6 +34,7 @@ public class BkashServiceImpl implements BkashService {
 
 	private CyclicCleaner cleaner;
 
+	@SuppressWarnings("null")
 	@Override
 	public BkashTransaction sendMoney(BkashTransaction bkashTransaction) {
 
@@ -135,6 +136,29 @@ public class BkashServiceImpl implements BkashService {
 
 		}
 
+		try {
+
+			BkashTransaction _bikashTransaction = bikashRepository
+					.findByTransactionId(bkashTransaction.getTransactionId());
+
+			if (_bikashTransaction != null) {
+
+				throw new ArithmeticException("Two payment's transaction id can't be the same...");
+
+			}
+			
+			System.out.println(_bikashTransaction.toString());
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("Two payment's transaction id can't be the same...");
+
+		} catch (Exception e) {
+			
+			System.out.println(e);
+
+		}
+
 		bkashTransaction = bikashRepository.save(bkashTransaction);
 
 		if (bkashTransaction == null) {
@@ -194,13 +218,13 @@ public class BkashServiceImpl implements BkashService {
 				throw new Exception();
 
 			}
-			
-			if(!venue.getOwnerId().equals(userId)) {
-				
+
+			if (!venue.getOwnerId().equals(userId)) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 		} catch (Exception e) {
 
 			throw new NoSuchElementException("No valid receiver user find at here...");

@@ -45,6 +45,25 @@ public class BkashTransaction {
 		this.bookingId = bookingId;
 	}
 
+	public BkashTransaction(String senderId, String senderName, String senderPhone, String receiverId,
+			String receiverName, String receiverPhone, double amount, String transactionId, String bookingId) {
+		super();
+		this.senderId = senderId;
+		this.senderName = senderName;
+		this.senderPhone = senderPhone;
+		this.receiverId = receiverId;
+		this.receiverName = receiverName;
+		this.receiverPhone = receiverPhone;
+		this.amount = amount;
+		this.transactionId = transactionId;
+		this.transactionTime = Instant.now();
+		this.bookingId = bookingId;
+	}
+
+	public BkashTransaction() {
+		super();
+	}
+
 	public String getId() {
 		return id;
 	}
