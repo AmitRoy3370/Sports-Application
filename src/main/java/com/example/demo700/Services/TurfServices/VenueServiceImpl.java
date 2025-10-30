@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
-
+import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Repositories.UserRepository;
-
+import com.example.demo700.Repositories.Turf.OwnerRepository;
 import com.example.demo700.Repositories.Turf.VenueRepository;
 import com.example.demo700.Validator.AddressValidator;
 import com.example.demo700.Validator.URLValidator;
@@ -32,6 +32,8 @@ public class VenueServiceImpl implements VenueService {
 	
 	@Autowired
 	private CyclicCleaner cleaner;
+	
+	private OwnerRepository ownerRepository;
 
 	URLValidator urlValidator = new URLValidator();
 	AddressValidator adressValidator = new AddressValidator();
@@ -90,6 +92,22 @@ public class VenueServiceImpl implements VenueService {
 
 			return null;
 
+		}
+		
+		try {
+			
+			Owner owner = ownerRepository.searchByUserId(v.getOwnerId());
+			
+			if(owner == null) {
+				
+				throw new Exception();
+				
+			}
+			
+		} catch(Exception e) {
+			
+			return null;
+			
 		}
 
 		Venue venue = venueRepository.save(v);

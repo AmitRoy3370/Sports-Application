@@ -14,5 +14,4 @@ public interface OwnerRepository extends MongoRepository<Owner, String>  {
 	List<Owner> searchByPhone(String phone);
 	Owner searchByUserId(String userId);
 	
-
 }
