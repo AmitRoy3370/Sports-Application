@@ -173,3 +173,4 @@ Table TeamJoinRequest {
   price double
 
 }
+// db diagram source code :- https://dbdiagram.io/d/Sports-Appliaction-DB-diagram-6902e0e76735e1117069509f
