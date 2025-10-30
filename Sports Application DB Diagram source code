@@ -1,0 +1,175 @@
+Table Users {
+
+  id objectid [PK]
+  name String
+  password String
+  Roles Array
+
+}
+
+Table Athelete {
+
+  id objectid [pk]
+  userId String [ref :- Users.id]
+  age int
+  position int
+  height double
+  weight double
+  gameLogs Array
+  eventAttendence Array [ref: < Match.id]
+  presentTeam String [ref: > Team.teamName]
+  highlightReels Array
+
+}
+
+Table Coach {
+
+  id objectid [pk]
+  atheleteId String [ref :- Athelete.id]
+  teamName String [ref: > Team.teamName]
+  atheletesVideo Array
+  performanceTracking Array
+
+}
+
+Table Scouts {
+
+  id objectid [pk]
+  atheleteId String [ref :- Athelete.id]
+  events Array [ref: < Match.id]
+  matches Array [ref: < Match.id]
+
+}
+
+Table TurfOwner {
+
+  id objectid [pk]
+  userId String [ref :- Users.id]
+  name String
+  phone String
+
+}
+
+Table EventOrganaizer {
+
+  id objectid [pk]
+  userId String [ref:-Users.id]
+  organaizerName String
+  matches Array [ref: < Match.id]
+
+}
+
+Table TeamOwner {
+
+  id objectid [pk]
+  atheleteId String [ref:- Athelete.id]
+  teams Array
+  matches Array [ref: < Match.id]
+
+}
+
+Table Venues {
+
+  id objectid [pk]
+  name String
+  adress String
+  ownerId String [ref :> TurfOwner.userId]
+  basePricePerHour double
+  sportsSupported Array
+  amenities Array
+  photos Array
+  pricingPolicy Array
+
+}
+
+Table VenueLocation {
+
+  id objectid [pk]
+  venueId String [ref :- Venues.id]
+  latitude double
+  longitude double
+  locationName String
+
+}
+
+Table Booking {
+
+  id objectid [pk]
+  venueId String [ref: > Venues.id]
+  userId String [ref:>Users.id]
+  startTime datetime
+  endTime datetime
+  status String
+  amount double
+  isGroupBooking boolean
+  
+}
+
+Table GroupBooking {
+
+  id objectid [pk]
+  bookingId String [ref:-Booking.id]
+  memberIds Array [ref: > Users.id]
+  perMemberAmount double
+  status String
+
+}
+
+Table Discounts {
+
+  id objectid [pk]
+  code String
+  ownerId String [ref: > Users.id]
+  percentage double
+  expiry datetime
+  usageLimit int
+  venueId String [ref: > Venues.id]
+
+}
+
+Table Team {
+
+  id objectid [pk]
+  teamOwnerId String [ref: > TeamOwner.id]
+  teamName String
+  atheletes Array [ref:- Athelete.id]
+  coaches Array [ref: - Coach.id]
+  scouts Array [ref:- Scouts.id]
+  matches Array [ref : < Match.id]
+
+}
+
+Table Match {
+
+  id objectid [pk]
+  organaizerId String [ref: - EventOrganaizer.id]
+  teams Array [ref: < Team.id]
+  gameLogs Array
+  videos Array
+  price double
+  matchStartTime datetime
+  matchEndTime datetime
+
+}
+
+Table MatchVenue {
+
+  id objectid [pk]
+  matchId String [ref:- Match.id]
+  venueId String [ref:- Venues.id]
+
+}
+
+Table TeamJoinRequest {
+
+  id objectid [pk]
+  teamId String [ref: > Team.id]
+  senderId String [ref: > Users.id, ref: > Athelete.userId, ref: > TeamOwner.atheleteId]
+  receiverId String [ref: > Athelete.id , ref: > Coach.id , ref : > Scouts.id]
+  roleType String
+  requestStartTime datetime
+  requestEndTime datetime
+  status String
+  price double
+
+}
