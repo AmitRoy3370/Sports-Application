@@ -113,10 +113,10 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+		<!-- Added for chatting and notification (WebSocket support) -->
 		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>CarRentalMongoApplication</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 	</dependencies>
 

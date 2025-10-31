@@ -13,9 +13,11 @@ import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamOwner;
+import com.example.demo700.Models.ChatModels.ChatMessage;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
+import com.example.demo700.Models.NotificationModels.Notification;
 import com.example.demo700.Models.PaymentGateway.BkashTransaction;
 import com.example.demo700.Models.Turf.Booking;
 import com.example.demo700.Models.Turf.Discount;
@@ -29,9 +31,11 @@ import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
+import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
+import com.example.demo700.Repositories.NotificationRepositories.NotificationRepository;
 import com.example.demo700.Repositories.PaymentRepositories.BkashTransactionRepository;
 import com.example.demo700.Repositories.Turf.BookingRepository;
 import com.example.demo700.Repositories.Turf.DiscountRepository;
@@ -91,6 +95,12 @@ public class CyclicCleaner {
 	@Autowired
 	private BkashTransactionRepository bkashTransactionRepository;
 
+	@Autowired
+	private NotificationRepository notificationRepository;
+	
+	@Autowired
+	private ChatMessageRepository chatMessageRepository; 
+	
 	public void removeUser(String userId) {
 
 		try {
@@ -1111,6 +1121,46 @@ public class CyclicCleaner {
 			}
 			
 			bkashTransactionRepository.deleteById(bkashTransactionId);
+			
+		} catch(Exception e) {
+			
+		}
+		
+	}
+	
+	public void removeNotification(String notificationId) {
+		
+		try {
+			
+			Notification notification = notificationRepository.findById(notificationId).get();
+			
+			if(notification == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			notificationRepository.deleteById(notificationId);
+			
+		} catch(Exception e) {
+			
+		}
+		
+	}
+	
+	public void removeChatMessage(String chatMessageId) {
+		
+		try {
+			
+			ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).get();
+			
+			if(chatMessage == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			chatMessageRepository.deleteById(chatMessageId);
 			
 		} catch(Exception e) {
 			
