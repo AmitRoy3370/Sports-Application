@@ -91,16 +91,16 @@ public class CyclicCleaner {
 
 	@Autowired
 	private MatchVenueRepository matchVenueRepository;
-	
+
 	@Autowired
 	private BkashTransactionRepository bkashTransactionRepository;
 
 	@Autowired
 	private NotificationRepository notificationRepository;
-	
+
 	@Autowired
-	private ChatMessageRepository chatMessageRepository; 
-	
+	private ChatMessageRepository chatMessageRepository;
+
 	public void removeUser(String userId) {
 
 		try {
@@ -500,35 +500,51 @@ public class CyclicCleaner {
 
 					try {
 
-						List<String> list = team.getScouts();
+						try {
 
-						for (String i : list) {
+							List<String> list = team.getScouts();
 
-							Scouts scouts = scoutsRepository.findById(i).get();
+							for (String i : list) {
 
-							Athelete athelete = atheleteRepository.findById(scouts.getAtheleteId()).get();
+								try {
 
-							athelete.setPresentTeam("");
+									Scouts scouts = scoutsRepository.findById(i).get();
 
-							atheleteRepository.save(athelete);
+									Athelete athelete = atheleteRepository.findById(scouts.getAtheleteId()).get();
 
-							try {
+									if (!team.getAtheletes().contains(athelete.getId())) {
 
-								List<Match> _list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
+										athelete.setPresentTeam("");
 
-								if (!_list.isEmpty()) {
-
-									for (Match j : _list) {
-
-										removeMatch(j.getId());
+										atheleteRepository.save(athelete);
 
 									}
 
+								} catch (Exception e) {
+
 								}
 
-							} catch (Exception e) {
+							}
+
+						} catch (Exception e) {
+
+						}
+
+						try {
+
+							List<Match> _list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
+
+							if (!_list.isEmpty()) {
+
+								for (Match j : _list) {
+
+									removeMatch(j.getId());
+
+								}
 
 							}
+
+						} catch (Exception e) {
 
 						}
 
@@ -796,19 +812,19 @@ public class CyclicCleaner {
 			bookingRepository.deleteById(booking.getId());
 
 			if (count != bookingRepository.count()) {
-				
+
 				try {
-					
+
 					List<BkashTransaction> list = bkashTransactionRepository.findByBookingId(bookingId);
-					
-					for(BkashTransaction i : list) {
-						
+
+					for (BkashTransaction i : list) {
+
 						removeBikashTransaction(i.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
 
 				try {
@@ -1109,63 +1125,63 @@ public class CyclicCleaner {
 	}
 
 	public void removeBikashTransaction(String bkashTransactionId) {
-		
+
 		try {
-			
+
 			BkashTransaction bkashTransaction = bkashTransactionRepository.findById(bkashTransactionId).get();
-			
-			if(bkashTransaction == null) {
-				
+
+			if (bkashTransaction == null) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			bkashTransactionRepository.deleteById(bkashTransactionId);
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 	public void removeNotification(String notificationId) {
-		
+
 		try {
-			
+
 			Notification notification = notificationRepository.findById(notificationId).get();
-			
-			if(notification == null) {
-				
+
+			if (notification == null) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			notificationRepository.deleteById(notificationId);
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 	public void removeChatMessage(String chatMessageId) {
-		
+
 		try {
-			
+
 			ChatMessage chatMessage = chatMessageRepository.findById(chatMessageId).get();
-			
-			if(chatMessage == null) {
-				
+
+			if (chatMessage == null) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			chatMessageRepository.deleteById(chatMessageId);
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 }
