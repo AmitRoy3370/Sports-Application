@@ -564,13 +564,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				teamJoinRequestRepository.deleteById(teamJoinRequestId);
 
-				User user = userRepository.findById(userId).orElseThrow(
-						() -> new NoSuchElementException("There is no user based on this id..."));
-				
-				if(user == null) {
-					
+				User user = userRepository.findById(userId)
+						.orElseThrow(() -> new NoSuchElementException("There is no user based on this id..."));
+
+				if (user == null) {
+
 					throw new NoSuchElementException();
-					
+
 				}
 
 				Team team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
@@ -583,67 +583,89 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)) {
 
-					Athelete athelete = atheleteRepository.findByUserId(userId).get();
+					try {
 
-					if (athelete == null) {
+						Athelete athelete = atheleteRepository.findByUserId(userId).get();
 
-						throw new Exception();
+						if (athelete == null) {
 
-					}
+							throw new Exception();
 
-					athelete.setPresentTeam(team.getTeamName());
-
-					atheleteRepository.save(athelete);
-
-				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)) {
-
-					Athelete athelete = atheleteRepository.findByUserId(userId).get();
-
-					if (athelete == null) {
-
-						throw new Exception();
-
-					}
-
-					Coach coach = coachRepository.findByAtheleteId(athelete.getId());
-
-					if (coach == null) {
-
-						throw new Exception();
-
-					}
-
-					coach.setTeamName(team.getTeamName());
-
-					coachRepository.save(coach);
-
-				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)) {
-
-					Athelete athelete = atheleteRepository.findByUserId(userId).get();
-
-					if (athelete == null) {
-
-						throw new Exception();
-
-					}
-
-					Scouts scouts = scoutsRepository.findByAtheleteId(athelete.getId());
-
-					if (scouts == null) {
-
-						throw new Exception();
-
-					}
-
-					if (athelete.getPresentTeam() != null) {
-						
-						
-
-					} else {
+						}
 
 						athelete.setPresentTeam(team.getTeamName());
 
 						atheleteRepository.save(athelete);
+
+					} catch (Exception e) {
+
+						throw new NoSuchElementException("No such athelete find at here...");
+
+					}
+
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)) {
+
+					try {
+
+						Athelete athelete = atheleteRepository.findByUserId(userId).get();
+
+						if (athelete == null) {
+
+							throw new Exception();
+
+						}
+
+						Coach coach = coachRepository.findByAtheleteId(athelete.getId());
+
+						if (coach == null) {
+
+							throw new Exception();
+
+						}
+
+						coach.setTeamName(team.getTeamName());
+
+						coachRepository.save(coach);
+
+					} catch (Exception e) {
+
+						throw new NoSuchElementException("No such coach find at here..");
+
+					}
+
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)) {
+
+					try {
+
+						Athelete athelete = atheleteRepository.findByUserId(userId).get();
+
+						if (athelete == null) {
+
+							throw new Exception();
+
+						}
+
+						Scouts scouts = scoutsRepository.findByAtheleteId(athelete.getId());
+
+						if (scouts == null) {
+
+							throw new Exception();
+
+						}
+
+						if (athelete.getPresentTeam() != null) {
+
+						} else {
+
+							athelete.setPresentTeam(team.getTeamName());
+
+							atheleteRepository.save(athelete);
+
+						}
+
+					} catch (Exception e) {
+
+						throw new NoSuchElementException("No such scouts find at here...");
 
 					}
 
