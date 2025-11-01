@@ -595,6 +595,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 						athelete.setPresentTeam(team.getTeamName());
 
+						System.out.println("User is accept the request for join the team :- " + team.getTeamName());
+
 						atheleteRepository.save(athelete);
 
 					} catch (Exception e) {
@@ -670,8 +672,6 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					}
 
 				}
-
-				return false;
 
 			}
 
@@ -812,9 +812,14 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			Team team = null;
 
-			if (atheleteResponse.name().equals("ROLE_ACCEPT")) {
+			System.out.println(
+					"Given athelete response :- " + atheleteResponse.equals(AtheletesTeamJoiningResponse.ROLE_ACCEPT));
+
+			if (atheleteResponse == (AtheletesTeamJoiningResponse.ROLE_ACCEPT)) {
 
 				if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)) {
+
+					System.out.println("Athelete present team name is adding...");
 
 					Athelete athelete = atheleteRepository.findByUserId(userId).get();
 
@@ -827,6 +832,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					}
 
 					athelete.setPresentTeam(team.getTeamName());
+
+					atheleteRepository.save(athelete);
 
 					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
 
@@ -886,6 +893,10 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
+					coach.setTeamName(team.getTeamName());
+
+					coachRepository.save(coach);
+
 					team.getCoaches().add(coach.getId());
 
 					team = teamRepository.save(team);
@@ -928,7 +939,21 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					System.out.println("This scout is requested...");
 
-					athelete.setPresentTeam(team.getTeamName());
+					try {
+
+						Team _team = teamRepository.findByAtheletesContainingIgnoreCase(athelete.getId());
+
+						if (_team == null) {
+
+							athelete.setPresentTeam(team.getTeamName());
+
+						}
+
+					} catch (Exception e) {
+
+						athelete.setPresentTeam(team.getTeamName());
+
+					}
 
 					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
 

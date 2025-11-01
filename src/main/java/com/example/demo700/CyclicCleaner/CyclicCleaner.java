@@ -300,7 +300,7 @@ public class CyclicCleaner {
 
 					for (TeamJoinRequest i : list) {
 
-						if (i.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE) {
+						if (i.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)) {
 
 							removeTeamJoinRequest(i.getId());
 
@@ -352,7 +352,7 @@ public class CyclicCleaner {
 
 							for (TeamJoinRequest i : list) {
 
-								if (i.getRoleType() == TeamJoinRequestRole.ROLE_COACH) {
+								if (i.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)) {
 
 									removeTeamJoinRequest(i.getId());
 
@@ -408,7 +408,7 @@ public class CyclicCleaner {
 
 							for (TeamJoinRequest i : list) {
 
-								if (i.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) {
+								if (i.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)) {
 
 									removeTeamJoinRequest(i.getId());
 
