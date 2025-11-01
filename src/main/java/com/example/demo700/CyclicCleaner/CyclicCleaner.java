@@ -7,11 +7,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.ENUMS.TeamJoinRequestRole;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
+import com.example.demo700.Models.Athlete.TeamJoinRequest;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.ChatModels.ChatMessage;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
@@ -29,6 +31,7 @@ import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
+import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
@@ -100,6 +103,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private ChatMessageRepository chatMessageRepository;
+
+	@Autowired
+	private TeamJoinRequestRepository teamJoinRequestRepository;
 
 	public void removeUser(String userId) {
 
@@ -282,6 +288,30 @@ public class CyclicCleaner {
 
 				}
 
+				try {
+
+					List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(athelteId);
+
+					if (list.isEmpty()) {
+
+						throw new Exception();
+
+					}
+
+					for (TeamJoinRequest i : list) {
+
+						if (i.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE) {
+
+							removeTeamJoinRequest(i.getId());
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
 				Team team = teamRepository.findByAtheletesContainingIgnoreCase(athelteId);
 
 				if (team != null) {
@@ -313,6 +343,28 @@ public class CyclicCleaner {
 				coachRepository.deleteById(coachId);
 
 				if (count != coachRepository.count()) {
+
+					try {
+
+						List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(coachId);
+
+						if (!list.isEmpty()) {
+
+							for (TeamJoinRequest i : list) {
+
+								if (i.getRoleType() == TeamJoinRequestRole.ROLE_COACH) {
+
+									removeTeamJoinRequest(i.getId());
+
+								}
+
+							}
+
+						}
+
+					} catch (Exception e) {
+
+					}
 
 					Team team = teamRepository.findByCoachesContainingIgnoreCase(coachId);
 
@@ -347,6 +399,28 @@ public class CyclicCleaner {
 				scoutsRepository.deleteById(scoutId);
 
 				if (count != scoutsRepository.count()) {
+
+					try {
+
+						List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(scoutId);
+
+						if (!list.isEmpty()) {
+
+							for (TeamJoinRequest i : list) {
+
+								if (i.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) {
+
+									removeTeamJoinRequest(i.getId());
+
+								}
+
+							}
+
+						}
+
+					} catch (Exception e) {
+
+					}
 
 					Team team = teamRepository.findByScoutsContainingIgnoreCase(scoutId);
 
@@ -1181,6 +1255,26 @@ public class CyclicCleaner {
 			}
 
 			chatMessageRepository.deleteById(chatMessageId);
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
+	public void removeTeamJoinRequest(String teamJoinRequestId) {
+
+		try {
+
+			TeamJoinRequest teamJoinRequest = teamJoinRequestRepository.findById(teamJoinRequestId).get();
+
+			if (teamJoinRequest == null) {
+
+				throw new Exception();
+
+			}
+
+			teamJoinRequestRepository.deleteById(teamJoinRequest.getId());
 
 		} catch (Exception e) {
 
