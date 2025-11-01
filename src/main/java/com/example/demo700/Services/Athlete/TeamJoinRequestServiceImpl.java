@@ -564,7 +564,14 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				teamJoinRequestRepository.deleteById(teamJoinRequestId);
 
-				User user = userRepository.findById(userId).get();
+				User user = userRepository.findById(userId).orElseThrow(
+						() -> new NoSuchElementException("There is no user based on this id..."));
+				
+				if(user == null) {
+					
+					throw new NoSuchElementException();
+					
+				}
 
 				Team team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
