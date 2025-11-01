@@ -468,27 +468,31 @@ public class CyclicCleaner {
 
 								Athelete athelete = atheleteRepository.findById(coach.getAtheleteId()).get();
 
-								athelete.setPresentTeam("");
+								if (!team.getAtheletes().contains(athelete.getId())) {
 
-								atheleteRepository.save(athelete);
+									athelete.setPresentTeam("");
 
-								try {
+									atheleteRepository.save(athelete);
 
-									List<Match> list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
+								}
 
-									if (!list.isEmpty()) {
+							}
 
-										for (Match j : list) {
+							try {
 
-											removeMatch(j.getId());
+								List<Match> list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
 
-										}
+								if (!list.isEmpty()) {
+
+									for (Match j : list) {
+
+										removeMatch(j.getId());
 
 									}
 
-								} catch (Exception e) {
-
 								}
+
+							} catch (Exception e) {
 
 							}
 
