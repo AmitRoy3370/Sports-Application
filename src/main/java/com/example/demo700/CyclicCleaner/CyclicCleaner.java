@@ -700,25 +700,25 @@ public class CyclicCleaner {
 
 			if (match != null) {
 
-				try {
-
-					MatchVenue matchVenues = matchVenueRepository.findByMatchId(match.getId());
-
-					if (matchVenues != null) {
-
-						removeMatchVenue(matchVenues.getId());
-
-					}
-
-				} catch (Exception e) {
-
-				}
-
 				long count = matchRepository.count();
 
 				matchRepository.deleteById(matchId);
 
 				if (count != matchRepository.count()) {
+
+					try {
+
+						MatchVenue matchVenues = matchVenueRepository.findByMatchId(match.getId());
+
+						if (matchVenues != null) {
+
+							removeMatchVenue(matchVenues.getId());
+
+						}
+
+					} catch (Exception e) {
+
+					}
 
 					System.out.println("Match is deleted...");
 
