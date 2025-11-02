@@ -542,12 +542,26 @@ public class CyclicCleaner {
 
 									coachRepository.save(coach);
 
-									Team teams = teamRepository.findByAtheletesContainingIgnoreCase(coach.getAtheleteId());
+									try {
 
-									if (teams != null) {
+										Team teams = teamRepository
+												.findByAtheletesContainingIgnoreCase(coach.getAtheleteId());
+
+										if (teams == null) {
+
+											Athelete athelete = atheleteRepository.findById(coach.getAtheleteId())
+													.get();
+
+											athelete.setPresentTeam("");
+
+											atheleteRepository.save(athelete);
+
+										}
+
+									} catch (Exception e) {
 
 										Athelete athelete = atheleteRepository.findById(coach.getAtheleteId()).get();
-										
+
 										athelete.setPresentTeam("");
 
 										atheleteRepository.save(athelete);
@@ -596,18 +610,31 @@ public class CyclicCleaner {
 
 									Scouts scouts = scoutsRepository.findById(i).get();
 
-									Team teams = teamRepository.findByAtheletesContainingIgnoreCase(scouts.getAtheleteId());
+									try {
 
-									if (teams != null) {
+										Team teams = teamRepository
+												.findByAtheletesContainingIgnoreCase(scouts.getAtheleteId());
+
+										if (teams == null) {
+
+											Athelete athelete = atheleteRepository.findById(scouts.getAtheleteId())
+													.get();
+
+											athelete.setPresentTeam("");
+
+											atheleteRepository.save(athelete);
+
+										}
+
+									} catch (Exception e) {
 
 										Athelete athelete = atheleteRepository.findById(scouts.getAtheleteId()).get();
-										
+
 										athelete.setPresentTeam("");
 
 										atheleteRepository.save(athelete);
 
 									}
-
 
 								} catch (Exception e) {
 
