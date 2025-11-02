@@ -534,19 +534,27 @@ public class CyclicCleaner {
 
 							for (String i : coaches) {
 
-								Coach coach = coachRepository.findById(i).get();
+								try {
 
-								coach.setTeamName("");
+									Coach coach = coachRepository.findById(i).get();
 
-								coachRepository.save(coach);
+									coach.setTeamName("");
 
-								Athelete athelete = atheleteRepository.findById(coach.getAtheleteId()).get();
+									coachRepository.save(coach);
 
-								if (!team.getAtheletes().contains(athelete.getId())) {
+									Team teams = teamRepository.findByAtheletesContainingIgnoreCase(coach.getAtheleteId());
 
-									athelete.setPresentTeam("");
+									if (teams != null) {
 
-									atheleteRepository.save(athelete);
+										Athelete athelete = atheleteRepository.findById(coach.getAtheleteId()).get();
+										
+										athelete.setPresentTeam("");
+
+										atheleteRepository.save(athelete);
+
+									}
+
+								} catch (Exception e) {
 
 								}
 
@@ -588,15 +596,18 @@ public class CyclicCleaner {
 
 									Scouts scouts = scoutsRepository.findById(i).get();
 
-									Athelete athelete = atheleteRepository.findById(scouts.getAtheleteId()).get();
+									Team teams = teamRepository.findByAtheletesContainingIgnoreCase(scouts.getAtheleteId());
 
-									if (!team.getAtheletes().contains(athelete.getId())) {
+									if (teams != null) {
 
+										Athelete athelete = atheleteRepository.findById(scouts.getAtheleteId()).get();
+										
 										athelete.setPresentTeam("");
 
 										atheleteRepository.save(athelete);
 
 									}
+
 
 								} catch (Exception e) {
 
