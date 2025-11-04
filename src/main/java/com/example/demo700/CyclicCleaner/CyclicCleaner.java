@@ -210,7 +210,7 @@ public class CyclicCleaner {
 				
 				try {
 					
-					List<ChatMessage> chatMessages = chatMessageRepository.findByReceiverOrSender(userId);
+					List<ChatMessage> chatMessages = chatMessageRepository.findByReceiverOrSender(userId, userId);
 					
 					if(!chatMessages.isEmpty()) {
 						
