@@ -207,6 +207,42 @@ public class CyclicCleaner {
 				} catch (Exception e) {
 
 				}
+				
+				try {
+					
+					List<ChatMessage> chatMessages = chatMessageRepository.findByReceiverOrSender(userId);
+					
+					if(!chatMessages.isEmpty()) {
+						
+						for(ChatMessage k : chatMessages) {
+							
+							removeChatMessage(k.getId());
+							
+						}
+						
+					}
+					
+				} catch(Exception e) {
+					
+				}
+				
+				try {
+					
+					List<Notification> notifications = notificationRepository.findByUserId(userId);
+					
+					if(!notifications.isEmpty()) {
+						
+						for(Notification k : notifications) {
+							
+							removeNotification(k.getId());
+							
+						}
+						
+					}
+					
+				} catch(Exception e) {
+					
+				}
 
 				List<Discount> discounts = discoutnRepository.findByOwnerId(userId);
 

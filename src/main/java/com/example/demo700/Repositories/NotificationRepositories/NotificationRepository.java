@@ -11,5 +11,6 @@ import com.example.demo700.Models.NotificationModels.Notification;
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 	
 	List<Notification> findByUserIdAndReadFalse(String userId);
+	List<Notification> findByUserId(String userId);
 
 }
