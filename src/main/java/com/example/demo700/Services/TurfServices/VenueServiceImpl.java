@@ -33,6 +33,7 @@ public class VenueServiceImpl implements VenueService {
 	@Autowired
 	private CyclicCleaner cleaner;
 	
+	@Autowired
 	private OwnerRepository ownerRepository;
 
 	URLValidator urlValidator = new URLValidator();
@@ -105,6 +106,8 @@ public class VenueServiceImpl implements VenueService {
 			}
 			
 		} catch(Exception e) {
+			
+			System.out.println(e);
 			
 			return null;
 			
