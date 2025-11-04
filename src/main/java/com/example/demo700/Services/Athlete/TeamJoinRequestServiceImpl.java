@@ -304,11 +304,17 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findByAtheletesContainingIgnoreCase(athelete.getId());
+				try {
 
-				if (team != null) {
+					Team team = teamRepository.findByAtheletesContainingIgnoreCase(athelete.getId());
 
-					throw new Exception();
+					if (team != null) {
+
+						throw new Exception();
+
+					}
+
+				} catch (Exception e) {
 
 				}
 
@@ -322,11 +328,17 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findByCoachesContainingIgnoreCase(coach.getId());
+				try {
 
-				if (team != null) {
+					Team team = teamRepository.findByCoachesContainingIgnoreCase(coach.getId());
 
-					throw new Exception();
+					if (team != null) {
+
+						throw new Exception();
+
+					}
+
+				} catch (Exception e) {
 
 				}
 
@@ -340,11 +352,17 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findByScoutsContainingIgnoreCase(scout.getId());
+				try {
 
-				if (team != null) {
+					Team team = teamRepository.findByScoutsContainingIgnoreCase(scout.getId());
 
-					throw new Exception();
+					if (team != null) {
+
+						throw new Exception();
+
+					}
+
+				} catch (Exception e) {
 
 				}
 
