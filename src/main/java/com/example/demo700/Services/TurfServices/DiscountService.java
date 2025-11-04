@@ -8,7 +8,7 @@ import com.example.demo700.Models.Turf.Discount;
 public interface DiscountService {
 	Discount createDiscount(Discount discount, String userId);
 
-	Optional<Discount> findByCode(String code);
+	Discount findByCode(String code);
 
 	boolean isValidDiscount(String code);
 

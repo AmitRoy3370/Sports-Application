@@ -11,7 +11,7 @@ import com.example.demo700.Models.Turf.Discount;
 @Repository
 public interface DiscountRepository extends MongoRepository<Discount, String> {
 	
-	Optional<Discount> findByCode(String code);
+	Discount findByCode(String code);
 	List<Discount> findByOwnerId(String ownerId);
 	List<Discount> findByOwnerIdAndVenueId(String ownerId, String venueId);
 	List<Discount> findByVenueId(String venueId);

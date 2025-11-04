@@ -58,7 +58,25 @@ public class DiscountController {
 
 	@GetMapping("/{code}")
 	public ResponseEntity<?> getByCode(@PathVariable String code) {
-		return discountService.findByCode(code).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+		
+		try {
+			
+			Discount discount = discountService.findByCode(code);
+			
+			if(discount == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			return ResponseEntity.status(200).body(discount);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body("invalid code request...");
+			
+		}
+		
 	}
 
 	@GetMapping("/isValid")

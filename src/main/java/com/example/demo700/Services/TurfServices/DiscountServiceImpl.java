@@ -2,6 +2,7 @@ package com.example.demo700.Services.TurfServices;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Turf.Discount;
+import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Turf.DiscountRepository;
 import com.example.demo700.Repositories.Turf.VenueRepository;
@@ -26,7 +28,7 @@ public class DiscountServiceImpl implements DiscountService {
 
 	@Autowired
 	private UserRepository userrepository;
-	
+
 	@Autowired
 	private VenueRepository venueRepository;
 
@@ -35,30 +37,85 @@ public class DiscountServiceImpl implements DiscountService {
 
 		if (discount.getExpiry() == null || discount.getExpiry().isBefore(Instant.now())) {
 			throw new IllegalArgumentException("Expiry date invalid");
-		} else if(venueRepository.findById(discount.getVenueId()).get() == null  || !venueRepository.findById(discount.getVenueId()).get().getOwnerId().equals(userId)) {
+		} else if (venueRepository.findById(discount.getVenueId()).get() == null
+				|| !venueRepository.findById(discount.getVenueId()).get().getOwnerId().equals(userId)) {
 			throw new IllegalArgumentException("You can add discount only for your created venue..");
 		}
-		discount =  discountRepository.save(discount);
-		
-		if(discount == null) {
-			
-			return null;
-			
+
+		try {
+
+			User user = userrepository.findById(discount.getOwnerId()).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("Discount owner is not a valid user...");
+
 		}
-		
+
+		try {
+
+			Discount _discount = discountRepository.findByCode(discount.getCode());
+
+			if (_discount != null) {
+
+				throw new ArithmeticException();
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("discount code already exist...");
+
+		} catch (Exception e) {
+
+		}
+
+		discount = discountRepository.save(discount);
+
+		if (discount == null) {
+
+			return null;
+
+		}
+
 		return discount;
-		
+
 	}
 
 	@Override
-	public Optional<Discount> findByCode(String code) {
+	public Discount findByCode(String code) {
+
+		if (code == null) {
+
+			throw new NullPointerException("False request...");
+
+		}
+
+		Discount discount = discountRepository.findByCode(code);
+
+		if (discount == null) {
+
+			System.out.println("No discount find...");
+
+			return null;
+
+		}
+
+		System.out.println(discount.toString());
+
 		return discountRepository.findByCode(code);
 	}
 
 	@Override
 	public boolean isValidDiscount(String code) {
-		Optional<Discount> disc = discountRepository.findByCode(code);
-		return disc.isPresent() && disc.get().getExpiry().isAfter(Instant.now()) && disc.get().getUsageLimit() > 0;
+		Discount disc = discountRepository.findByCode(code);
+		return disc != null && disc.getExpiry().isAfter(Instant.now()) && disc.getUsageLimit() > 0;
 	}
 
 	@Override
@@ -119,7 +176,7 @@ public class DiscountServiceImpl implements DiscountService {
 		}
 
 		if (!user.getRoles().contains(Role.valueOf("ROLE_ADMIN"))) {
-			
+
 			System.out.println("not an admin");
 
 			return null;
@@ -194,35 +251,97 @@ public class DiscountServiceImpl implements DiscountService {
 
 	@Override
 	public Discount updateDiscount(String discountId, Discount updatedDiscount, String userId) {
-		
-		if(discountId == null || updatedDiscount == null || userId == null) {
-			
+
+		if (discountId == null || updatedDiscount == null || userId == null) {
+
 			return null;
-			
+
 		}
-		
+
 		Discount discount = discountRepository.findById(discountId).get();
-		
-		if(discount == null) {
-			
+
+		if (discount == null) {
+
 			return null;
-			
+
+		}
+
+		try {
+
+			User user = userrepository.findById(updatedDiscount.getOwnerId()).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("Discount owner is not a valid user...");
+
+		}
+
+		try {
+
+			Venue venue = venueRepository.findById(updatedDiscount.getVenueId()).get();
+
+			if (venue == null) {
+
+				throw new Exception();
+
+			}
+
+			if (!venue.getOwnerId().equals(userId)) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("Invalid venue and venue owner...");
+
 		}
 		
-		discount.setId(discountId);
-		
+		try {
+
+			Discount _discount = discountRepository.findByCode(updatedDiscount.getCode());
+
+			if (_discount == null) {
+
+				throw new Exception();
+
+			}
+			
+			if(!_discount.getId().equals(discountId)) {
+				
+				throw new ArithmeticException();
+				
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("discount code already exist...");
+			
+		} catch(Exception e) {
+			
+		}
+
+		updatedDiscount.setId(discountId);
+
 		if (discount.getExpiry() == null || discount.getExpiry().isBefore(Instant.now())) {
 			throw new IllegalArgumentException("Expiry date invalid");
 		}
-		
+
 		discount = discountRepository.save(updatedDiscount);
-		
-		if(discount == null) {
-			
+
+		if (discount == null) {
+
 			return null;
-			
+
 		}
-		
+
 		return discount;
 	}
 
