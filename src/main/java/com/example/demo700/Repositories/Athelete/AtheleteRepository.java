@@ -33,7 +33,7 @@ public interface AtheleteRepository extends MongoRepository<Athelete, String> {
 	@Query("{ 'presentTeam': { $regex: ?0, $options: 'i' } }")
 	List<Athelete> searchByTeamNamePartial(String partialName);
 
-	@Query("{ 'eventAttendence': { $all: ?0 } }")
+	@Query("SELECT a FROM Athelete a WHERE a.eventAttendence IN :events")
 	List<Athelete> findByMultipleEvents(List<String> eventNames);
 
 	@Query("{ 'weight': { $gte: ?0, $lte: ?1 } }")
