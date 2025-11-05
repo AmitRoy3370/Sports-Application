@@ -80,6 +80,20 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 			throw new ArithmeticException(e.getMessage());
 
 		}
+		
+		try {
+			
+			if(!eventOrganaizer.getMatches().isEmpty()) {
+				
+				throw new Exception();
+				
+			}
+			
+		} catch(Exception e) {
+			
+			throw new ArithmeticException("No event organaizer can arrange event in time of creation...");
+			
+		}
 
 		eventOrganaizer = eventOrganaizerRepository.save(eventOrganaizer);
 
