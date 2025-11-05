@@ -163,8 +163,8 @@ public class TeamController {
     @GetMapping("/findByMatchId")
     public ResponseEntity<?> findByMatchId(@RequestParam String matchId) {
         try {
-            Team team = teamService.findByMatchesContainingIgnoreCase(matchId);
-            if (team == null) {
+            List<Team> team = teamService.findByMatchesContainingIgnoreCase(matchId);
+            if (team.isEmpty()) {
                 return ResponseEntity.status(404).body("No team found for this match...");
             }
             return ResponseEntity.ok(team);
