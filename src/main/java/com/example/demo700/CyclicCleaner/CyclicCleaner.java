@@ -1238,7 +1238,7 @@ public class CyclicCleaner {
 			if (count != matchVenueRepository.count()) {
 
 				removeMatch(matchVenue.getMatchId());
-				removeVenue(matchVenue.getVenueId());
+				/*removeVenue(matchVenue.getVenueId());
 
 				VenueLocation venueLocation = venueLocationRepository.findByVenueId(matchVenue.getVenueId());
 
@@ -1246,7 +1246,7 @@ public class CyclicCleaner {
 
 					venueLocationRepository.deleteById(venueLocation.getId());
 
-				}
+				}*/
 
 			}
 
