@@ -1092,7 +1092,7 @@ public class CyclicCleaner {
 
 			}
 
-			groupBookingRepository.findById(groupBookingId);
+			groupBookingRepository.deleteById(groupBookingId);
 
 		} catch (Exception e) {
 
