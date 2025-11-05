@@ -35,7 +35,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 	MatchRepository matchRepository;
 
 	URLValidator urlValidator = new URLValidator();
-	
+
 	@Autowired
 	CyclicCleaner cleaner;
 
@@ -270,15 +270,28 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 					}
 
-					Team team = teamRepository.findByMatchesContainingIgnoreCase(match.getId());
+					List<Team> teams = teamRepository.findByMatchesContainingIgnoreCase(match.getId());
 
-					if (team == null) {
+					if (teams.isEmpty()) {
 
 						throw new Exception();
 
 					}
 
-					if (!team.getAtheletes().contains(_athelete.getId())) {
+					boolean find = false;
+
+					for (Team team : teams) {
+
+						if (team.getAtheletes().contains(_athelete.getId())) {
+
+							find = true;
+							break;
+
+						}
+
+					}
+
+					if (!find) {
 
 						throw new Exception();
 
@@ -563,7 +576,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 		long count = autheleteRepository.count();
 
 		cleaner.removeAthelete(athelete.getId());
-		
+
 		boolean yes = count != autheleteRepository.count();
 
 		return yes;

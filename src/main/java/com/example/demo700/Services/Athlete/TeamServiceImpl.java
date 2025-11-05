@@ -586,7 +586,7 @@ public class TeamServiceImpl implements TeamService {
 	}
 
 	@Override
-	public Team findByMatchesContainingIgnoreCase(String matchId) {
+	public List<Team> findByMatchesContainingIgnoreCase(String matchId) {
 
 		if (matchId == null) {
 
@@ -594,7 +594,7 @@ public class TeamServiceImpl implements TeamService {
 
 		}
 
-		Team team = teamRepository.findByMatchesContainingIgnoreCase(matchId);
+		List<Team> team = teamRepository.findByMatchesContainingIgnoreCase(matchId);
 
 		return team;
 	}
