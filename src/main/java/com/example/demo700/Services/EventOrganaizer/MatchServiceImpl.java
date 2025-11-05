@@ -71,7 +71,7 @@ public class MatchServiceImpl implements MatchService {
 
 	@Autowired
 	private MatchVenueRepository matchVenueRepository;
-	
+
 	private URLValidator urlValidator = new URLValidator();
 
 	@Autowired
@@ -329,11 +329,11 @@ public class MatchServiceImpl implements MatchService {
 			try {
 
 				MatchVenue matchVenue = new MatchVenue(matchVenueId, match.getId());
-				
+
 				System.out.println("Going to saving match venue :- " + matchVenue.toString());
 
 				matchVenue = matchVenueService.addMatchVenue(matchVenue, userId);
-				
+
 				System.out.println("Saved matche venue :- " + matchVenue.toString());
 
 			} catch (Exception e) {
@@ -778,14 +778,20 @@ public class MatchServiceImpl implements MatchService {
 
 				MatchVenue matchVenue = new MatchVenue(matchVenueId, match.getId());
 
-				try {
-					
-					matchVenueService.addMatchVenue(matchVenue, userId);
-					
-				} catch(Exception e) {
-					
-					matchVenueRepository.save(matchVenue);
-					
+				MatchVenue _matchVenue = matchVenueRepository.findByMatchId(matchId);
+
+				if (_matchVenue != null) {
+
+					try {
+
+						matchVenue.setId(_matchVenue.getId());
+
+						matchVenueService.updateMatchVenue(matchVenue, userId, matchVenue.getId());
+
+					} catch (Exception e) {
+
+					}
+
 				}
 
 			} catch (Exception e) {
