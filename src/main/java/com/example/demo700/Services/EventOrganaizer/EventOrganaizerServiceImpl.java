@@ -21,7 +21,7 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -80,19 +80,19 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 			throw new ArithmeticException(e.getMessage());
 
 		}
-		
+
 		try {
-			
-			if(!eventOrganaizer.getMatches().isEmpty()) {
-				
+
+			if (!eventOrganaizer.getMatches().isEmpty()) {
+
 				throw new Exception();
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new ArithmeticException("No event organaizer can arrange event in time of creation...");
-			
+
 		}
 
 		eventOrganaizer = eventOrganaizerRepository.save(eventOrganaizer);
@@ -169,7 +169,6 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 		return eventOrganaizerRepository.findByMatchesContainingIgnoreCase(matchId);
 	}
 
-	@SuppressWarnings("null")
 	@Override
 	public EventOrganaizer updateEventOrganaizer(String userId, String eventOrganaizerId,
 			EventOrganaizer eventOrganaizer) {
@@ -204,6 +203,8 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 		try {
 
+			System.out.println("event OrganaizerId :- " + eventOrganaizerId);
+
 			EventOrganaizer _eventOrganaizer = eventOrganaizerRepository.findById(eventOrganaizerId).get();
 
 			if (_eventOrganaizer == null) {
@@ -230,19 +231,29 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 			EventOrganaizer _eventOrganaizer = eventOrganaizerRepository
 					.findByOrganaizationName(eventOrganaizer.getOrganaizationName());
 
-			if (!_eventOrganaizer.getUserId().equals(userId)) {
+			if (_eventOrganaizer != null) {
 
-				throw new Exception("Duplicate venet organaization name...");
+				System.out.println(_eventOrganaizer.toString());
+
+				if (!_eventOrganaizer.getUserId().equals(userId)) {
+
+					throw new ArithmeticException("Duplicate venet organaization name...");
+
+				}
+
+				_eventOrganaizer = eventOrganaizerRepository.findByUserId(userId);
+
+				if (_eventOrganaizer == null) {
+
+					throw new ArithmeticException("One user can't be the owner of multiple event organaizer...");
+
+				}
 
 			}
 
-			_eventOrganaizer = eventOrganaizerRepository.findByUserId(userId);
+		} catch (ArithmeticException e) {
 
-			if (_eventOrganaizer == null) {
-
-				throw new Exception("One user can't be the owner of multiple event organaizer...");
-
-			}
+			throw new ArithmeticException(e.getMessage());
 
 		} catch (Exception e) {
 
@@ -251,7 +262,7 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 		}
 
 		eventOrganaizer.setId(eventOrganaizerId);
-		
+
 		eventOrganaizer = eventOrganaizerRepository.save(eventOrganaizer);
 
 		if (eventOrganaizer == null) {
@@ -328,7 +339,7 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 		}
 
 		long count = eventOrganaizerRepository.count();
-		
+
 		cleaner.removeEventOrganaizer(eventOrganaizerId);
 
 		return count != eventOrganaizerRepository.count();
