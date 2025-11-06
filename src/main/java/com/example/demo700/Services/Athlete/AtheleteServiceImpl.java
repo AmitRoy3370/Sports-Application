@@ -118,19 +118,13 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 			if (athelete.getPresentTeam() != null) {
 
-				Team team = teamRepository.findByTeamName(athelete.getPresentTeam());
-
-				if (team != null) {
-
-					throw new Exception();
-
-				}
-
+				throw new Exception();
+				
 			}
 
 		} catch (Exception e) {
 
-			throw new ArithmeticException("Team information is not valid...");
+			throw new ArithmeticException("No athlete can join a team in time of creation...");
 
 		}
 
@@ -221,6 +215,32 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new ArithmeticException("False user request...");
 
 		}
+		
+		try {
+			
+			if(__athlete.getPresentTeam() != null) {
+				
+				Team team1 = teamRepository.findByTeamName(__athlete.getPresentTeam());
+				
+				if(team1 == null) {
+					
+					throw new Exception();
+					
+				}
+			
+				if(!team1.getAtheletes().contains(atheleteId)) {
+					
+					throw new Exception();
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+			throw new ArithmeticException("Team information is not valid...");
+			
+		}
 
 		try {
 
@@ -257,7 +277,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			}
 
 		}
-
+		
 		try {
 
 			if (!athelete.getEventAttendence().isEmpty()) {
