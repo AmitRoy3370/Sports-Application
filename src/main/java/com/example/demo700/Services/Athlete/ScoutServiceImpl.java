@@ -330,7 +330,9 @@ public class ScoutServiceImpl implements ScoutService {
 
 			User user = userRepository.findById(userId).get();
 
-			Scouts _scout = scoutsRepository.findByAtheleteId(userId);
+			Athelete _athlete = atheleteRepository.findByUserId(user.getId()).get(); 
+			
+			Scouts _scout = scoutsRepository.findByAtheleteId(_athlete.getId());
 
 			if (_scout == null) {
 
