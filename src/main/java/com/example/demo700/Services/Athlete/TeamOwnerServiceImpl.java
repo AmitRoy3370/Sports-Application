@@ -90,6 +90,20 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		}
 
+		try {
+			
+			if(!teamOwner.getMatches().isEmpty() || !teamOwner.getTeams().isEmpty()) {
+				
+				throw new Exception();
+				
+			}
+			
+		} catch(Exception e) {
+			
+			throw new ArithmeticException("No such team owner have match or team as the time of creation....");
+			
+		}
+		
 		teamOwner = teamOwnerRepository.save(teamOwner);
 
 		if (teamOwner == null) {
@@ -161,6 +175,109 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 			throw new NoSuchElementException("Your team owner not exist at here...");
 
+		}
+		
+		try {
+			
+			if(!teamOwner.getTeams().isEmpty()) {
+				
+				for(String i : teamOwner.getTeams()) {
+					
+					try {
+						
+						Team team = teamRepository.findById(i).get();
+						
+						if(team == null) {
+							
+							throw new Exception();
+							
+						}
+						
+						if(!team.getTeamOwnerId().equals(teamOwner.getId())) {
+							
+							throw new Exception();
+							
+						}
+						
+					} catch(Exception e) {
+						
+						throw new Exception();
+						
+					}
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("You teams are not valid...");
+			
+		}
+		
+		try {
+			
+			if(!teamOwner.getMatches().isEmpty()) {
+				
+				for(String i : teamOwner.getMatches()) {
+					
+					try {
+						
+						Match match = matchRepository.findById(i).get();
+						
+						if(match == null) {
+							
+							throw new Exception();
+							
+						}
+						
+						if(match.getTeams().isEmpty()) {
+							
+							throw new Exception();
+							
+						}
+						
+						boolean find = false;
+						
+						for(String j : match.getTeams()) {
+							
+							Team team = teamRepository.findById(j).get();
+							
+							if(team == null) {
+								
+								throw new Exception();
+								
+							}
+							
+							if(team.getTeamOwnerId().equals(teamOwner.getId())) {
+								
+								find = true;
+								break;
+								
+							}
+							
+						}
+						
+						if(!find) {
+							
+							throw new Exception();
+							
+						}
+						
+					} catch(Exception e) {
+						
+						throw new Exception();
+						
+					}
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("Your matches are not valid...");
+			
 		}
 
 		teamOwner = teamOwnerRepository.save(teamOwner);
