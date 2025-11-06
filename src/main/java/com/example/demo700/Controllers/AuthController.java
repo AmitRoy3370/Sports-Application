@@ -48,6 +48,8 @@ public class AuthController {
 		
 		try {
 			
+			System.out.println("I am in the delete rest api...");
+			
 			boolean yes = authService.removeUser(userId, userTryingToDelete);
 			
 			if(yes) {

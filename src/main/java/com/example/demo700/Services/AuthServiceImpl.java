@@ -75,6 +75,8 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public boolean removeUser(String userId, String userTryingToDelete) {
 
+		System.out.println("Working for delete...");
+
 		if (userId == null || userTryingToDelete == null) {
 
 			throw new NullPointerException("False request...");
@@ -103,7 +105,11 @@ public class AuthServiceImpl implements AuthService {
 
 				long count = userRepository.count();
 
+				System.out.println("previous count :- " + count);
+				
 				cyclicCleaner.removeUser(userId);
+				
+				System.out.println("now :- " + userRepository.count());
 
 				return count != userRepository.count();
 

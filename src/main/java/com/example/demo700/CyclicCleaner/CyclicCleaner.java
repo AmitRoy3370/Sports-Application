@@ -121,9 +121,9 @@ public class CyclicCleaner {
 
 			long count = userRepository.count();
 
-			if (count != userRepository.count()) {
+			userRepository.deleteById(userId);
 
-				userRepository.deleteById(userId);
+			if (count != userRepository.count()) {
 
 				try {
 
@@ -207,41 +207,41 @@ public class CyclicCleaner {
 				} catch (Exception e) {
 
 				}
-				
+
 				try {
-					
+
 					List<ChatMessage> chatMessages = chatMessageRepository.findByReceiverOrSender(userId, userId);
-					
-					if(!chatMessages.isEmpty()) {
-						
-						for(ChatMessage k : chatMessages) {
-							
+
+					if (!chatMessages.isEmpty()) {
+
+						for (ChatMessage k : chatMessages) {
+
 							removeChatMessage(k.getId());
-							
+
 						}
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
-				
+
 				try {
-					
+
 					List<Notification> notifications = notificationRepository.findByUserId(userId);
-					
-					if(!notifications.isEmpty()) {
-						
-						for(Notification k : notifications) {
-							
+
+					if (!notifications.isEmpty()) {
+
+						for (Notification k : notifications) {
+
 							removeNotification(k.getId());
-							
+
 						}
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
 
 				List<Discount> discounts = discoutnRepository.findByOwnerId(userId);
@@ -1238,15 +1238,18 @@ public class CyclicCleaner {
 			if (count != matchVenueRepository.count()) {
 
 				removeMatch(matchVenue.getMatchId());
-				/*removeVenue(matchVenue.getVenueId());
-
-				VenueLocation venueLocation = venueLocationRepository.findByVenueId(matchVenue.getVenueId());
-
-				if (venueLocation != null) {
-
-					venueLocationRepository.deleteById(venueLocation.getId());
-
-				}*/
+				/*
+				 * removeVenue(matchVenue.getVenueId());
+				 * 
+				 * VenueLocation venueLocation =
+				 * venueLocationRepository.findByVenueId(matchVenue.getVenueId());
+				 * 
+				 * if (venueLocation != null) {
+				 * 
+				 * venueLocationRepository.deleteById(venueLocation.getId());
+				 * 
+				 * }
+				 */
 
 			}
 

@@ -18,11 +18,16 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-				.authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-				.anyRequest().authenticated();
+		http
 
-		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+				.csrf().disable()
+
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+
+				.authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/delete")
+				.permitAll().anyRequest().authenticated().and()
+
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
