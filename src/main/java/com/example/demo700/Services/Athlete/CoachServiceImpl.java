@@ -165,6 +165,10 @@ public class CoachServiceImpl implements CoachService {
 		try {
 
 			User user = userRepository.findById(userId).get();
+			
+			System.out.println("User find...");
+			
+			System.out.println(user.getId());
 
 			Athelete athelete = atheleteRepository.findByUserId(user.getId()).get();
 
@@ -174,6 +178,8 @@ public class CoachServiceImpl implements CoachService {
 
 			}
 
+			System.out.println("Athlete find...");
+			
 			Coach _coach = coachRepository.findByAtheleteId(athelete.getId());
 
 			if (_coach == null) {
@@ -181,6 +187,8 @@ public class CoachServiceImpl implements CoachService {
 				throw new Exception();
 
 			}
+			
+			System.out.println("Coach find by athlete...");
 
 			if (_coach.getId().equals(coachId) && !user.getRoles().contains(Role.ROLE_COACH)) {
 
@@ -188,6 +196,8 @@ public class CoachServiceImpl implements CoachService {
 
 			}
 
+			System.out.println("Everything is ok...");
+			
 		} catch (Exception e) {
 
 			throw new ArithmeticException("Your given actioned user is not valid...");

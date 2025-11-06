@@ -214,7 +214,9 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		if (!user.getRoles().contains(Role.ROLE_ATHLETE)) {
+		Athelete __athlete = autheleteRepository.findByUserId(user.getId()).get();
+		
+		if (!user.getRoles().contains(Role.ROLE_ATHLETE) || !__athlete.getId().equals(atheleteId)) {
 
 			throw new ArithmeticException("False user request...");
 
