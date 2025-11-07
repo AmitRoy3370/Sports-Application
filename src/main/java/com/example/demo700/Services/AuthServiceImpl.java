@@ -197,6 +197,8 @@ public class AuthServiceImpl implements AuthService {
 			u.setRoles(request.getRoles());
 		}
 
+		u.setId(userId);
+		
 		u = userRepository.save(u);
 
 		return u;
