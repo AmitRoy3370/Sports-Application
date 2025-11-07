@@ -21,6 +21,8 @@ public interface TeamJoinRequestService {
 
 	List<TeamJoinRequest> searchByPrice(double price);
 	
+	List<TeamJoinRequest> searchByTeamId(String teamId);
+	
 	boolean handleJoinResponse(String teamJoinRequestId, String userId, AtheletesTeamJoiningResponse atheleteResponse);
 
 }

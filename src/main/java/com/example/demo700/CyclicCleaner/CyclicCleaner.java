@@ -683,6 +683,25 @@ public class CyclicCleaner {
 						}
 
 						try {
+							
+							TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
+							
+							if(teamOwner == null) {
+								
+								throw new Exception();
+								
+							}
+							
+							teamOwner.getTeams().remove(teamId);
+							
+							teamOwnerRepository.save(teamOwner);
+							
+						} catch(Exception e) {
+							
+							
+						}
+						
+						try {
 
 							List<Match> _list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
 

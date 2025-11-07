@@ -1017,7 +1017,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		if (yes) {
 
-			List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(userId);
+			List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(teamJoinRequest.getReceiverId());
 
 			for (TeamJoinRequest i : list) {
 
@@ -1036,6 +1036,26 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 		}
 
 		return yes;
+	}
+
+	@Override
+	public List<TeamJoinRequest> searchByTeamId(String teamId) {
+		
+		if(teamId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		List<TeamJoinRequest> list = teamJoinRequestRepository.findByTeamId(teamId);
+		
+		if(list.isEmpty()) {
+			
+			throw new NoSuchElementException("No value find at here...");
+			
+		}
+		
+		return list;
 	}
 
 }

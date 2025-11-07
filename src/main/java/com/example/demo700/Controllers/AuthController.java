@@ -42,32 +42,5 @@ public class AuthController {
 		JwtResponse resp = authService.login(request);
 		return ResponseEntity.ok(resp);
 	}
-	
-	@DeleteMapping("/delete")
-	public ResponseEntity<?> deleteUser(@RequestParam String userId, @RequestParam String userTryingToDelete) {
-		
-		try {
-			
-			System.out.println("I am in the delete rest api...");
-			
-			boolean yes = authService.removeUser(userId, userTryingToDelete);
-			
-			if(yes) {
-				
-				return ResponseEntity.status(200).body("USER deleted successfully...");
-				
-			} else {
-				
-				return ResponseEntity.status(500).body("User is not deleted...");
-				
-			}
-			
-		} catch(Exception e) {
-			
-			return ResponseEntity.status(400).body(e.getMessage());
-			
-		}
-		
-	}
 
 }

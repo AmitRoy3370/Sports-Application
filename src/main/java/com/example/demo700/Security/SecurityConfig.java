@@ -24,7 +24,7 @@ public class SecurityConfig {
 
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 
-				.authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/delete")
+				.authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/login")
 				.permitAll().anyRequest().authenticated().and()
 
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

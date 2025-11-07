@@ -106,9 +106,9 @@ public class AuthServiceImpl implements AuthService {
 				long count = userRepository.count();
 
 				System.out.println("previous count :- " + count);
-				
+
 				cyclicCleaner.removeUser(userId);
-				
+
 				System.out.println("now :- " + userRepository.count());
 
 				return count != userRepository.count();
@@ -133,6 +133,73 @@ public class AuthServiceImpl implements AuthService {
 
 		}
 
+	}
+
+	@Override
+	public User updateUser(RegisterRequest request, String userId) {
+
+		if (request == null) {
+
+			throw new ArithmeticException("False request...");
+
+		}
+
+		try {
+
+			User user = userRepository.findById(userId).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new RuntimeException("False user update request...");
+
+		}
+
+		try {
+
+			User user = userRepository.findByEmail(request.getEmail()).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+			if (!user.getId().equals(userId)) {
+
+				throw new RuntimeException("this email is already used by another user...");
+
+			}
+
+		} catch (RuntimeException e) {
+
+			throw new RuntimeException(e.getMessage());
+
+		} catch (Exception e) {
+
+		}
+
+		User u = new User();
+		u.setName(request.getName());
+		u.setEmail(request.getEmail());
+		u.setPassword(passwordEncoder.encode(request.getPassword()));
+
+		if (request.getRoles() == null || request.getRoles().isEmpty()) {
+
+			u.setRoles(new HashSet<>());
+			u.getRoles().add(Role.ROLE_USER);
+		} else {
+			u.setRoles(request.getRoles());
+		}
+
+		u = userRepository.save(u);
+
+		return u;
 	}
 
 }
