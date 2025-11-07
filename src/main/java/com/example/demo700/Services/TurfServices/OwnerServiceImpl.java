@@ -21,7 +21,7 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -46,9 +46,45 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 		}
 
-		User user = userRepository.findById(owner.getUserId()).get();
+		try {
 
-		if (user == null) {
+			User user = userRepository.findById(owner.getUserId()).get();
+
+			if (user == null) {
+
+				return null;
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			Owner _owner = ownerRepository.searchByUserId(owner.getUserId());
+
+			if (_owner != null) {
+
+				return null;
+
+			}
+
+		} catch (Exception e) {
+
+			return null;
+
+		}
+
+		try {
+
+			if (!ownerRepository.searchByPhone(owner.getPhone()).isEmpty()) {
+
+				throw new ArithmeticException("Phone number exist already...");
+
+			}
+
+		} catch (Exception e) {
 
 			return null;
 
@@ -91,11 +127,65 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 		}
 
-		User user = userRepository.findById(updatedOwner.getUserId()).get();
+		try {
 
-		if (user == null) {
+			User user = userRepository.findById(updatedOwner.getUserId()).get();
 
-			return null;
+			if (user == null) {
+
+				return null;
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			Owner _owner = ownerRepository.searchByUserId(updatedOwner.getUserId());
+
+			if (_owner != null) {
+
+				if (!_owner.getId().equals(updatedOwner.getId())) {
+
+					throw new Exception();
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("One turf owner can be form from single user..");
+
+		}
+
+		try {
+
+			List<Owner> list = ownerRepository.searchByPhone(owner.getPhone());
+
+			if (!list.isEmpty()) {
+
+				if (list.size() > 1) {
+
+					throw new ArithmeticException();
+
+				}
+
+				if (!list.get(0).getId().equals(id)) {
+
+					throw new ArithmeticException();
+
+				}
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("Phone number exist already...");
+
+		} catch (Exception e) {
 
 		}
 
@@ -146,7 +236,7 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 			if (ownerRepository.count() != count) {
 
-				//cleaner.removeUser(user.getId());
+				// cleaner.removeUser(user.getId());
 
 				return true;
 
@@ -160,7 +250,7 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 			if (ownerRepository.count() != count) {
 
-				//cleaner.removeUser(user.getId());
+				// cleaner.removeUser(user.getId());
 
 				return true;
 
@@ -169,6 +259,68 @@ public class OwnerServiceImpl implements TurfOwnerService {
 		}
 
 		return false;
+	}
+
+	@Override
+	public Owner findByUserId(String userId) {
+
+		if (userId == null) {
+
+			return null;
+
+		}
+
+		try {
+
+			Owner owner = ownerRepository.searchByUserId(userId);
+
+			return owner;
+
+		} catch (Exception e) {
+
+		}
+
+		return null;
+	}
+
+	@Override
+	public List<Owner> searchByName(String name) {
+
+		if (name == null) {
+
+			return null;
+
+		}
+
+		List<Owner> list = ownerRepository.searchByName(name);
+
+		if (list.isEmpty()) {
+
+			return null;
+
+		}
+
+		return list;
+	}
+
+	@Override
+	public List<Owner> searchByPhone(String phone) {
+
+		if (phone == null) {
+
+			return null;
+
+		}
+
+		List<Owner> list = ownerRepository.searchByPhone(phone);
+
+		if (list.isEmpty()) {
+
+			return null;
+
+		}
+
+		return list;
 	}
 
 }

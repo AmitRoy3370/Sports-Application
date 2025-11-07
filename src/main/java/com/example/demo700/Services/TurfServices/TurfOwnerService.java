@@ -10,5 +10,8 @@ public interface TurfOwnerService {
 	public List<Owner> seeAllOwner();
 	public Owner updateOwnerData(String id, Owner updatedOwner) throws Exception;
 	public boolean removeOwner(String id, String ownId);
+	public Owner findByUserId(String userId);
+	List<Owner> searchByName(String name);
+	List<Owner> searchByPhone(String phone);
 
 }

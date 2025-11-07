@@ -55,7 +55,76 @@ public class OwnerController {
 		return ResponseEntity.status(200).body(list);
 
 	}
+	
+	@GetMapping("/findByUserId")
+	public ResponseEntity<?> searchByUserId(@RequestParam String userId) {
+		
+		try {
+			
+			Owner owner = turfOwnerService.findByUserId(userId);
+			
+			if(owner == null) {
+				
+				return ResponseEntity.status(404).body("No turf owner find...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(owner);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
+	@GetMapping("/findByName")
+	public ResponseEntity<?> searchByName(@RequestParam String name) {
+		
+		try {
+			
+			List<Owner> list = turfOwnerService.searchByName(name);
+			
+			if(list.isEmpty()) {
+				
+				return ResponseEntity.status(404).body("No user find...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(list);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
 
+	@GetMapping("/findByPhone")
+	public ResponseEntity<?> searchByPhone(@RequestParam String phone) {
+		
+		try {
+			
+			List<Owner> list = turfOwnerService.searchByPhone(phone);
+			
+			if(list.isEmpty()) {
+				
+				return ResponseEntity.status(404).body("No user find...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(list);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	@PutMapping("/updateOwner")
 	public ResponseEntity<?> updateOwner(@RequestParam String id, @RequestBody Owner owner) {
 
