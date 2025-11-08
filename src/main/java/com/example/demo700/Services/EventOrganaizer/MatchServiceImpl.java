@@ -704,9 +704,9 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
-				if (!team.getMatches().contains(match.getId())) {
+				if (!team.getMatches().contains(matchId)) {
 
-					team.getMatches().add(match.getId());
+					team.getMatches().add(matchId);
 
 					teamRepository.save(team);
 
