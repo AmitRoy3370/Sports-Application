@@ -244,6 +244,42 @@ public class CyclicCleaner {
 
 				}
 
+				try {
+
+					List<BkashTransaction> list = bkashTransactionRepository.findBySenderId(userId);
+
+					if (!list.isEmpty()) {
+
+						for (BkashTransaction i : list) {
+
+							removeBikashTransaction(i.getId());
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					List<BkashTransaction> list = bkashTransactionRepository.findByReceiverId(userId);
+
+					if (!list.isEmpty()) {
+
+						for (BkashTransaction i : list) {
+
+							removeBikashTransaction(i.getId());
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
 				List<Discount> discounts = discoutnRepository.findByOwnerId(userId);
 
 				if (!discounts.isEmpty()) {
@@ -683,24 +719,23 @@ public class CyclicCleaner {
 						}
 
 						try {
-							
+
 							TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
-							
-							if(teamOwner == null) {
-								
+
+							if (teamOwner == null) {
+
 								throw new Exception();
-								
+
 							}
-							
+
 							teamOwner.getTeams().remove(teamId);
-							
+
 							teamOwnerRepository.save(teamOwner);
-							
-						} catch(Exception e) {
-							
-							
+
+						} catch (Exception e) {
+
 						}
-						
+
 						try {
 
 							List<Match> _list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
@@ -1112,7 +1147,7 @@ public class CyclicCleaner {
 			}
 
 			groupBookingRepository.deleteById(groupBookingId);
-			
+
 			removeBooking(groupBooking.getBookingId());
 
 		} catch (Exception e) {
