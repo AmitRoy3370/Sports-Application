@@ -132,8 +132,8 @@ public class MatchController {
     /**
      * ✅ Get matches by game logs URL substring
      */
-    @GetMapping("/gamelogs/{keyword}")
-    public ResponseEntity<?> getByGameLogs(@PathVariable String keyword) {
+    @GetMapping("/gamelogs")
+    public ResponseEntity<?> getByGameLogs(@RequestParam String keyword) {
         try {
             List<Match> matches = matchService.findByGameLogsContainingIgnoreCase(keyword);
             return ResponseEntity.ok(matches);
@@ -145,8 +145,8 @@ public class MatchController {
     /**
      * ✅ Get matches by video URL substring
      */
-    @GetMapping("/videos/{keyword}")
-    public ResponseEntity<?> getByVideos(@PathVariable String keyword) {
+    @GetMapping("/videos")
+    public ResponseEntity<?> getByVideos(@RequestParam String keyword) {
         try {
             List<Match> matches = matchService.findByVideosContainingIgnoreCase(keyword);
             return ResponseEntity.ok(matches);
