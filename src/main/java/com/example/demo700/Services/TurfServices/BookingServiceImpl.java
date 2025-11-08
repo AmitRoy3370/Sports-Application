@@ -42,51 +42,48 @@ public class BookingServiceImpl implements BookingService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
 	@Override
 	public Booking createBooking(BookingRequestDto request) {
-		
-		if(request == null) {
-			
+
+		if (request == null) {
+
 			return null;
-			
+
 		}
-		
+
 		User user = userRepository.findById(request.getUserId()).get();
-		
-		if(user == null) {
-			
+
+		if (user == null) {
+
 			System.out.println("User not find...");
-			
+
 			return null;
-			
+
 		}
-		
-		
-		
+
 		Venue venue = venueRepository.findById(request.getVenueId())
 				.orElseThrow(() -> new IllegalArgumentException("Venue not found"));
 
 		System.out.println("request group :- " + request.isGroup());
-		
-		if(request.getStartTime().isAfter(request.getEndTime())) {
+
+		if (request.getStartTime().isAfter(request.getEndTime())) {
 			System.out.println("Wrong time scheduled...");
-			
-			
+
 			return null;
-			
+
 		}
 
 		List<Booking> overlapped = bookingRepository.findByVenueIdAndEndTimeAfterAndStartTimeBefore(
 				request.getVenueId(), request.getStartTime(), request.getEndTime());
 
 		if (!overlapped.isEmpty()) {
-			
+
 			System.out.println("over lapped...");
-			
+
 			return null;
 		}
 
@@ -177,6 +174,8 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	public Booking updateBooking(String id, BookingRequestDto request) {
 
+		System.out.println("Trying to update the bookings...");
+
 		Booking booking = bookingRepository.findById(id).get();
 		GroupBooking groupBooking = null;
 
@@ -188,11 +187,13 @@ public class BookingServiceImpl implements BookingService {
 
 		if (booking == null && groupBooking == null) {
 
+			System.out.println("no booking and group booking find....");
+
 			return null;
 
 		}
 
-		request.setUserId(id);
+		// request.setUserId(id);
 
 		Venue venue = venueRepository.findById(request.getVenueId())
 				.orElseThrow(() -> new IllegalArgumentException("Venue not found"));
@@ -221,6 +222,9 @@ public class BookingServiceImpl implements BookingService {
 		}
 
 		if (!overlapped.isEmpty()) {
+
+			System.out.println("over lapped...");
+
 			return null;
 		}
 
@@ -279,6 +283,8 @@ public class BookingServiceImpl implements BookingService {
 
 		if (request.isGroup()) {
 
+			System.out.println("this is group booking request...");
+
 			GroupBooking gb = new GroupBooking();
 			gb.setBookingId(null);
 			gb.setMemberIds(List.of(request.getUserId()));
@@ -290,7 +296,9 @@ public class BookingServiceImpl implements BookingService {
 		}
 
 		b.setId(id);
-		
+
+		System.out.println("updated booking :- " + b.toString());
+
 		Booking saved = bookingRepository.save(b);
 
 		if (saved.isGroupBooking()) {
@@ -317,7 +325,15 @@ public class BookingServiceImpl implements BookingService {
 
 		if (isGroup) {
 
-			GroupBooking groupBooking = groupBookingRepository.findById(id).get();
+			GroupBooking groupBooking = null;
+
+			try {
+
+				groupBooking = groupBookingRepository.findById(id).get();
+
+			} catch (Exception e) {
+
+			}
 
 			if (groupBooking == null) {
 
@@ -482,43 +498,43 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	public List<Booking> findByVenueIdAndStatus(String venueId, BookingStatus status) {
-		
-		if(venueId == null || status == null) {
-			
+
+		if (venueId == null || status == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		List<Booking> list = bookingRepository.findByVenueIdAndStatus(venueId, status);
-		
+
 		return list;
 	}
 
 	@Override
 	public List<Booking> findByUserId(String userId) {
-		
-		if(userId == null) {
-			
+
+		if (userId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		List<Booking> list = bookingRepository.findByUserId(userId);
-		
+
 		return list;
 	}
 
 	@Override
 	public List<Booking> findByVenueId(String venueId) {
-		
-		if(venueId == null) {
-			
+
+		if (venueId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		List<Booking> list = bookingRepository.findByVenueId(venueId);
-		
+
 		return list;
 	}
 

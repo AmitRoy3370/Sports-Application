@@ -164,6 +164,8 @@ public class BookingController {
 	@PutMapping("/updateBooking")
 	public ResponseEntity<?> updateBooking(@RequestParam String id, @RequestParam String userId,
 			@RequestBody BookingRequestDto dto) {
+		
+		System.out.println("Trying to update the requested booking...");
 
 		try {
 
