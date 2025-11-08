@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.DTOFiles.BookingRequestDto;
+import com.example.demo700.ENUMS.BookingStatus;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Turf.Booking;
@@ -288,6 +289,8 @@ public class BookingServiceImpl implements BookingService {
 			b.setGroupBooking(true);
 		}
 
+		b.setId(id);
+		
 		Booking saved = bookingRepository.save(b);
 
 		if (saved.isGroupBooking()) {
@@ -475,6 +478,48 @@ public class BookingServiceImpl implements BookingService {
 
 		return booking;
 
+	}
+
+	@Override
+	public List<Booking> findByVenueIdAndStatus(String venueId, BookingStatus status) {
+		
+		if(venueId == null || status == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		List<Booking> list = bookingRepository.findByVenueIdAndStatus(venueId, status);
+		
+		return list;
+	}
+
+	@Override
+	public List<Booking> findByUserId(String userId) {
+		
+		if(userId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		List<Booking> list = bookingRepository.findByUserId(userId);
+		
+		return list;
+	}
+
+	@Override
+	public List<Booking> findByVenueId(String venueId) {
+		
+		if(venueId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		List<Booking> list = bookingRepository.findByVenueId(venueId);
+		
+		return list;
 	}
 
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Turf.Discount;
@@ -32,6 +33,8 @@ public class DiscountServiceImpl implements DiscountService {
 	@Autowired
 	private VenueRepository venueRepository;
 
+	private CyclicCleaner cleaner;
+	
 	@Override
 	public Discount createDiscount(Discount discount, String userId) {
 
@@ -216,7 +219,7 @@ public class DiscountServiceImpl implements DiscountService {
 
 			long count = discountRepository.count();
 
-			discountRepository.deleteById(discountId);
+			cleaner.removeDiscount(discountId);
 
 			if (discountRepository.count() != count) {
 
@@ -232,7 +235,7 @@ public class DiscountServiceImpl implements DiscountService {
 
 			long count = discountRepository.count();
 
-			discountRepository.deleteById(discountId);
+			cleaner.removeDiscount(discountId);
 
 			if (discountRepository.count() != count) {
 

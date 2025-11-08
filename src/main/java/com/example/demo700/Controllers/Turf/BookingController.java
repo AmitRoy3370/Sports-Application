@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo700.DTOFiles.BookingRequestDto;
+import com.example.demo700.ENUMS.BookingStatus;
 import com.example.demo700.Models.Turf.Booking;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Services.TurfServices.BookingService;
@@ -71,6 +72,93 @@ public class BookingController {
 
 		}
 
+	}
+	
+	@GetMapping("/findByUserId")
+	public ResponseEntity<?> findByUserId(@RequestParam String userId) {
+		
+		try {
+			
+			List<Booking> list = bookingService.findByUserId(userId);
+			
+			if(list.isEmpty()) {
+				
+				return ResponseEntity.status(404).body("No booking find...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(list);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(400).body(e.getMessage());
+			
+		}
+		
+	}
+	
+	@GetMapping("/findByVenueId")
+	public ResponseEntity<?> findByVenueId(@RequestParam String venueId) {
+		
+		try {
+			
+			List<Booking> list = bookingService.findByVenueId(venueId);
+			
+			if(list.isEmpty()) {
+				
+				return ResponseEntity.status(404).body("No booking find...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(list);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(400).body(e.getMessage());
+			
+		}
+		
+	}
+	
+	@GetMapping("/findByVenueIdAndStatus")
+	public ResponseEntity<?> findByVenueIdAndStatus(@RequestParam String venueId, @RequestParam String status) {
+		
+		try {
+			
+			BookingStatus bookingStatus = null;
+			
+			try {
+				
+				bookingStatus = BookingStatus.valueOf(status);
+				
+				if(bookingStatus == null) {
+					
+					throw new Exception();
+					
+				}
+				
+			} catch(Exception e) {
+				
+				return ResponseEntity.status(400).body("False status request...");
+				
+			}
+			
+			List<Booking> list = bookingService.findByVenueIdAndStatus(venueId, bookingStatus);
+			
+			if(list.isEmpty()) {
+				
+				return ResponseEntity.status(404).body("No booking find...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(list);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(400).body(e.getMessage());
+			
+		}
+		
 	}
 
 	@PutMapping("/updateBooking")
@@ -129,8 +217,8 @@ public class BookingController {
 	}
 
 	@DeleteMapping("/deleteBooking")
-	public ResponseEntity<?> deleteBooking(@RequestParam() String id, @RequestParam() String isGroup,
-			@RequestParam("givenUserId") String givenUserId) {
+	public ResponseEntity<?> deleteBooking(@RequestParam String id, @RequestParam String isGroup,
+			@RequestParam String givenUserId) {
 
 		try {
 
