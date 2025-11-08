@@ -32,6 +32,7 @@ public class BkashServiceImpl implements BkashService {
 	@Autowired
 	private VenueRepository venueRepository;
 
+	@Autowired
 	private CyclicCleaner cleaner;
 
 	@SuppressWarnings("null")
