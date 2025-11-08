@@ -175,7 +175,7 @@ public class BookingController {
 
 			}
 
-			Booking updatedBooking = bookingService.updateBooking(id, dto);
+			Booking updatedBooking = bookingService.updateBooking(id, dto, userId);
 
 			if (updatedBooking == null) {
 

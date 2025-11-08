@@ -1,6 +1,7 @@
 package com.example.demo700.Services.TurfServices;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -172,7 +173,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	@Override
-	public Booking updateBooking(String id, BookingRequestDto request) {
+	public Booking updateBooking(String id, BookingRequestDto request, String userId) {
 
 		System.out.println("Trying to update the bookings...");
 
@@ -272,6 +273,12 @@ public class BookingServiceImpl implements BookingService {
 		}
 
 		amount -= (offer / 100) * amount;
+		
+		if(booking != null && !booking.getUserId().equals(userId)) {
+			
+			throw new NoSuchElementException("Only the booking user can update the booking record...");
+			
+		}
 
 		Booking b = new Booking();
 		b.setVenueId(venue.getId());

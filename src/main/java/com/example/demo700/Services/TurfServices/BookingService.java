@@ -10,7 +10,7 @@ public interface BookingService {
 
 	List<Booking> seeAll();
 
-	Booking updateBooking(String id, BookingRequestDto request);
+	Booking updateBooking(String id, BookingRequestDto request, String userId);
 
 	boolean deleteBooking(String id, boolean isGroup, String userId);
 

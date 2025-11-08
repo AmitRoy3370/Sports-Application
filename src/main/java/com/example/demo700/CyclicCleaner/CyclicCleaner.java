@@ -1112,6 +1112,8 @@ public class CyclicCleaner {
 			}
 
 			groupBookingRepository.deleteById(groupBookingId);
+			
+			removeBooking(groupBooking.getBookingId());
 
 		} catch (Exception e) {
 
