@@ -818,7 +818,11 @@ public class CyclicCleaner {
 
 						for (Athelete i : list) {
 
-							i.getEventAttendence().remove(matchId);
+							while (i.getEventAttendence().contains(matchId)) {
+
+								i.getEventAttendence().remove(matchId);
+
+							}
 
 							atheleteRepository.save(i);
 
@@ -834,7 +838,11 @@ public class CyclicCleaner {
 
 							for (Scouts scout : _list) {
 
-								scout.getMatches().remove(matchId);
+								while (scout.getMatches().contains(matchId)) {
+
+									scout.getMatches().remove(matchId);
+
+								}
 
 								scoutsRepository.save(scout);
 
@@ -854,7 +862,11 @@ public class CyclicCleaner {
 
 							for (Scouts scout : _list) {
 
-								scout.getEvents().remove(matchId);
+								while (scout.getEvents().contains(matchId)) {
+
+									scout.getEvents().remove(matchId);
+
+								}
 
 								scoutsRepository.save(scout);
 
@@ -898,7 +910,11 @@ public class CyclicCleaner {
 
 									if (teamOwner.getMatches().contains(match.getId())) {
 
-										teamOwner.getMatches().remove(match.getId());
+										while (teamOwner.getMatches().contains(match.getId())) {
+
+											teamOwner.getMatches().remove(match.getId());
+
+										}
 
 										teamOwnerRepository.save(teamOwner);
 
@@ -924,7 +940,11 @@ public class CyclicCleaner {
 
 													if (eventOrganaizer != null) {
 
-														eventOrganaizer.getMatches().remove(matchId);
+														while (eventOrganaizer.getMatches().contains(matchId)) {
+
+															eventOrganaizer.getMatches().remove(matchId);
+
+														}
 
 														eventOrganaizerRepository.save(eventOrganaizer);
 
