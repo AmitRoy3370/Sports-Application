@@ -10,8 +10,10 @@ import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
+import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 
 @Service
 public class EventOrganaizerServiceImpl implements EventOrganaizerService {
@@ -22,6 +24,9 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+	private MatchRepository matchRepository;
+	
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -259,6 +264,36 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 			throw new ArithmeticException(e.getMessage());
 
+		}
+		
+		try {
+			
+			if(!eventOrganaizer.getMatches().isEmpty()) {
+				
+				for(String i : eventOrganaizer.getMatches()) {
+					
+					Match match = matchRepository.findById(i).get();
+					
+					if(match == null) {
+						
+						throw new Exception();
+						
+					}
+					
+					if(!match.getOrganaizerId().equals(eventOrganaizerId)) {
+					
+						throw new Exception();
+						
+					}
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+			throw new ArithmeticException("Event organaizer's match information is invalid...");
+			
 		}
 
 		eventOrganaizer.setId(eventOrganaizerId);
