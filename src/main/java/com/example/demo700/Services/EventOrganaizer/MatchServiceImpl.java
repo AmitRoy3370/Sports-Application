@@ -399,6 +399,8 @@ public class MatchServiceImpl implements MatchService {
 						}
 
 						scouts.getMatches().add(match.getId());
+						
+						scouts.getEvents().add(match.getId());
 
 						scoutsRepository.save(scouts);
 
@@ -578,6 +580,22 @@ public class MatchServiceImpl implements MatchService {
 
 		try {
 
+			Match _match = matchRepository.findById(matchId).get();
+
+			if (_match == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("Match information is not valid...");
+
+		}
+
+		try {
+
 			if (match.getMatchStartTime().isAfter(match.getMatchEndTime())) {
 
 				throw new Exception();
@@ -722,7 +740,11 @@ public class MatchServiceImpl implements MatchService {
 
 					}
 
-					athelete.getEventAttendence().add(matchId);
+					if (!athelete.getEventAttendence().contains(matchId)) {
+
+						//athelete.getEventAttendence().add(matchId);
+
+					}
 
 					atheleteRepository.save(athelete);
 
@@ -738,7 +760,17 @@ public class MatchServiceImpl implements MatchService {
 
 					}
 
-					scouts.getMatches().add(matchId);
+					if (!scouts.getMatches().contains(matchId)) {
+
+						//scouts.getMatches().add(matchId);
+
+					}
+
+					if (!scouts.getEvents().contains(matchId)) {
+
+						//scouts.getEvents().add(matchId);
+
+					}
 
 					scoutsRepository.save(scouts);
 
