@@ -1194,7 +1194,7 @@ public class CyclicCleaner {
 
 			if (count != ownerRepository.count()) {
 
-				List<Venue> list = venueReposiotry.findByOwnerId(venueOwnerId);
+				List<Venue> list = venueReposiotry.findByOwnerId(owner.getUserId());
 
 				if (!list.isEmpty()) {
 
