@@ -28,7 +28,7 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 	@Autowired
 	CyclicCleaner cleaner;
-	
+
 	@Override
 	public VenueLocation addVenueLocation(VenueLocation venueLocation, String userId) {
 
@@ -38,9 +38,17 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		}
 
-		User user = userRepository.findById(userId).get();
+		try {
 
-		if (user == null) {
+			User user = userRepository.findById(userId).get();
+
+			if (user == null) {
+
+				throw new NullPointerException("No such user exist at here...");
+
+			}
+
+		} catch (Exception e) {
 
 			throw new NullPointerException("No such user exist at here...");
 
@@ -52,17 +60,43 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		}
 
-		Venue venue = venueRepository.findById(venueLocation.getVenueId()).get();
+		try {
 
-		if (venue == null) {
+			VenueLocation _venueLocation = venueLocationRepository.findByVenueId(venueLocation.getVenueId());
 
-			throw new NullPointerException("No such venue exist at here...");
+			if (_venueLocation != null) {
+
+				throw new ArithmeticException();
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("Duplicate venue at here...");
+
+		} catch (Exception e) {
 
 		}
 
-		if (!venue.getOwnerId().equals(userId)) {
+		try {
 
-			throw new ArithmeticException("You can fixed the location only at your own venue...");
+			Venue venue = venueRepository.findById(venueLocation.getVenueId()).get();
+
+			if (venue == null) {
+
+				throw new NullPointerException("No such venue exist at here...");
+
+			}
+
+			if (!venue.getOwnerId().equals(userId)) {
+
+				throw new ArithmeticException("You can fixed the location only at your own venue...");
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException(e.getMessage());
 
 		}
 
@@ -134,17 +168,25 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 	@Override
 	public VenueLocation updateVenueLocation(String venueLocationId, VenueLocation updatedVenueLocation,
 			String userId) {
-		
+
 		System.out.println("I am now working to update the venue location...");
 
-		User user = userRepository.findById(userId).get();
+		try {
 
-		if (user == null) {
+			User user = userRepository.findById(userId).get();
 
-			throw new NullPointerException("No such user exist at here...");
+			if (user == null) {
+
+				throw new NullPointerException("No such user exist at here...");
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NullPointerException(e.getMessage());
 
 		}
-		
+
 		System.out.println("Your given user user is valid...");
 
 		if (updatedVenueLocation == null) {
@@ -153,14 +195,46 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		}
 
-		Venue venue = venueRepository.findById(updatedVenueLocation.getVenueId()).get();
+		Venue venue = null;
 
-		if (venue == null) {
+		try {
 
-			throw new NullPointerException("No such venue exist at here...");
+			venue = venueRepository.findById(updatedVenueLocation.getVenueId()).get();
+
+			if (venue == null) {
+
+				throw new NullPointerException("No such venue exist at here...");
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NullPointerException(e.getMessage());
 
 		}
-		
+
+		try {
+
+			VenueLocation _venueLocation = venueLocationRepository.findByVenueId(venue.getId());
+
+			if (_venueLocation != null) {
+
+				if (!_venueLocation.getId().equals(venueLocationId)) {
+
+					throw new ArithmeticException();
+
+				}
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("Venue not exist...");
+
+		} catch (Exception e) {
+
+		}
+
 		System.out.println("Your given venue is valid...");
 
 		if (!venue.getOwnerId().equals(userId)) {
@@ -168,9 +242,9 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 			throw new NullPointerException("You can update only update at your own created venue...");
 
 		}
-		
+
 		updatedVenueLocation.setId(venueLocationId);
-		
+
 		updatedVenueLocation = venueLocationRepository.save(updatedVenueLocation);
 
 		if (updatedVenueLocation == null) {
