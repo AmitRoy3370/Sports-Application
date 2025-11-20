@@ -32,15 +32,34 @@ public class AuthController {
 	private UserRepository userRepository;
 
 	@PostMapping("/register")
-	public ResponseEntity<JwtResponse> register(@Validated @RequestBody RegisterRequest request) {
-		JwtResponse resp = authService.register(request);
-		return ResponseEntity.ok(resp);
+	public ResponseEntity<?> register(@Validated @RequestBody RegisterRequest request) {
+
+		try {
+
+			JwtResponse resp = authService.register(request);
+			return ResponseEntity.ok(resp);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(400).body(e.getMessage());
+
+		}
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<JwtResponse> login(@Validated @RequestBody LoginRequest request) {
-		JwtResponse resp = authService.login(request);
-		return ResponseEntity.ok(resp);
+	public ResponseEntity<?> login(@Validated @RequestBody LoginRequest request) {
+
+		try {
+
+			JwtResponse resp = authService.login(request);
+			return ResponseEntity.ok(resp);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(400).body(e.getMessage());
+
+		}
+
 	}
 
 }
