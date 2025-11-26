@@ -14,6 +14,7 @@ import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Security.JwtUtil;
+import com.example.demo700.Validator.EmailValidator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,12 +31,22 @@ public class AuthServiceImpl implements AuthService {
 	@Autowired
 	private CyclicCleaner cyclicCleaner;
 
+	private EmailValidator emailValidator;
+
 	@Override
 	public JwtResponse register(RegisterRequest request) {
 
 		userRepository.findByEmail(request.getEmail()).ifPresent(u -> {
 			throw new RuntimeException("Email already exists");
 		});
+
+		emailValidator = new EmailValidator();
+
+		if (!emailValidator.isValidEmail(request.getEmail())) {
+
+			throw new RuntimeException("Email adress is not valid...");
+
+		}
 
 		User u = new User();
 		u.setName(request.getName());
@@ -198,7 +209,7 @@ public class AuthServiceImpl implements AuthService {
 		}
 
 		u.setId(userId);
-		
+
 		u = userRepository.save(u);
 
 		return u;
