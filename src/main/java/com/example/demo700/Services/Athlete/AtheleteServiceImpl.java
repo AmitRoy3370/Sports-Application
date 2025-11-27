@@ -119,7 +119,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			if (athelete.getPresentTeam() != null) {
 
 				throw new Exception();
-				
+
 			}
 
 		} catch (Exception e) {
@@ -139,6 +139,18 @@ public class AtheleteServiceImpl implements AtheleteService {
 		} catch (Exception e) {
 
 			throw new ArithmeticException("Match information is not valid...");
+
+		}
+
+		if (athelete.getAge() < 5) {
+
+			throw new ArithmeticException("Age less than 5 years can't be an athlete...");
+
+		}
+
+		if (athelete.getHeight() < 3.0) {
+
+			throw new ArithmeticException("Any atheltes height can't be less than 3");
 
 		}
 
@@ -209,37 +221,37 @@ public class AtheleteServiceImpl implements AtheleteService {
 		}
 
 		Athelete __athlete = autheleteRepository.findByUserId(user.getId()).get();
-		
+
 		if (!user.getRoles().contains(Role.ROLE_ATHLETE) || !__athlete.getId().equals(atheleteId)) {
 
 			throw new ArithmeticException("False user request...");
 
 		}
-		
+
 		try {
-			
-			if(__athlete.getPresentTeam() != null) {
-				
+
+			if (__athlete.getPresentTeam() != null) {
+
 				Team team1 = teamRepository.findByTeamName(__athlete.getPresentTeam());
-				
-				if(team1 == null) {
-					
+
+				if (team1 == null) {
+
 					throw new Exception();
-					
+
 				}
-			
-				if(!team1.getAtheletes().contains(atheleteId)) {
-					
+
+				if (!team1.getAtheletes().contains(atheleteId)) {
+
 					throw new Exception();
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new ArithmeticException("Team information is not valid...");
-			
+
 		}
 
 		try {
@@ -277,7 +289,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			}
 
 		}
-		
+
 		try {
 
 			if (!athelete.getEventAttendence().isEmpty()) {
@@ -326,6 +338,18 @@ public class AtheleteServiceImpl implements AtheleteService {
 		} catch (Exception e) {
 
 			throw new ArithmeticException("Match information is not valid...");
+
+		}
+
+		if (athelete.getAge() < 5) {
+
+			throw new ArithmeticException("Age less than 5 years can't be an athlete...");
+
+		}
+
+		if (athelete.getHeight() < 3.0) {
+
+			throw new ArithmeticException("Any atheltes height can't be less than 3");
 
 		}
 
