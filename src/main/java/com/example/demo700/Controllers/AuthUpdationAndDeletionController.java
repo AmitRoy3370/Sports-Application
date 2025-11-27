@@ -1,9 +1,12 @@
 package com.example.demo700.Controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,6 +73,52 @@ public class AuthUpdationAndDeletionController {
 		} catch (Exception e) {
 
 			return ResponseEntity.status(400).body(e.getMessage());
+
+		}
+
+	}
+
+	@GetMapping("/seeAll")
+	public ResponseEntity<?> seeAllUser() {
+
+		try {
+
+			List<User> list = authService.seeAllUser();
+
+			if (list.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			return ResponseEntity.status(200).body(list);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
+
+		}
+
+	}
+
+	@GetMapping("/searchByUserId")
+	public ResponseEntity<?> searchByUserId(@RequestParam String userId) {
+
+		try {
+
+			User user = authService.searchUserById(userId);
+
+			if (user == null) {
+
+				return ResponseEntity.status(404).body("No such user exist at here...");
+
+			}
+
+			return ResponseEntity.status(200).body(user);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
 
 		}
 

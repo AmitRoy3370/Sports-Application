@@ -1,6 +1,8 @@
 package com.example.demo700.Services;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -213,6 +215,40 @@ public class AuthServiceImpl implements AuthService {
 		u = userRepository.save(u);
 
 		return u;
+	}
+
+	@Override
+	public List<User> seeAllUser() {
+		
+		List<User> list = userRepository.findAll();
+		
+		if(list.isEmpty()) {
+			
+			throw new NoSuchElementException("No such user exist at here...");
+			
+		}
+		
+		return list;
+	}
+
+	@Override
+	public User searchUserById(String userId) {
+		
+		if(userId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		User user = userRepository.findById(userId).get();
+		
+		if(user == null) {
+			
+			throw new NoSuchElementException("No such user exist at here...");
+			
+		}
+		
+		return user;
 	}
 
 }
