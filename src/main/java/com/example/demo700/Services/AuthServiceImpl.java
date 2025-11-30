@@ -321,7 +321,7 @@ public class AuthServiceImpl implements AuthService {
 
 		} catch (Exception e) {
 
-			throw new NoSuchElementException("No such user find at here...");
+			throw new NoSuchElementException("No such user find for this " + email + " adress at here...");
 
 		}
 
