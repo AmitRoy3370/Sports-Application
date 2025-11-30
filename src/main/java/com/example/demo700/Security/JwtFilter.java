@@ -19,6 +19,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -30,33 +31,35 @@ public class JwtFilter extends OncePerRequestFilter {
 	private UserRepository userRepository;
 
 	@Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
+		final String authHeader = request.getHeader("Authorization");
 
-        String username = null;
-        String token = null;
+		String username = null;
+		String token = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtUtil.extractUsername(token);
-        }
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			token = authHeader.substring(7);
+			username = jwtUtil.extractUsername(token);
+		}
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.validateToken(token)) {
-                User user = userRepository.findByName(username);
+		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			if (jwtUtil.validateToken(token)) {
 
-                if (user != null) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+				User user = userRepository.findByName(username);
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            }
-        }
+				if (user != null) {
+					UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null,
+							new ArrayList<>());
 
-        filterChain.doFilter(request, response);
-    }
+					SecurityContextHolder.getContext().setAuthentication(authToken);
+				}
+
+			}
+		}
+
+		filterChain.doFilter(request, response);
+	}
 
 }

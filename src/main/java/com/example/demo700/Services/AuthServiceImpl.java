@@ -50,6 +50,24 @@ public class AuthServiceImpl implements AuthService {
 
 		}
 
+		try {
+
+			User user = userRepository.findByName(request.getName());
+
+			if (user != null) {
+
+				throw new ArithmeticException();
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("User name already exist...");
+
+		} catch (Exception e) {
+
+		}
+
 		User u = new User();
 		u.setName(request.getName());
 		u.setEmail(request.getEmail());
@@ -219,36 +237,94 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public List<User> seeAllUser() {
-		
+
 		List<User> list = userRepository.findAll();
-		
-		if(list.isEmpty()) {
-			
+
+		if (list.isEmpty()) {
+
 			throw new NoSuchElementException("No such user exist at here...");
-			
+
 		}
-		
+
 		return list;
 	}
 
 	@Override
 	public User searchUserById(String userId) {
-		
-		if(userId == null) {
-			
+
+		if (userId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		User user = userRepository.findById(userId).get();
-		
-		if(user == null) {
-			
+
+		if (user == null) {
+
 			throw new NoSuchElementException("No such user exist at here...");
-			
+
 		}
-		
+
 		return user;
+	}
+
+	@Override
+	public User findByName(String name) {
+
+		if (name == null) {
+
+			throw new NullPointerException("False request....");
+
+		}
+
+		try {
+
+			User user = userRepository.findByName(name);
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+			return user;
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such user find at here...");
+
+		}
+
+	}
+
+	@Override
+	public User findByEmail(String email) {
+
+		if (email == null) {
+
+			throw new NullPointerException("False request....");
+
+		}
+
+		try {
+
+			User user = userRepository.findByEmail(email).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+			return user;
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such user find at here...");
+
+		}
+
 	}
 
 }

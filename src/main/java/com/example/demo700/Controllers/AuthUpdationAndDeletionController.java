@@ -124,4 +124,50 @@ public class AuthUpdationAndDeletionController {
 
 	}
 
+	@GetMapping("/findByName")
+	public ResponseEntity<?> searchByName(@RequestParam String name) {
+		
+		try {
+			
+			User user = authService.findByName(name);
+			
+			if(user == null) {
+				
+				return ResponseEntity.status(500).body("User can't searching...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(user);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
+	@GetMapping("/findByEmail")
+	public ResponseEntity<?> searchByEmail(@RequestParam String email) {
+		
+		try {
+			
+			User user = authService.findByEmail(email);
+			
+			if(user == null) {
+				
+				return ResponseEntity.status(500).body("User can't searching...");
+				
+			}
+			
+			return ResponseEntity.status(200).body(user);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 }

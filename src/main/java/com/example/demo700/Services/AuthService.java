@@ -16,5 +16,7 @@ public interface AuthService {
 	User updateUser(RegisterRequest request, String userId);
 	List<User> seeAllUser();
 	User searchUserById(String userId);
+	User findByName(String name);
+	User findByEmail(String email);
 	
 }
