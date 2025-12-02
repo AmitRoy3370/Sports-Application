@@ -8,15 +8,17 @@ public class ProfileImageResponse {
 	private String contentType;
 	private long size;
 	private String base64Image; // encoded file
+	private String profileImageId;
 
 	public ProfileImageResponse(String userId, String imageId, String fileName, String contentType, long size,
-			String base64Image) {
+			String base64Image, String profileImageId) {
 		this.userId = userId;
 		this.imageId = imageId;
 		this.fileName = fileName;
 		this.contentType = contentType;
 		this.size = size;
 		this.base64Image = base64Image;
+		this.profileImageId = profileImageId;
 	}
 
 	public ProfileImageResponse() {
@@ -71,10 +73,19 @@ public class ProfileImageResponse {
 		this.base64Image = base64Image;
 	}
 
+	public String getProfileImageId() {
+		return profileImageId;
+	}
+
+	public void setProfileImageId(String profileImageId) {
+		this.profileImageId = profileImageId;
+	}
+
 	@Override
 	public String toString() {
 		return "ProfileImageResponse [userId=" + userId + ", imageId=" + imageId + ", fileName=" + fileName
-				+ ", contentType=" + contentType + ", size=" + size + ", base64Image=" + base64Image + "]";
+				+ ", contentType=" + contentType + ", size=" + size + ", base64Image=" + base64Image
+				+ ", profileImageId=" + profileImageId + "]";
 	}
 
 }

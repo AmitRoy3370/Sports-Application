@@ -123,7 +123,7 @@ public class ProfileImageController {
 			String base64 = Base64.getEncoder().encodeToString(fileBytes);
 
 			ProfileImageResponse response = new ProfileImageResponse(userId, imageHex, uploadedFile.getFilename(),
-					uploadedFile.getMetadata().getString("type"), uploadedFile.getLength(), base64);
+					uploadedFile.getMetadata().getString("type"), uploadedFile.getLength(), base64, profileImage.getId());
 
 			return ResponseEntity.status(201).body(response);
 
@@ -246,7 +246,7 @@ public class ProfileImageController {
 			String base64 = Base64.getEncoder().encodeToString(fileBytes);
 
 			ProfileImageResponse response = new ProfileImageResponse(userId, imageHex, uploadedFile.getFilename(),
-					uploadedFile.getMetadata().getString("type"), uploadedFile.getLength(), base64);
+					uploadedFile.getMetadata().getString("type"), uploadedFile.getLength(), base64, profileImage.getId());
 
 			return ResponseEntity.status(200).body(response);
 
