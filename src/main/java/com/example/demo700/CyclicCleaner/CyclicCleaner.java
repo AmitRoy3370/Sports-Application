@@ -19,6 +19,7 @@ import com.example.demo700.Models.ChatModels.ChatMessage;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
+import com.example.demo700.Models.FileUploadModel.ProfileIamge;
 import com.example.demo700.Models.NotificationModels.Notification;
 import com.example.demo700.Models.PaymentGateway.BkashTransaction;
 import com.example.demo700.Models.Turf.Booking;
@@ -38,6 +39,7 @@ import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
+import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Repositories.NotificationRepositories.NotificationRepository;
 import com.example.demo700.Repositories.PaymentRepositories.BkashTransactionRepository;
 import com.example.demo700.Repositories.Turf.BookingRepository;
@@ -46,6 +48,7 @@ import com.example.demo700.Repositories.Turf.GroupBookingRepository;
 import com.example.demo700.Repositories.Turf.OwnerRepository;
 import com.example.demo700.Repositories.Turf.VenueLocationServiceRepository;
 import com.example.demo700.Repositories.Turf.VenueRepository;
+import com.example.demo700.Services.FileUploadServices.ImageService;
 
 @Service
 public class CyclicCleaner {
@@ -106,6 +109,12 @@ public class CyclicCleaner {
 
 	@Autowired
 	private TeamJoinRequestRepository teamJoinRequestRepository;
+	
+	@Autowired
+	private ImageService imageService;
+	
+	@Autowired
+	private ProfileImageRepository profileImageRepository;
 
 	public void removeUser(String userId) {
 
@@ -280,6 +289,21 @@ public class CyclicCleaner {
 
 				}
 
+				try {
+					
+					ProfileIamge profileImage = profileImageRepository.findByUserId(user.getId());
+					
+					if(profileImage != null) {
+						
+						removeProfileImage(profileImage.getId());
+						
+					}
+					
+				} catch(Exception e) {
+					
+					
+				}
+				
 				List<Discount> discounts = discoutnRepository.findByOwnerId(userId);
 
 				if (!discounts.isEmpty()) {
@@ -1433,6 +1457,32 @@ public class CyclicCleaner {
 
 		}
 
+	}
+	
+	public void removeProfileImage(String profileImageId) {
+		
+		try {
+			
+			ProfileIamge profileImage = profileImageRepository.findById(profileImageId).get();
+			
+			if(profileImage != null) {
+				
+				long count = profileImageRepository.count();
+				
+				profileImageRepository.deleteById(profileImage.getId());
+				
+				if(count != profileImageRepository.count()) {
+					
+					imageService.delete(profileImage.getImageHex());
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
 	}
 
 }
