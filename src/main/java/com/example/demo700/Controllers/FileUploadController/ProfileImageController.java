@@ -276,6 +276,35 @@ public class ProfileImageController {
 		}
 	}
 
+	@GetMapping("/find")
+	public ResponseEntity<?> findProfileImage(@RequestParam String userId) {
+		
+		if(userId == null) {
+			
+			return ResponseEntity.status(400).body("False request...");
+			
+		}
+		
+		try {
+			
+			ProfileIamge profileImage = profileImageRepository.findByUserId(userId);
+			
+			if(profileImage == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			return ResponseEntity.status(200).body(profileImage);
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	@DeleteMapping("/delete/{userId}")
 	public ResponseEntity<?> deleteProfileImage(@PathVariable String userId) {
 		try {
