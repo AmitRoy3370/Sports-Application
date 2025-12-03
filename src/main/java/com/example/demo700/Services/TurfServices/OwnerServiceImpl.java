@@ -292,7 +292,7 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 		}
 
-		List<Owner> list = ownerRepository.searchByName(name);
+		List<Owner> list = ownerRepository.searchByNameIgnoreCase(name);
 
 		if (list.isEmpty()) {
 

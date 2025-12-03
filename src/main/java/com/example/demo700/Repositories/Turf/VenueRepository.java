@@ -14,6 +14,6 @@ public interface VenueRepository extends MongoRepository<Venue, String> {
 	List<Venue> findByAddressContainingIgnoreCase(String address);
 	List<Venue> findByOwnerId(String ownerId);
 	@Query("{ 'name': { $regex: '^?0$' } }")
-	Venue findByNameCaseSensitive(String name);
+	Venue findByNameIgnoreCase(String name);
 
 }

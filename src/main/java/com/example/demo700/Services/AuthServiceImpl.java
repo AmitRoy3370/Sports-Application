@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
 
 		try {
 
-			User user = userRepository.findByName(request.getName());
+			User user = userRepository.findByNameIgnoreCase(request.getName());
 
 			if (user != null) {
 
@@ -280,7 +280,7 @@ public class AuthServiceImpl implements AuthService {
 
 		try {
 
-			User user = userRepository.findByName(name);
+			User user = userRepository.findByNameIgnoreCase(name);
 
 			if (user == null) {
 

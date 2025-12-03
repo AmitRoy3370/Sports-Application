@@ -154,7 +154,7 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		}
 
-		List<VenueLocation> list = venueLocationRepository.findByLocationName(locationName);
+		List<VenueLocation> list = venueLocationRepository.findByLocationNameIgnoreCase(locationName);
 
 		if (list == null) {
 
