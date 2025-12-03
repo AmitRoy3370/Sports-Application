@@ -116,7 +116,7 @@ public class VenueServiceImpl implements VenueService {
 
 		try {
 
-			Venue venue = venueRepository.findByNameContainingIgnoreCase(v.getName());
+			Venue venue = venueRepository.findByNameCaseSensitive(v.getName());
 
 			if (venue != null) {
 
@@ -237,7 +237,7 @@ public class VenueServiceImpl implements VenueService {
 
 		try {
 
-			Venue venue = venueRepository.findByName(v.getName());
+			Venue venue = venueRepository.findByNameCaseSensitive(v.getName());
 
 			if (venue != null) {
 
