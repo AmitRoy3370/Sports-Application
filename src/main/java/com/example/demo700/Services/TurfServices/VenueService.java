@@ -14,4 +14,5 @@ public interface VenueService {
 	List<Venue> getAllVenue();
 	Venue updateVeue(String id, Venue updateVenue);
 	boolean removeVenue(String id, String userId);
+	Venue findByName(String name);
 }

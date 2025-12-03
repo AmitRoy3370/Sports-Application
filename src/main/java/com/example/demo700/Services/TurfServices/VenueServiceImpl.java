@@ -1,6 +1,7 @@
 package com.example.demo700.Services.TurfServices;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,10 @@ public class VenueServiceImpl implements VenueService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private CyclicCleaner cleaner;
-	
+
 	@Autowired
 	private OwnerRepository ownerRepository;
 
@@ -50,20 +51,20 @@ public class VenueServiceImpl implements VenueService {
 			if (v == null || v.getAddress().isEmpty() || v.getName().isEmpty() || v.getOwnerId().isEmpty()
 					|| v.getBasePricePerHour() <= 0.00 || v.getAmenities().isEmpty() || v.getPhotos().isEmpty()
 					|| v.getSportsSupported().isEmpty()) {
-				
-				//System.out.println("not enough data...");
+
+				// System.out.println("not enough data...");
 
 				throw new Exception("Have to put all the required arguments at here");
 
 			} else if (!urlValidator.isValid(v.getPhotos())) {
-				
-				//System.out.println("url is not valid...");
+
+				// System.out.println("url is not valid...");
 
 				throw new Exception("Have to put all the urls perfectly at here");
 
 			} else if (!adressValidator.isValidAddress(v.getAddress())) {
-				
-				//System.out.println("adress is not valid...");
+
+				// System.out.println("adress is not valid...");
 
 				throw new Exception("Have to put all the perfect address at here");
 
@@ -72,14 +73,14 @@ public class VenueServiceImpl implements VenueService {
 				User user = userRepository.findById(v.getOwnerId()).get();
 
 				if (user == null) {
-					
-					//System.out.println("user not find...");
+
+					// System.out.println("user not find...");
 
 					throw new Exception("Have to put all the perfect userId at here");
 
 				} else if (!user.getRoles().contains(Role.valueOf("ROLE_OWNER"))) {
-					
-					//System.out.println("Only role owner can add it...");
+
+					// System.out.println("Only role owner can add it...");
 
 					throw new Exception("Only turf owner can add venue");
 
@@ -94,30 +95,48 @@ public class VenueServiceImpl implements VenueService {
 			return null;
 
 		}
-		
+
 		try {
-			
+
 			Owner owner = ownerRepository.searchByUserId(v.getOwnerId());
-			
-			if(owner == null) {
-				
+
+			if (owner == null) {
+
 				throw new Exception();
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			System.out.println(e);
-			
+
 			return null;
-			
+
+		}
+
+		try {
+
+			Venue venue = venueRepository.findByName(v.getName());
+
+			if (venue != null) {
+
+				throw new ArithmeticException();
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("Already added venue with this name...");
+
+		} catch (Exception e) {
+
 		}
 
 		Venue venue = venueRepository.save(v);
 
 		if (venue == null) {
-			
-			//System.out.println("venue is not added at here...");
+
+			// System.out.println("venue is not added at here...");
 
 			return null;
 
@@ -162,9 +181,17 @@ public class VenueServiceImpl implements VenueService {
 
 		}
 
-		if (venueRepository.findById(id).get() == null) {
+		try {
 
-			return null;
+			if (venueRepository.findById(id).get() == null) {
+
+				return null;
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("Your venue id is not valid...");
 
 		}
 
@@ -205,6 +232,28 @@ public class VenueServiceImpl implements VenueService {
 			System.out.println(e);
 
 			return null;
+
+		}
+
+		try {
+
+			Venue venue = venueRepository.findByName(v.getName());
+
+			if (venue != null) {
+
+				if (!venue.getId().equals(id)) {
+
+					throw new ArithmeticException();
+
+				}
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("Already added venue with this name...");
+
+		} catch (Exception e) {
 
 		}
 
@@ -268,6 +317,35 @@ public class VenueServiceImpl implements VenueService {
 		}
 
 		return false;
+	}
+
+	@Override
+	public Venue findByName(String name) {
+		
+		if(name == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			Venue venue = venueRepository.findByName(name);
+			
+			if(venue == null) {
+				
+				throw new Exception("No such venue find at here...");
+				
+			}
+			
+			return venue;
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException(e.getMessage());
+			
+		}
+		
 	}
 
 }

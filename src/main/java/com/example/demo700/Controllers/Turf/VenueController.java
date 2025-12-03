@@ -37,33 +37,42 @@ public class VenueController {
 	@PostMapping("/addVenue")
 	public ResponseEntity<?> createVenue(@Validated @RequestBody Venue v) {
 
-		if (v == null || v.getAddress().isEmpty() || v.getName().isEmpty() || v.getOwnerId().isEmpty()
-				|| v.getBasePricePerHour() <= 0.00 || v.getAmenities().isEmpty() || v.getPhotos().isEmpty()
-				|| v.getSportsSupported().isEmpty()) {
+		try {
 
-			return ResponseEntity.status(400).body("Have to put all the required arguments at here");
+			if (v == null || v.getAddress().isEmpty() || v.getName().isEmpty() || v.getOwnerId().isEmpty()
+					|| v.getBasePricePerHour() <= 0.00 || v.getAmenities().isEmpty() || v.getPhotos().isEmpty()
+					|| v.getSportsSupported().isEmpty()) {
 
-		} else if (!urlValidator.isValid(v.getPhotos())) {
+				return ResponseEntity.status(400).body("Have to put all the required arguments at here");
 
-			return ResponseEntity.status(400).body("Have to put all the urls perfectly at here");
+			} else if (!urlValidator.isValid(v.getPhotos())) {
 
-		} else if (!adressValidator.isValidAddress(v.getAddress())) {
+				return ResponseEntity.status(400).body("Have to put all the urls perfectly at here");
 
-			return ResponseEntity.status(400).body("Have to put all the perfect address at here");
+			} else if (!adressValidator.isValidAddress(v.getAddress())) {
+
+				return ResponseEntity.status(400).body("Have to put all the perfect address at here");
+
+			}
+
+			Venue list = (venueService.createVenue(v));
+
+			if (list == null) {
+
+				return ResponseEntity.status(500).body("Data is not added...");
+
+			} else {
+
+				return ResponseEntity.ok(list);
+
+			}
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(400).body(e.getMessage());
 
 		}
 
-		Venue list = (venueService.createVenue(v));
-
-		if (list == null) {
-
-			return ResponseEntity.status(500).body("Data is not added...");
-
-		} else {
-
-			return ResponseEntity.ok(list);
-
-		}
 	}
 
 	@GetMapping("/{id}")
@@ -74,64 +83,120 @@ public class VenueController {
 	@GetMapping("/search")
 	public ResponseEntity<?> search(@RequestParam String q) {
 
-		List<Venue> list = venueService.searchByAddress(q);
+		try {
 
-		if (list.isEmpty()) {
+			List<Venue> list = venueService.searchByAddress(q);
 
-			return ResponseEntity.status(404).body("No Venue in this place");
+			if (list.isEmpty()) {
 
-		} else {
+				return ResponseEntity.status(404).body("No Venue in this place");
 
-			return ResponseEntity.ok(list);
+			} else {
+
+				return ResponseEntity.ok(list);
+
+			}
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
 
 		}
+
 	}
 
 	@GetMapping("/seeAll")
 	public ResponseEntity<?> seeAll() {
 
-		List<Venue> list = venueService.getAllVenue();
+		try {
 
-		if (list.isEmpty()) {
+			List<Venue> list = venueService.getAllVenue();
 
-			return ResponseEntity.status(404).body("No Venue find at here...");
+			if (list.isEmpty()) {
 
-		} else {
+				return ResponseEntity.status(404).body("No Venue find at here...");
 
-			return ResponseEntity.status(200).body(list);
+			} else {
+
+				return ResponseEntity.status(200).body(list);
+
+			}
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
 
 		}
 
 	}
-	
+
+	@GetMapping("/findByName")
+	public ResponseEntity<?> findByName(@RequestParam String name) {
+
+		try {
+
+			Venue venue = venueService.findByName(name);
+
+			if (venue == null) {
+
+				return ResponseEntity.status(404).body("No venue find at here...");
+
+			}
+
+			return ResponseEntity.status(200).body(venue);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
+
+		}
+
+	}
+
 	@PutMapping("/update")
 	public ResponseEntity<?> updateVenue(@RequestParam String id, @RequestBody Venue venue) {
-	
-		venue = venueService.updateVeue(id, venue);
-		
-		if(venue == null) {
-			
-			return ResponseEntity.status(400).body("Veneue not updated...");
-			
+
+		try {
+
+			venue = venueService.updateVeue(id, venue);
+
+			if (venue == null) {
+
+				return ResponseEntity.status(400).body("Veneue not updated...");
+
+			}
+
+			return ResponseEntity.status(200).body(venue);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(400).body(e.getMessage());
+
 		}
-		
-		return ResponseEntity.status(200).body(venue);
-		
+
 	}
-	
+
 	@DeleteMapping("/delete")
 	public ResponseEntity<?> deleteVenue(@RequestParam String id, @RequestParam String userId) {
-		
-		boolean yes = venueService.removeVenue(id, userId);
-		
-		if(!yes) {
-			
-			return ResponseEntity.status(400).body("Data is not deleted...");
-			
+
+		try {
+
+			boolean yes = venueService.removeVenue(id, userId);
+
+			if (!yes) {
+
+				return ResponseEntity.status(400).body("Data is not deleted...");
+
+			}
+
+			return ResponseEntity.status(200).body("Data is deleted successfully....");
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(400).body(e.getMessage());
+
 		}
-		
-		return ResponseEntity.status(200).body("Data is deleted successfully....");
-		
+
 	}
-	
+
 }

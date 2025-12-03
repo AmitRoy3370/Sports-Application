@@ -19,6 +19,7 @@ import com.example.demo700.Models.ChatModels.ChatMessage;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
+import com.example.demo700.Models.FileUploadModel.CVUploadModel;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
 import com.example.demo700.Models.NotificationModels.Notification;
 import com.example.demo700.Models.PaymentGateway.BkashTransaction;
@@ -39,6 +40,7 @@ import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
+import com.example.demo700.Repositories.FileUploadRepositories.CVUploadRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Repositories.NotificationRepositories.NotificationRepository;
 import com.example.demo700.Repositories.PaymentRepositories.BkashTransactionRepository;
@@ -115,6 +117,9 @@ public class CyclicCleaner {
 	
 	@Autowired
 	private ProfileImageRepository profileImageRepository;
+	
+	@Autowired
+	private CVUploadRepository cvUploadRepository;
 
 	public void removeUser(String userId) {
 
@@ -301,6 +306,20 @@ public class CyclicCleaner {
 					
 				} catch(Exception e) {
 					
+					
+				}
+				
+				try {
+					
+					CVUploadModel model = cvUploadRepository.findByUserId(user.getId());
+					
+					if(model != null) {
+						
+						removeCV(model.getId());
+						
+					}
+					
+				} catch(Exception e) {
 					
 				}
 				
@@ -1480,6 +1499,31 @@ public class CyclicCleaner {
 			}
 			
 		} catch(Exception e) {
+			
+		}
+		
+	}
+	
+	public void removeCV(String cvId) {
+		
+		try {
+			
+			CVUploadModel model = cvUploadRepository.findById(cvId).get();
+			
+			if(model != null) {
+				
+				long count = cvUploadRepository.count();
+				
+				cvUploadRepository.deleteById(cvId);
+				
+				if(count != cvUploadRepository.count()) {
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
 			
 		}
 		

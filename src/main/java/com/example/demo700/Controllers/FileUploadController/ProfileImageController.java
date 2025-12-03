@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.DTOFiles.ProfileImageResponse;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
@@ -38,6 +39,9 @@ public class ProfileImageController {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private CyclicCleaner cleaner;
 
 	@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	private ResponseEntity<?> uploadProfileIamge(@RequestParam String requestedUserId,
@@ -313,10 +317,14 @@ public class ProfileImageController {
 				return ResponseEntity.status(404).body("No image found");
 			}
 
-			imageService.delete(profileImage.getImageHex());
-			profileImageRepository.deleteById(profileImage.getId());
+			/*imageService.delete(profileImage.getImageHex());
+			profileImageRepository.deleteById(profileImage.getId());*/
+			
+			long count = profileImageRepository.count();
+			
+			cleaner.removeProfileImage(profileImage.getId());
 
-			return ResponseEntity.ok("Image deleted successfully");
+			return count != profileImageRepository.count() ? ResponseEntity.ok("Image deleted successfully") : ResponseEntity.status(500).body("profile image is not deleted...");
 
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body("Error deleting file");
