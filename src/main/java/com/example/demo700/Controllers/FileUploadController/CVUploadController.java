@@ -79,20 +79,36 @@ public class CVUploadController {
 	// ✔ DOWNLOAD CV
 	// ============================
 	@GetMapping("/download/{userId}")
-	public ResponseEntity<?> downloadCv(@PathVariable String userId) {
+	public ResponseEntity<?> downloadCv(
+	        @PathVariable String userId,
+	        @RequestParam(defaultValue = "view") String mode) {
 
-		CVUploadModel model = cvRepo.findByUserId(userId);
-		if (model == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CV not found for this user.");
-		}
+	    CVUploadModel model = cvRepo.findByUserId(userId);
+	    if (model == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("CV not found for this user.");
+	    }
 
-		byte[] fileBytes = cvService.getCv(model.getHexFile());
+	    byte[] fileBytes = cvService.getCv(model.getHexFile());
+	    
+	    User user = userRepository.findById(userId).get();
+	    
+	    String fileName = user.getName();
 
-		String fileName = userId + "_cv.pdf"; // client can rename
+	    MediaType mediaType = getMediaType(fileName);
 
-		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-				.contentType(MediaType.APPLICATION_OCTET_STREAM).body(fileBytes);
+	    String disposition = mode.equalsIgnoreCase("download")
+	            ? "attachment"
+	            : "inline";
+
+	    return ResponseEntity.ok()
+	            .header(HttpHeaders.CONTENT_DISPOSITION, disposition + "; filename=\"" + fileName + "\"")
+	            .contentType(mediaType)
+	            .contentLength(fileBytes.length)
+	            .body(fileBytes);
 	}
+
+
 
 	// ============================
 	// ✔ READ CV BY USER ID
@@ -254,4 +270,38 @@ public class CVUploadController {
 
 		return ResponseEntity.ok(list);
 	}
+	
+	private MediaType getMediaType(String fileName) {
+
+	    String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+
+	    switch (extension) {
+	        case "pdf":
+	            return MediaType.APPLICATION_PDF;
+
+	        case "jpg":
+	        case "jpeg":
+	            return MediaType.IMAGE_JPEG;
+
+	        case "png":
+	            return MediaType.IMAGE_PNG;
+
+	        case "doc":
+	            return MediaType.parseMediaType("application/msword");
+
+	        case "docx":
+	            return MediaType.parseMediaType(
+	                "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+	        case "mp4":
+	            return MediaType.parseMediaType("video/mp4");
+
+	        case "txt":
+	            return MediaType.TEXT_PLAIN;
+
+	        default:
+	            return MediaType.APPLICATION_OCTET_STREAM;
+	    }
+	}
+
 }
