@@ -330,7 +330,7 @@ public class VenueServiceImpl implements VenueService {
 		
 		try {
 			
-			Venue venue = venueRepository.findByName(name);
+			Venue venue = venueRepository.findByNameCaseSensitive(name);
 			
 			if(venue == null) {
 				

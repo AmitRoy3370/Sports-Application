@@ -3,6 +3,7 @@ package com.example.demo700.Repositories.Turf;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo700.Models.Turf.Venue;
@@ -12,6 +13,7 @@ public interface VenueRepository extends MongoRepository<Venue, String> {
 
 	List<Venue> findByAddressContainingIgnoreCase(String address);
 	List<Venue> findByOwnerId(String ownerId);
+	@Query("{ 'name': { $regex: '^?0$' } }")
 	Venue findByNameCaseSensitive(String name);
 
 }
