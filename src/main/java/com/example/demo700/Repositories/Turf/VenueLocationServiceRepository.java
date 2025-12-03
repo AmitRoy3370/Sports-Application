@@ -9,7 +9,7 @@ import com.example.demo700.Models.Turf.VenueLocation;
 
 public interface VenueLocationServiceRepository extends MongoRepository<VenueLocation, String> {
 	
-	@Query("{ 'name': { $regex: '^?0$' } }")
+	@Query("{ 'name': { $regex: '^?0$', $options: 'i' } }")
 	List<VenueLocation> findByLocationNameIgnoreCase(String locationName);
 	VenueLocation findByLatitudeAndLongitude(double latitude, double longitude);
 	VenueLocation findByVenueId(String venueId);

@@ -11,7 +11,7 @@ import com.example.demo700.Models.Turf.Owner;
 @Repository
 public interface OwnerRepository extends MongoRepository<Owner, String>  {
 	
-	@Query("{ 'name': { $regex: '^?0$' } }")
+	@Query("{ 'name': { $regex: '^?0$', $options: 'i' } }")
 	List<Owner> searchByNameIgnoreCase(String name);
 	List<Owner> searchByPhone(String phone);
 	Owner searchByUserId(String userId);
