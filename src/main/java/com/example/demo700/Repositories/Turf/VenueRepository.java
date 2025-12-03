@@ -12,6 +12,6 @@ public interface VenueRepository extends MongoRepository<Venue, String> {
 
 	List<Venue> findByAddressContainingIgnoreCase(String address);
 	List<Venue> findByOwnerId(String ownerId);
-	Venue findByName(String name);
+	Venue findByNameContainingIgnoreCase(String name);
 
 }
