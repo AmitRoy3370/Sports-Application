@@ -101,7 +101,7 @@ public class CVUploadController {
 	            ? "attachment"
 	            : "inline";
 
-	    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, disposition, "attachment; filename=" + fileName)
+	    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
 				.contentType(mediaType).body(fileBytes);
 	}
 
