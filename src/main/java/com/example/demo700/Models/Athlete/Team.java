@@ -26,16 +26,18 @@ public class Team {
 	List<String> atheletes;
 	List<String> coaches;
 	List<String> scouts;
+	List<String> doctors;
 	List<String> matches;
 
 	public Team(String teamOwnerId, String teamName, List<String> atheletes, List<String> coaches, List<String> scouts,
-			List<String> matches) {
+			List<String> doctors,List<String> matches) {
 		super();
 		this.teamOwnerId = teamOwnerId;
 		this.teamName = teamName;
 		this.atheletes = atheletes;
 		this.coaches = coaches;
 		this.scouts = scouts;
+		this.doctors = doctors;
 		this.matches = matches;
 	}
 
@@ -99,10 +101,18 @@ public class Team {
 		this.matches = matches;
 	}
 
+	public List<String> getDoctors() {
+		return doctors;
+	}
+
+	public void setDoctors(List<String> doctors) {
+		this.doctors = doctors;
+	}
+
 	@Override
 	public String toString() {
 		return "Team [id=" + id + ", teamOwnerId=" + teamOwnerId + ", teamName=" + teamName + ", atheletes=" + atheletes
-				+ ", coaches=" + coaches + ", scouts=" + scouts + ", matches=" + matches + "]";
+				+ ", coaches=" + coaches + ", scouts=" + scouts + ", Doctors= "+ doctors + ", matches=" + matches + "]";
 	}
 
 }

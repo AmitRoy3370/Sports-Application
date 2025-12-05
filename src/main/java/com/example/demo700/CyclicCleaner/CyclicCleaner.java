@@ -16,6 +16,7 @@ import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamJoinRequest;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.ChatModels.ChatMessage;
+import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
@@ -37,6 +38,7 @@ import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
+import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
@@ -120,6 +122,9 @@ public class CyclicCleaner {
 	
 	@Autowired
 	private CVUploadRepository cvUploadRepository;
+	
+	@Autowired
+	private DoctorRepository doctorRepository;
 
 	public void removeUser(String userId) {
 
@@ -316,6 +321,20 @@ public class CyclicCleaner {
 					if(model != null) {
 						
 						removeCV(model.getId());
+						
+					}
+					
+				} catch(Exception e) {
+					
+				}
+				
+				try {
+					
+					Doctor doctor = doctorRepository.findByUserId(user.getId());
+					
+					if(doctor != null) {
+						
+						removeDoctor(doctor.getId());
 						
 					}
 					
@@ -761,6 +780,24 @@ public class CyclicCleaner {
 
 						}
 
+						try {
+							
+							for(String doctorId : team.getDoctors()) {
+								
+								try {
+									
+									removeDoctor(doctorId);
+									
+								} catch(Exception e) {
+									
+								}
+								
+							}
+							
+						} catch(Exception e) {
+							
+						}
+						
 						try {
 
 							TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
@@ -1524,6 +1561,38 @@ public class CyclicCleaner {
 			
 		} catch(Exception e) {
 			
+			
+		}
+		
+	}
+	
+	public void removeDoctor(String doctorId) {
+		
+		try {
+			
+			Doctor doctor = doctorRepository.findById(doctorId).get();
+			
+			if(doctor != null) {
+				
+				long count = doctorRepository.count();
+				
+				doctorRepository.deleteById(doctorId);
+				
+				if(count != doctorRepository.count()) {
+					
+					List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(doctor.getId());
+					
+					for(TeamJoinRequest i : list) {
+						
+						removeTeamJoinRequest(i.getId());
+						
+					}
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
 			
 		}
 		

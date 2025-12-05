@@ -4,6 +4,7 @@ public enum TeamJoinRequestRole {
 
 	ROLE_ATHLETE, 
 	ROLE_SCOUT,
-	ROLE_COACH
+	ROLE_COACH,
+	ROLE_DOCTOR
 
 }

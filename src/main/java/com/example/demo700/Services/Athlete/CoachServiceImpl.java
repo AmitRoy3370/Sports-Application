@@ -266,6 +266,12 @@ public class CoachServiceImpl implements CoachService {
 					throw new Exception();
 
 				}
+				
+				if(!team.getTeamName().equalsIgnoreCase(coach.getTeamName())) {
+					
+					throw new Exception();
+					
+				}
 
 			} catch (Exception e) {
 

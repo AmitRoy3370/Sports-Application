@@ -13,6 +13,7 @@ public interface TeamService {
 	Team findByAtheletesContainingIgnoreCase(String atheleteId);
 	Team findByCoachesContainingIgnoreCase(String coachId);
 	Team findByScoutsContainingIgnoreCase(String scoutId);
+	Team findByDoctorsContainingIgnoreCase(String doctorId);
 	List<Team> findByMatchesContainingIgnoreCase(String matchId);
 	List<Team> findByTeamOwnerId(String teamOwnerId);
 	

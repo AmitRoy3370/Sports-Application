@@ -14,6 +14,7 @@ import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamOwner;
+import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
@@ -21,6 +22,7 @@ import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
+import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 
 @Service
@@ -45,8 +47,11 @@ public class TeamServiceImpl implements TeamService {
 	private ScoutsRepository scoutsRepository;
 
 	@Autowired
+	private DoctorRepository doctorRepository;
+
+	@Autowired
 	private MatchRepository matchRepository;
-	
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -111,7 +116,7 @@ public class TeamServiceImpl implements TeamService {
 
 		try {
 
-			Team _team = teamRepository.findByTeamName(team.getTeamName());
+			Team _team = teamRepository.findByTeamNameIgnoreCase(team.getTeamName());
 
 			if (_team != null) {
 
@@ -218,6 +223,36 @@ public class TeamServiceImpl implements TeamService {
 
 		}
 
+		try {
+			
+			for(String doctorId : team.getDoctors()) {
+				
+				Doctor doctor = doctorRepository.findById(doctorId).get();
+				
+				if(doctor == null) {
+					
+					throw new NoSuchElementException();
+					
+				}
+				
+				Team _team = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
+
+				if (_team != null) {
+
+					throw new NoSuchElementException();
+
+				}
+				
+			}
+
+		} catch (NoSuchElementException e) {
+
+			throw new NoSuchElementException("In valid doctor request....");
+
+		} catch (Exception e) {
+
+		}
+
 		if (!team.getMatches().isEmpty()) {
 
 			throw new ArithmeticException("In the time of creation no team doesn't get any match...");
@@ -309,7 +344,7 @@ public class TeamServiceImpl implements TeamService {
 
 		try {
 
-			Team _team = teamRepository.findByTeamName(team.getTeamName());
+			Team _team = teamRepository.findByTeamNameIgnoreCase(team.getTeamName());
 
 			if (!_team.getId().equals(teamId)) {
 
@@ -423,19 +458,19 @@ public class TeamServiceImpl implements TeamService {
 				try {
 
 					Match match = matchRepository.findById(i).get();
-					
-					if(match == null) {
-						
+
+					if (match == null) {
+
 						throw new Exception();
-						
+
 					}
-					
-					if(!match.getTeams().contains(teamId)) {
-					
+
+					if (!match.getTeams().contains(teamId)) {
+
 						throw new Exception();
-						
+
 					}
-					
+
 				} catch (Exception e) {
 
 					throw new NoSuchElementException("False team information...");
@@ -611,6 +646,26 @@ public class TeamServiceImpl implements TeamService {
 		List<Team> list = teamRepository.findByTeamOwnerId(teamOwnerId);
 
 		return list;
+	}
+
+	@Override
+	public Team findByDoctorsContainingIgnoreCase(String doctorId) {
+		
+		if(doctorId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		Team team = teamRepository.findByDoctorsContainingIgnoreCase(doctorId);
+		
+		if(team == null) {
+			
+			throw new NoSuchElementException("No such team find at here...");
+			
+		}
+		
+		return team;
 	}
 
 }

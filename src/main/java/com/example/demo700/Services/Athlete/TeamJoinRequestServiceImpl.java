@@ -18,6 +18,7 @@ import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamJoinRequest;
 import com.example.demo700.Models.Athlete.TeamOwner;
+import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
@@ -25,6 +26,7 @@ import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
+import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 
 @Service
 public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
@@ -49,6 +51,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 	@Autowired
 	private ScoutsRepository scoutsRepository;
+
+	@Autowired
+	private DoctorRepository doctorRepository;
 
 	@Override
 	public TeamJoinRequest sendJoinRequest(TeamJoinRequest teamJoinRequest, String userId) {
@@ -176,6 +181,24 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				}
 
 				Team team = teamRepository.findByScoutsContainingIgnoreCase(scout.getId());
+
+				if (team != null) {
+
+					throw new Exception();
+
+				}
+
+			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR) {
+
+				Doctor doctor = doctorRepository.findById(teamJoinRequest.getReceiverId()).get();
+
+				if (doctor == null) {
+
+					throw new NoSuchElementException();
+
+				}
+
+				Team team = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
 
 				if (team != null) {
 
@@ -355,6 +378,30 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				try {
 
 					Team team = teamRepository.findByScoutsContainingIgnoreCase(scout.getId());
+
+					if (team != null) {
+
+						throw new Exception();
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR) {
+
+				Doctor doctor = doctorRepository.findById(teamJoinRequest.getReceiverId()).get();
+
+				if (doctor == null) {
+
+					throw new NoSuchElementException();
+
+				}
+
+				try {
+
+					Team team = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
 
 					if (team != null) {
 
@@ -689,6 +736,24 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_DOCTOR)) {
+
+					try {
+
+						Doctor doctor = doctorRepository.findByUserId(userId);
+
+						if (doctor == null) {
+
+							throw new Exception();
+
+						}
+
+					} catch (Exception e) {
+
+						throw new NoSuchElementException("No such doctor present at here...");
+
+					}
+
 				}
 
 			}
@@ -724,7 +789,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 			}
 
 			if (!user.getRoles().contains(Role.ROLE_ATHLETE) && !user.getRoles().contains(Role.ROLE_COACH)
-					&& !user.getRoles().contains(Role.ROLE_SCOUT)) {
+					&& !user.getRoles().contains(Role.ROLE_SCOUT) && !user.getRoles().contains(Role.ROLE_DOCTOR)) {
 
 				throw new Exception();
 
@@ -813,6 +878,22 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				}
 
 				if (!teamJoinRequest.getReceiverId().equals(scout.getId())) {
+
+					throw new Exception();
+
+				}
+
+			} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_DOCTOR)) {
+
+				Doctor doctor = doctorRepository.findByUserId(userId);
+
+				if (doctor == null) {
+
+					throw new Exception();
+
+				}
+
+				if (!teamJoinRequest.getReceiverId().equals(doctor.getId())) {
 
 					throw new Exception();
 
@@ -993,6 +1074,65 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_DOCTOR)) {
+
+					Doctor doctor = doctorRepository.findByUserId(userId);
+
+					if (doctor == null) {
+
+						throw new Exception();
+
+					}
+
+					if (!teamJoinRequest.getReceiverId().equals(doctor.getId())) {
+
+						throw new Exception();
+
+					}
+
+					team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
+
+					if (team == null) {
+
+						throw new Exception();
+
+					}
+
+					TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
+
+					if (teamOwner == null) {
+
+						throw new Exception();
+
+					}
+
+					try {
+
+						Team _team = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
+
+						if (_team != null) {
+
+							throw new ArithmeticException();
+
+						}
+
+					} catch (ArithmeticException e) {
+
+						throw new Exception();
+
+					} catch (Exception e) {
+
+					}
+
+					team.getDoctors().add(doctor.getId());
+					team = teamRepository.save(team);
+
+					if (team != null) {
+
+						teamJoinRequestRepository.deleteById(teamJoinRequestId);
+
+					}
+
 				}
 
 				// teamJoinRequestRepository.deleteById(teamJoinRequestId);
@@ -1040,21 +1180,21 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 	@Override
 	public List<TeamJoinRequest> searchByTeamId(String teamId) {
-		
-		if(teamId == null) {
-			
+
+		if (teamId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		List<TeamJoinRequest> list = teamJoinRequestRepository.findByTeamId(teamId);
-		
-		if(list.isEmpty()) {
-			
+
+		if (list.isEmpty()) {
+
 			throw new NoSuchElementException("No value find at here...");
-			
+
 		}
-		
+
 		return list;
 	}
 

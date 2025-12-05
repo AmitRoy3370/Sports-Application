@@ -232,7 +232,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 			if (__athlete.getPresentTeam() != null) {
 
-				Team team1 = teamRepository.findByTeamName(__athlete.getPresentTeam());
+				Team team1 = teamRepository.findByTeamNameIgnoreCase(__athlete.getPresentTeam());
 
 				if (team1 == null) {
 

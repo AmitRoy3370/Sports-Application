@@ -188,4 +188,28 @@ public class TeamController {
             return ResponseEntity.status(400).body(e.getMessage());
         }
     }
+    
+    @GetMapping("/findByDoctorId")
+    public ResponseEntity<?> findByDoctorId(@RequestParam String doctorId) {
+    	
+    	try {
+    		
+    		Team team = teamService.findByDoctorsContainingIgnoreCase(doctorId);
+    		
+    		if(team == null) {
+    			
+    			return ResponseEntity.status(404).body("No team find at here...");
+    			
+    		}
+    		
+    		return ResponseEntity.status(200).body(team);
+    		
+    	} catch(Exception e) {
+    		
+    		return ResponseEntity.status(400).body(e.getMessage());
+    		
+    	}
+    	
+    }
+    
 }
