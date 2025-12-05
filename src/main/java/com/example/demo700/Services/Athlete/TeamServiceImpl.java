@@ -668,4 +668,19 @@ public class TeamServiceImpl implements TeamService {
 		return team;
 	}
 
+	@Override
+	public Team findByTeamName(String teamName) {
+		
+		if(teamName == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		Team team = teamRepository.findByTeamNameIgnoreCase(teamName);
+		
+		return team;
+		
+	}
+	
 }

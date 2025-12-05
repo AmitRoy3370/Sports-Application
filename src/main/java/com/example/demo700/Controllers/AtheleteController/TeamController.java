@@ -212,4 +212,27 @@ public class TeamController {
     	
     }
     
+    @GetMapping("/findByTeamName")
+    public ResponseEntity<?> findByTeamName(@RequestParam String teamName) {
+    	
+    	try {
+    		
+    		Team team = teamService.findByTeamName(teamName);
+    		
+    		if(team == null) {
+    			
+    			return ResponseEntity.status(404).body("No such team exist at here...");
+    			
+    		}
+    		
+    		return ResponseEntity.status(200).body(team);
+    		
+    	} catch(Exception e) {
+    		
+    		return ResponseEntity.status(400).body(e.getMessage());
+    		
+    	}
+    	
+    }
+    
 }

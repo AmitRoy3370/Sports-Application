@@ -1,6 +1,7 @@
 package com.example.demo700.Services.Athlete;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -1083,6 +1084,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 						throw new Exception();
 
 					}
+					
+					System.out.println("find doctor");
 
 					if (!teamJoinRequest.getReceiverId().equals(doctor.getId())) {
 
@@ -1090,6 +1093,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
+					System.out.println("match receiver id...");
+					
 					team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
 					if (team == null) {
@@ -1124,8 +1129,21 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
+					try {
+					
 					team.getDoctors().add(doctor.getId());
 					team = teamRepository.save(team);
+					
+					} catch(Exception e) {
+						
+						List<String> doctors = new ArrayList<>();
+						
+						doctors.add(doctor.getId());
+						
+						team.setDoctors(doctors);
+						team = teamRepository.save(team);
+						
+					}
 
 					if (team != null) {
 
