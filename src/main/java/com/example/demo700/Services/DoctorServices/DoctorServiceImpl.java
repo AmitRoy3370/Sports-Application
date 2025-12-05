@@ -145,7 +145,7 @@ public class DoctorServiceImpl implements DoctorService {
 
 		}
 
-		List<Doctor> list = doctorRepository.findByDegressContainingIgnoreCase(designation);
+		List<Doctor> list = doctorRepository.findByDesignationIgnoreCase(designation);
 
 		if (list.isEmpty()) {
 
