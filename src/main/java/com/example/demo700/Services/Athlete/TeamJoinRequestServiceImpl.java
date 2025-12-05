@@ -943,9 +943,22 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
-					team.getAtheletes().add(athelete.getId());
+					try {
 
-					team = teamRepository.save(team);
+						team.getAtheletes().add(athelete.getId());
+
+						team = teamRepository.save(team);
+
+					} catch (Exception e) {
+
+						List<String> list = new ArrayList<>();
+
+						list.add(athelete.getId());
+
+						team.setAtheletes(list);
+						team = teamRepository.save(team);
+
+					}
 
 					if (team != null) {
 
@@ -997,9 +1010,22 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					coachRepository.save(coach);
 
-					team.getCoaches().add(coach.getId());
+					try {
 
-					team = teamRepository.save(team);
+						team.getCoaches().add(coach.getId());
+
+						team = teamRepository.save(team);
+
+					} catch (Exception e) {
+
+						List<String> list = new ArrayList<>();
+
+						list.add(coach.getId());
+						team.setCoaches(list);
+
+						team = teamRepository.save(team);
+
+					}
 
 					if (team != null) {
 
@@ -1065,9 +1091,23 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					System.out.println("Team owner find...");
 
-					team.getScouts().add(scout.getId());
+					try {
 
-					team = teamRepository.save(team);
+						team.getScouts().add(scout.getId());
+
+						team = teamRepository.save(team);
+
+					} catch (Exception e) {
+
+						List<String> list = new ArrayList<>();
+
+						list.add(scout.getId());
+
+						team.setScouts(list);
+
+						team = teamRepository.save(team);
+
+					}
 
 					if (team != null) {
 
@@ -1084,7 +1124,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 						throw new Exception();
 
 					}
-					
+
 					System.out.println("find doctor");
 
 					if (!teamJoinRequest.getReceiverId().equals(doctor.getId())) {
@@ -1094,7 +1134,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					}
 
 					System.out.println("match receiver id...");
-					
+
 					team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
 					if (team == null) {
@@ -1130,19 +1170,19 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					}
 
 					try {
-					
-					team.getDoctors().add(doctor.getId());
-					team = teamRepository.save(team);
-					
-					} catch(Exception e) {
-						
+
+						team.getDoctors().add(doctor.getId());
+						team = teamRepository.save(team);
+
+					} catch (Exception e) {
+
 						List<String> doctors = new ArrayList<>();
-						
+
 						doctors.add(doctor.getId());
-						
+
 						team.setDoctors(doctors);
 						team = teamRepository.save(team);
-						
+
 					}
 
 					if (team != null) {
