@@ -15,6 +15,7 @@ import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamJoinRequest;
 import com.example.demo700.Models.Athlete.TeamOwner;
+import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.ChatModels.ChatMessage;
 import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
@@ -37,6 +38,7 @@ import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
+import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
@@ -113,18 +115,21 @@ public class CyclicCleaner {
 
 	@Autowired
 	private TeamJoinRequestRepository teamJoinRequestRepository;
-	
+
 	@Autowired
 	private ImageService imageService;
-	
+
 	@Autowired
 	private ProfileImageRepository profileImageRepository;
-	
+
 	@Autowired
 	private CVUploadRepository cvUploadRepository;
-	
+
 	@Autowired
 	private DoctorRepository doctorRepository;
+
+	@Autowired
+	private AthleteLocationRepository athleteLocationRepository;
 
 	public void removeUser(String userId) {
 
@@ -300,48 +305,47 @@ public class CyclicCleaner {
 				}
 
 				try {
-					
+
 					ProfileIamge profileImage = profileImageRepository.findByUserId(user.getId());
-					
-					if(profileImage != null) {
-						
+
+					if (profileImage != null) {
+
 						removeProfileImage(profileImage.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
-					
+
+				} catch (Exception e) {
+
 				}
-				
+
 				try {
-					
+
 					CVUploadModel model = cvUploadRepository.findByUserId(user.getId());
-					
-					if(model != null) {
-						
+
+					if (model != null) {
+
 						removeCV(model.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
-				
+
 				try {
-					
+
 					Doctor doctor = doctorRepository.findByUserId(user.getId());
-					
-					if(doctor != null) {
-						
+
+					if (doctor != null) {
+
 						removeDoctor(doctor.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
-				
+
 				List<Discount> discounts = discoutnRepository.findByOwnerId(userId);
 
 				if (!discounts.isEmpty()) {
@@ -439,6 +443,20 @@ public class CyclicCleaner {
 							removeTeamJoinRequest(i.getId());
 
 						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					AthleteLocation athleteLocation = athleteLocationRepository.findByAthleteId(athelteId);
+
+					if (athleteLocation != null) {
+
+						removeAthleteLocation(athleteLocation.getId());
 
 					}
 
@@ -781,23 +799,23 @@ public class CyclicCleaner {
 						}
 
 						try {
-							
-							for(String doctorId : team.getDoctors()) {
-								
+
+							for (String doctorId : team.getDoctors()) {
+
 								try {
-									
+
 									removeDoctor(doctorId);
-									
-								} catch(Exception e) {
-									
+
+								} catch (Exception e) {
+
 								}
-								
+
 							}
-							
-						} catch(Exception e) {
-							
+
+						} catch (Exception e) {
+
 						}
-						
+
 						try {
 
 							TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
@@ -1514,88 +1532,113 @@ public class CyclicCleaner {
 		}
 
 	}
-	
+
 	public void removeProfileImage(String profileImageId) {
-		
+
 		try {
-			
+
 			ProfileIamge profileImage = profileImageRepository.findById(profileImageId).get();
-			
-			if(profileImage != null) {
-				
+
+			if (profileImage != null) {
+
 				long count = profileImageRepository.count();
-				
+
 				profileImageRepository.deleteById(profileImage.getId());
-				
-				if(count != profileImageRepository.count()) {
-					
+
+				if (count != profileImageRepository.count()) {
+
 					imageService.delete(profileImage.getImageHex());
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 	public void removeCV(String cvId) {
-		
+
 		try {
-			
+
 			CVUploadModel model = cvUploadRepository.findById(cvId).get();
-			
-			if(model != null) {
-				
+
+			if (model != null) {
+
 				long count = cvUploadRepository.count();
-				
+
 				cvUploadRepository.deleteById(cvId);
-				
-				if(count != cvUploadRepository.count()) {
-					
+
+				if (count != cvUploadRepository.count()) {
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 	public void removeDoctor(String doctorId) {
-		
+
 		try {
-			
+
 			Doctor doctor = doctorRepository.findById(doctorId).get();
-			
-			if(doctor != null) {
-				
+
+			if (doctor != null) {
+
 				long count = doctorRepository.count();
-				
+
 				doctorRepository.deleteById(doctorId);
-				
-				if(count != doctorRepository.count()) {
-					
+
+				if (count != doctorRepository.count()) {
+
 					List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(doctor.getId());
-					
-					for(TeamJoinRequest i : list) {
-						
+
+					for (TeamJoinRequest i : list) {
+
 						removeTeamJoinRequest(i.getId());
-						
+
 					}
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
+	}
+
+	public void removeAthleteLocation(String athleteLocationId) {
+
+		try {
+
+			AthleteLocation athleteLocation = athleteLocationRepository.findById(athleteLocationId).get();
+
+			if (athleteLocation != null) {
+
+				long count = athleteLocationRepository.count();
+
+				athleteLocationRepository.deleteById(athleteLocationId);
+
+				if (count != athleteLocationRepository.count()) {
+
+					removeAthelete(athleteLocation.getAthleteId());
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
 	}
 
 }
