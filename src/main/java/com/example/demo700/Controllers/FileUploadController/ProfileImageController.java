@@ -299,8 +299,17 @@ public class ProfileImageController {
 				
 			}
 			
-			return ResponseEntity.status(200).body(profileImage);
+			String imageHex = profileImage.getImageHex();
 			
+			GridFSFile uploadedFile = imageService.getFile(imageHex);
+
+			byte[] fileBytes = imageService.getStream(uploadedFile).readAllBytes();
+			String base64 = Base64.getEncoder().encodeToString(fileBytes);
+
+			ProfileImageResponse response = new ProfileImageResponse(userId, imageHex, uploadedFile.getFilename(),
+					uploadedFile.getMetadata().getString("type"), uploadedFile.getLength(), base64, profileImage.getId());
+
+			return ResponseEntity.status(200).body(response);
 		} catch(Exception e) {
 			
 			return ResponseEntity.status(404).body(e.getMessage());
