@@ -30,22 +30,6 @@ public class BkashTransaction {
 	private Instant transactionTime;
 
 	public BkashTransaction(String senderId, String senderName, String senderPhone, String receiverId,
-			String receiverName, String receiverPhone, double amount, String transactionId, String bookingId,
-			Instant transactionTime) {
-		super();
-		this.senderId = senderId;
-		this.senderName = senderName;
-		this.senderPhone = senderPhone;
-		this.receiverId = receiverId;
-		this.receiverName = receiverName;
-		this.receiverPhone = receiverPhone;
-		this.amount = amount;
-		this.transactionId = transactionId;
-		this.transactionTime = transactionTime;
-		this.bookingId = bookingId;
-	}
-
-	public BkashTransaction(String senderId, String senderName, String senderPhone, String receiverId,
 			String receiverName, String receiverPhone, double amount, String transactionId, String bookingId) {
 		super();
 		this.senderId = senderId;
