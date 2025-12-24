@@ -27,7 +27,7 @@ public class BkashTransaction {
 	private double amount;
 	private String transactionId;
 
-	private Instant transactionTime;
+	private Instant transactionTime = Instant.now();;
 
 	public BkashTransaction(String senderId, String senderName, String senderPhone, String receiverId,
 			String receiverName, String receiverPhone, double amount, String transactionId, String bookingId) {
@@ -40,7 +40,7 @@ public class BkashTransaction {
 		this.receiverPhone = receiverPhone;
 		this.amount = amount;
 		this.transactionId = transactionId;
-		this.transactionTime = Instant.now();
+		
 		this.bookingId = bookingId;
 	}
 
