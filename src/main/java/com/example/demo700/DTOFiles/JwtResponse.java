@@ -12,13 +12,12 @@ public class JwtResponse {
 	private String token;
 	private String type = "Bearer";
 	private String userId;
-	private Set<Role> roles;
-
-	public JwtResponse(String token, String userId, Set<Role> roles) {
+	
+	public JwtResponse(String token, String userId) {
 		super();
 		this.token = token;
 		this.userId = userId;
-		this.roles = roles;
+		
 	}
 
 	public JwtResponse() {
@@ -49,17 +48,9 @@ public class JwtResponse {
 		this.userId = userId;
 	}
 
-	public Set<Role> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(Set<Role> roles) {
-		this.roles = roles;
-	}
-
 	@Override
 	public String toString() {
-		return "JwtResponse [token=" + token + ", type=" + type + ", userId=" + userId + ", roles=" + roles + "]";
+		return "JwtResponse [token=" + token + ", type=" + type + ", userId=" + userId + "]";
 	}
 
 }
