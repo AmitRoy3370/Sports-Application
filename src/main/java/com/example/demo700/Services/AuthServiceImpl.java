@@ -84,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
 		u = userRepository.save(u);
 
 		String token = jwtUtil.generateToken(u.getName());
-		return new JwtResponse(token, u.getId());
+		return new JwtResponse(token, u.getId(), u.getRoles());
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
 		}
 
 		String token = jwtUtil.generateToken(u.getName());
-		return new JwtResponse(token, u.getId());
+		return new JwtResponse(token, u.getId(), u.getRoles());
 	}
 
 	@Override
