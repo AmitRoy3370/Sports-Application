@@ -95,7 +95,7 @@ public class JwtUtil {
 				.setSubject(user.getName())
 				.claim("roles", roles)  // ← ADD ROLES HERE
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + 12000 * 60 * 60)) 
+				.setExpiration(new Date(System.currentTimeMillis() + 100L * 365 * 24 * 60 * 60 * 1000)) 
 				.signWith(key, SignatureAlgorithm.HS256)
 				.compact();
 	}
