@@ -19,7 +19,9 @@ public class Athelete {
 	@NonNull
 	private String userId;
 	@NonNull
-	private int age, position;
+	private int age;
+	@NonNull
+	private String position;
 	@NonNull
 	private double height, weight;
 	private List<String> gameLogs;
@@ -27,7 +29,7 @@ public class Athelete {
 	private List<String> highlightReels;
 	private String presentTeam;
 
-	public Athelete(String userId, int age, int position, double height, double weight, List<String> gameLogs,
+	public Athelete(String userId, int age, String position, double height, double weight, List<String> gameLogs,
 			List<String> eventAttendence, List<String> highlightReels, String presentTeam) {
 		super();
 		this.userId = userId;
@@ -69,11 +71,11 @@ public class Athelete {
 		this.age = age;
 	}
 
-	public int getPosition() {
+	public String getPosition() {
 		return position;
 	}
 
-	public void setPosition(int position) {
+	public void setPosition(String position) {
 		this.position = position;
 	}
 

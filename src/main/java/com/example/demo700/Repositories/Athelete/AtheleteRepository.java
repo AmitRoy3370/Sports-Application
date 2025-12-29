@@ -20,7 +20,7 @@ public interface AtheleteRepository extends MongoRepository<Athelete, String> {
 
 	List<Athelete> findByPresentTeamIgnoreCase(String presentTeam);
 
-	List<Athelete> findByPosition(int position);
+	List<Athelete> findByPositionContainingIgnoreCase(String position);
 
 	List<Athelete> findByEventAttendenceContainingIgnoreCase(String eventName);
 

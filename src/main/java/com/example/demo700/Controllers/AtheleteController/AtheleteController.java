@@ -180,9 +180,7 @@ public class AtheleteController {
 		
 		try {
 			
-			int _position = Integer.parseInt(position);
-			
-			List<Athelete> list = atheleteService.findByPosition(_position);
+			List<Athelete> list = atheleteService.findByPosition(position);
 			
 			if(list == null) {
 				

@@ -496,8 +496,8 @@ public class AtheleteServiceImpl implements AtheleteService {
 	}
 
 	@Override
-	public List<Athelete> findByPosition(int position) {
-		List<Athelete> list = autheleteRepository.findByPosition(position);
+	public List<Athelete> findByPosition(String position) {
+		List<Athelete> list = autheleteRepository.findByPositionContainingIgnoreCase(position);
 
 		return list;
 	}

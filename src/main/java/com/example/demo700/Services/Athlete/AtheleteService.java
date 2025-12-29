@@ -25,7 +25,7 @@ public interface AtheleteService {
 
 	List<Athelete> findByPresentTeamIgnoreCase(String presentTeam);
 
-	List<Athelete> findByPosition(int position);
+	List<Athelete> findByPosition(String position);
 
 	List<Athelete> findByEventAttendenceContainingIgnoreCase(String eventName);
 
