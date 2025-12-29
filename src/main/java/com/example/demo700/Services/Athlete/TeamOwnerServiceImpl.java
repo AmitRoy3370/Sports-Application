@@ -472,4 +472,33 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 		return list;
 	}
 
+	@Override
+	public TeamOwner findByAthleteId(String athleteId) {
+		
+		if(athleteId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			TeamOwner teamOwner = teamOwnerRepository.findByAtheleteId(athleteId);
+			
+			if(teamOwner == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			return teamOwner;
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such team owner exist at here...");
+			
+		}
+		
+	}
+
 }

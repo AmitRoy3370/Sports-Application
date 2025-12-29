@@ -10,6 +10,7 @@ public interface TeamOwnerService {
 	TeamOwner addTeamOwner(TeamOwner teamOwner);
 	List<TeamOwner> seeAllTeamOwner();
 	TeamOwner updateTeamOwner(TeamOwner teamOwner, String userId);
+	TeamOwner findByAthleteId(String athleteId);
 	boolean deleteTeamOwner(String teamOwnerId, String userId);
 	List<TeamOwner> findByAchivementsContainingIgnoreCase(String achivement);
 	List<TeamOwner> findByMatchesContainingIgnoreCase(String matchId);
