@@ -11,5 +11,6 @@ public interface CoachService {
 	Coach updateCoach(Coach coach, String userID, String coachId);
 	boolean deleteCoach(String coachId, String userId);
 	Coach searchCoach(String coachId);
+	Coach findByAthleteId(String athleteId);
 	
 }

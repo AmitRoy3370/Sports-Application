@@ -1,6 +1,7 @@
 package com.example.demo700.Services.Athlete;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -360,6 +361,35 @@ public class CoachServiceImpl implements CoachService {
 
 		return coach;
 
+	}
+
+	@Override
+	public Coach findByAthleteId(String athleteId) {
+		
+		if(athleteId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			Coach coach = coachRepository.findByAtheleteId(athleteId);
+			
+			if(coach == null) {
+				
+				throw new Exception();
+				
+			}
+			
+			return coach;
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such coach find at here...");
+			
+		}
+		
 	}
 
 }

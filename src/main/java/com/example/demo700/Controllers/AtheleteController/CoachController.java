@@ -76,6 +76,21 @@ public class CoachController {
 		
 	}
 	
+	@GetMapping("/findByAthleteId")
+	public ResponseEntity<?> findByAthleteId(@RequestParam String athleteId) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(coachService.findByAthleteId(athleteId));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	@PutMapping("/update")
 	public ResponseEntity<?> updateCoach(@RequestBody Coach coach, @RequestParam String userId, @RequestParam String coachId) {
 		
