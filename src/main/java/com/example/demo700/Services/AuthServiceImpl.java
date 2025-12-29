@@ -658,5 +658,25 @@ public class AuthServiceImpl implements AuthService {
 
 	}
 
+	@Override
+	public List<User> findByUserNamePrefix(String namePrefix) {
+		
+		if(namePrefix == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		List<User> list = userRepository.findByNameContainingIgnoreCase(namePrefix);
+		
+		if(list.isEmpty()) {
+			
+			throw new NoSuchElementException("No such user find at here..");
+			
+		}
+		
+		return list;
+	}
+
 }
 

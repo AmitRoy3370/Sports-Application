@@ -147,6 +147,21 @@ public class AuthUpdationAndDeletionController {
 		
 	}
 	
+	@GetMapping("/findByNamePrefix")
+	public ResponseEntity<?> findByNamePrefix(@RequestParam String namePrefix) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(authService.findByUserNamePrefix(namePrefix));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	@GetMapping("/findByEmail")
 	public ResponseEntity<?> searchByEmail(@RequestParam String email) {
 		

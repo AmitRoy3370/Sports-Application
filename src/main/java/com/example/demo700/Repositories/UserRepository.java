@@ -17,4 +17,6 @@ public interface UserRepository extends MongoRepository<User, String> {
 	@Query("{ 'name': { $regex: '^?0$', $options: 'i' } }")
 	User findByNameIgnoreCase(String userName);
 	
+	List<User> findByNameContainingIgnoreCase(String namePrefix);
+	
 }

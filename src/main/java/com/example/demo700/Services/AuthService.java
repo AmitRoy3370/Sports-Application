@@ -18,5 +18,6 @@ public interface AuthService {
 	User searchUserById(String userId);
 	User findByName(String name);
 	User findByEmail(String email);
+	List<User> findByUserNamePrefix(String namePrefix);
 	
 }
