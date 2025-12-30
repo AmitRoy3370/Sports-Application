@@ -1039,4 +1039,25 @@ public class MatchServiceImpl implements MatchService {
 		return matchRepository.findByPriceGreaterThan(price);
 	}
 
+	@Override
+	public Match findByMatchId(String id) {
+		
+		if(id == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			return matchRepository.findById(id).get();
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such match find at here...");
+			
+		}
+		
+	}
+
 }

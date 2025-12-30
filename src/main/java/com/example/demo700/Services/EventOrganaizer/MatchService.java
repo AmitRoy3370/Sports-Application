@@ -17,5 +17,6 @@ public interface MatchService {
 	public Match updateMatch(Match match, String userId, String matchId);
 	public boolean deleteMatch(String matchId, String userId);
 	public List<Match> findByPriceGreaterThan(double price);
+	public Match findByMatchId(String id);
 
 }

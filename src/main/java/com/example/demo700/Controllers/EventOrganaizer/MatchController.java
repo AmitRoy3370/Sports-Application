@@ -103,6 +103,21 @@ public class MatchController {
         }
     }
 
+    @GetMapping("/findById")
+    public ResponseEntity<?> findById(@RequestParam String id) {
+    	
+    	try {
+    		
+    		return ResponseEntity.status(200).body(matchService.findByMatchId(id));
+    		
+    	} catch(Exception e) {
+    		
+    		return ResponseEntity.status(404).body(e.getMessage());
+    		
+    	}
+    	
+    }
+    
     /**
      * ✅ Get matches by organizer ID
      */

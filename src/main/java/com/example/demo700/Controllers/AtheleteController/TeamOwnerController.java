@@ -107,6 +107,21 @@ public class TeamOwnerController {
 
 	}
 
+	@GetMapping("/findById")
+	public ResponseEntity<?> findById(@RequestParam String id) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(temOwnerService.findByTeamOwnerId(id));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	@GetMapping("/findByAthleteId")
 	public ResponseEntity<?> findByAthleteId(@RequestParam String athleteId) {
 		

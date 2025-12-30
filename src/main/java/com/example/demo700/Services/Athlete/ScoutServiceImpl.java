@@ -428,4 +428,25 @@ public class ScoutServiceImpl implements ScoutService {
 		return list;
 	}
 
+	@Override
+	public Scouts findByScoutsId(String scoutId) {
+		
+		if(scoutId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			return scoutsRepository.findById(scoutId).get();
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException(e.getMessage());
+			
+		}
+		
+	}
+
 }

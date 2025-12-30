@@ -91,6 +91,21 @@ public class CoachController {
 		
 	}
 	
+	@GetMapping("/findById")
+	public ResponseEntity<?> findById(@RequestParam String id) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(coachService.findByCoachId(id));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	@PutMapping("/update")
 	public ResponseEntity<?> updateCoach(@RequestBody Coach coach, @RequestParam String userId, @RequestParam String coachId) {
 		

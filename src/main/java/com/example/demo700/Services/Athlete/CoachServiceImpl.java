@@ -392,4 +392,25 @@ public class CoachServiceImpl implements CoachService {
 		
 	}
 
+	@Override
+	public Coach findByCoachId(String coachId) {
+		
+		if(coachId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			return coachRepository.findById(coachId).get();
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such coach find at here...");
+			
+		}
+		
+	}
+
 }

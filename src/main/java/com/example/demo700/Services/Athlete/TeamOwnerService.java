@@ -15,5 +15,6 @@ public interface TeamOwnerService {
 	List<TeamOwner> findByAchivementsContainingIgnoreCase(String achivement);
 	List<TeamOwner> findByMatchesContainingIgnoreCase(String matchId);
 	public TeamOwner findByTeamsContainingIgnoreCase(String teamId);
+	public TeamOwner findByTeamOwnerId(String teamOwnerId);
 	
 }

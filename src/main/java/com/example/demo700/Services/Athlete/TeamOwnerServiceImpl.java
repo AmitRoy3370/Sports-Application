@@ -501,4 +501,25 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 		
 	}
 
+	@Override
+	public TeamOwner findByTeamOwnerId(String teamOwnerId) {
+		
+		if(teamOwnerId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			return teamOwnerRepository.findById(teamOwnerId).get();
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such team owner find at here..");
+			
+		}
+	
+	}
+
 }

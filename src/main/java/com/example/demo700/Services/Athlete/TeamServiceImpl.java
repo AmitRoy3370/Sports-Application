@@ -682,5 +682,26 @@ public class TeamServiceImpl implements TeamService {
 		return team;
 		
 	}
+
+	@Override
+	public Team findByTeamId(String teamId) {
+		
+		if(teamId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			return teamRepository.findById(teamId).get();
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such scouts find at here..");
+			
+		}
+		
+	}
 	
 }

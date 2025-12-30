@@ -84,6 +84,21 @@ public class ScoutController {
 		
 	}
 	
+	@GetMapping("/findById")
+	public ResponseEntity<?> findById(@RequestParam String id) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(scoutService.findByScoutsId(id));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	// ✅ Update existing scout
     @PutMapping("/updateScout")
     public ResponseEntity<?> updateScouts(@RequestParam String scoutId,

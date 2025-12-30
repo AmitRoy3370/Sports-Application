@@ -380,4 +380,25 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 		return count != eventOrganaizerRepository.count();
 	}
 
+	@Override
+	public EventOrganaizer findByEventOrganaizerId(String eventOrganaizerId) {
+		
+		if(eventOrganaizerId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			return eventOrganaizerRepository.findById(eventOrganaizerId).get();
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such event organaizer find at here...");
+			
+		}
+		
+	}
+
 }

@@ -61,6 +61,21 @@ public class TeamController {
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
+    
+    @GetMapping("/findById")
+    public ResponseEntity<?> findById(String id) {
+    	
+    	try {
+    		
+    		return ResponseEntity.status(200).body(teamService.findByTeamId(id));
+    		
+    	} catch(Exception e) {
+    		
+    		return ResponseEntity.status(404).body(e.getMessage());
+    		
+    	}
+    	
+    }
 
     // -----------------------------
     // ✅ 3. Update a team

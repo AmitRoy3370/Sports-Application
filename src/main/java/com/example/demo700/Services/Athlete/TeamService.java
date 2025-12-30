@@ -17,5 +17,6 @@ public interface TeamService {
 	List<Team> findByMatchesContainingIgnoreCase(String matchId);
 	List<Team> findByTeamOwnerId(String teamOwnerId);
 	Team findByTeamName(String teamName);
+	Team findByTeamId(String teamId);
 	
 }

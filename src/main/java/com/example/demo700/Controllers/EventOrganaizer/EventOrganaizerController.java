@@ -80,6 +80,21 @@ public class EventOrganaizerController {
 		}
 	}
 
+	@GetMapping("/findById")
+	public ResponseEntity<?> findById(@RequestParam String id) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(eventOrganaizerService.findByEventOrganaizerId(id));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	/**
 	 * ✅ Get all Event Organizers that include a specific match
 	 */
