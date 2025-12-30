@@ -200,6 +200,21 @@ public class AtheleteController {
 		
 	}
 	
+	@GetMapping("/searchById")
+	public ResponseEntity<?> findById(@RequestParam String id) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(atheleteService.searchByAthleteId(id));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+	
 	 // --------------------- FIND BY EVENT ATTENDENCE ---------------------
     @GetMapping("/findByEventAttendence")
     public ResponseEntity<?> findByEventAttendence(@RequestParam String eventName) {

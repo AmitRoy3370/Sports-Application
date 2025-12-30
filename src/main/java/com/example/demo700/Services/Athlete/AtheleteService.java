@@ -15,6 +15,8 @@ public interface AtheleteService {
 
 	boolean deleteAthelete(String atheleteId, String userId);
 
+	Athelete searchByAthleteId(String athleteId);
+	
 	List<Athelete> searchAtheleteByTeamName(String teamName);
 
 	List<Athelete> findByAgeLessThan(int age);

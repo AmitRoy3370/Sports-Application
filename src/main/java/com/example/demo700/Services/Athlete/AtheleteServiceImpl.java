@@ -1,6 +1,7 @@
 package com.example.demo700.Services.Athlete;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -588,6 +589,27 @@ public class AtheleteServiceImpl implements AtheleteService {
 		return autheleteRepository.findByUserId(userId);
 	}
 
+	
+	public Athelete searchByAthleteId(String athleteId) {
+		
+		if(athleteId == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		try {
+			
+			return autheleteRepository.findById(athleteId).get();
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such athlete fin at here...");
+			
+		}
+		
+	}
+	
 	@Override
 	public boolean deleteByUserId(String userId, String actionUserId) {
 
