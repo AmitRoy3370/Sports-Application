@@ -58,7 +58,7 @@ public class TeamLocationServiceImpl implements TeamLocationService {
 
 			if (teamLocationModel != null) {
 
-				throw new Exception();
+				throw new ArithmeticException();
 
 			}
 
