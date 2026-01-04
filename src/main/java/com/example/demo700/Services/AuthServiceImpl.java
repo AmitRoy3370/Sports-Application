@@ -369,13 +369,13 @@ public class AuthServiceImpl implements AuthService {
 	@Override
 	public JwtResponse register(RegisterRequest request) {
 
-		userRepository.findByEmail(request.getEmail()).ifPresent(u -> {
+		userRepository.findByEmail(request.getEmail().trim()).ifPresent(u -> {
 			throw new RuntimeException("Email already exists");
 		});
 
 		emailValidator = new EmailValidator();
 
-		if (!emailValidator.isValidEmail(request.getEmail())) {
+		if (!emailValidator.isValidEmail(request.getEmail().trim())) {
 
 			throw new RuntimeException("Email adress is not valid...");
 
@@ -383,7 +383,7 @@ public class AuthServiceImpl implements AuthService {
 
 		try {
 
-			User user = userRepository.findByNameIgnoreCase(request.getName());
+			User user = userRepository.findByNameIgnoreCase(request.getName().trim());
 
 			if (user != null) {
 
@@ -400,9 +400,9 @@ public class AuthServiceImpl implements AuthService {
 		}
 
 		User u = new User();
-		u.setName(request.getName());
-		u.setEmail(request.getEmail());
-		u.setPassword(passwordEncoder.encode(request.getPassword()));
+		u.setName(request.getName().trim());
+		u.setEmail(request.getEmail().trim());
+		u.setPassword(passwordEncoder.encode(request.getPassword().trim()));
 
 		if (request.getRoles() == null || request.getRoles().isEmpty()) {
 
@@ -547,8 +547,8 @@ public class AuthServiceImpl implements AuthService {
 		}
 
 		User u = new User();
-		u.setName(request.getName());
-		u.setEmail(request.getEmail());
+		u.setName(request.getName().trim());
+		u.setEmail(request.getEmail().trim());
 		u.setPassword(passwordEncoder.encode(request.getPassword()));
 
 		if (request.getRoles() == null || request.getRoles().isEmpty()) {
@@ -611,7 +611,7 @@ public class AuthServiceImpl implements AuthService {
 
 		try {
 
-			User user = userRepository.findByNameIgnoreCase(name);
+			User user = userRepository.findByNameIgnoreCase(name.trim());
 
 			if (user == null) {
 
@@ -640,7 +640,7 @@ public class AuthServiceImpl implements AuthService {
 
 		try {
 
-			User user = userRepository.findByEmail(email).get();
+			User user = userRepository.findByEmail(email.trim()).get();
 
 			if (user == null) {
 
@@ -667,7 +667,7 @@ public class AuthServiceImpl implements AuthService {
 			
 		}
 		
-		List<User> list = userRepository.findByNameContainingIgnoreCase(namePrefix);
+		List<User> list = userRepository.findByNameContainingIgnoreCase(namePrefix.trim());
 		
 		if(list.isEmpty()) {
 			

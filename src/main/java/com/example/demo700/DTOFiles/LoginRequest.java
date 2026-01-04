@@ -15,8 +15,8 @@ public class LoginRequest {
 
 	public LoginRequest(String email, String password) {
 		super();
-		this.email = email;
-		this.password = password;
+		this.email = email.trim();
+		this.password = password.trim();
 	}
 
 	public LoginRequest() {

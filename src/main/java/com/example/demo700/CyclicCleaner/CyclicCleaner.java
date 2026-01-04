@@ -25,6 +25,7 @@ import com.example.demo700.Models.FileUploadModel.CVUploadModel;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
 import com.example.demo700.Models.NotificationModels.Notification;
 import com.example.demo700.Models.PaymentGateway.BkashTransaction;
+import com.example.demo700.Models.TeamLocationModels.TeamLocationModel;
 import com.example.demo700.Models.Turf.Booking;
 import com.example.demo700.Models.Turf.Discount;
 import com.example.demo700.Models.Turf.GroupBooking;
@@ -48,6 +49,7 @@ import com.example.demo700.Repositories.FileUploadRepositories.CVUploadRepositor
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Repositories.NotificationRepositories.NotificationRepository;
 import com.example.demo700.Repositories.PaymentRepositories.BkashTransactionRepository;
+import com.example.demo700.Repositories.TeamLocationRepositories.TeamLocationRepository;
 import com.example.demo700.Repositories.Turf.BookingRepository;
 import com.example.demo700.Repositories.Turf.DiscountRepository;
 import com.example.demo700.Repositories.Turf.GroupBookingRepository;
@@ -130,6 +132,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private AthleteLocationRepository athleteLocationRepository;
+	
+	@Autowired
+	private TeamLocationRepository teamLocationRepository;
 
 	public void removeUser(String userId) {
 
@@ -854,6 +859,22 @@ public class CyclicCleaner {
 
 					} catch (Exception e) {
 
+					}
+					
+					try {
+						
+						TeamLocationModel  teamLocation = teamLocationRepository.findByTeamId(teamId);
+						
+						if(teamLocation == null) {
+							
+							throw new Exception();
+							
+						}
+						
+						removeTeamLocation(teamLocation.getId());
+						
+					} catch(Exception e) {
+						
 					}
 
 					List<Match> matches = matchRepository.findByTeamsContainingIgnoreCase(team.getId());
@@ -1639,6 +1660,32 @@ public class CyclicCleaner {
 
 		}
 
+	}
+	
+	public void removeTeamLocation(String id) {
+		
+		try {
+			
+			TeamLocationModel teamLocation = teamLocationRepository.findById(id).get();
+			
+			if(teamLocation != null) {
+				
+				long count = teamLocationRepository.count();
+				
+				teamLocationRepository.deleteById(id);
+				
+				if(count != teamLocationRepository.count()) {
+					
+					removeTeam(teamLocation.getTeamId());
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
 	}
 
 }

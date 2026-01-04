@@ -27,9 +27,9 @@ public class RegisterRequest {
 
 	public RegisterRequest(String name, String email, String password, String role) {
 		super();
-		this.name = name;
-		this.email = email;
-		this.password = password;
+		this.name = name.trim();
+		this.email = email.trim();
+		this.password = password.trim();
 		this.roles.add(Role.valueOf(role));
 	}
 

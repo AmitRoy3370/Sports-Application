@@ -27,9 +27,9 @@ public class User {
 
 	public User(String name, String email, String password, String role) {
 
-		this.name = name;
-		this.password = password;
-		this.email = email;
+		this.name = name.trim();
+		this.password = password.trim();
+		this.email = email.trim();
 		roles.add(Role.valueOf(role));
 
 	}
