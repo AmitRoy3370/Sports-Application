@@ -65,8 +65,11 @@ public class ChatServiceImpl implements ChatService {
 
 		message.setTimeStamp(Instant.now());
 		ChatMessage saved = chatMessageRepository.save(message);
+		
+		User user = userRepository.findById(message.getSender()).get();
+		
 		// নোটিফিকেশন পাঠানো
-		notificationService.sendNotification(message.getReceiver(), "New message from " + message.getSender());
+		notificationService.sendNotification(message.getReceiver(), "New message from " + user.getName());
 		return saved;
 	}
 
@@ -155,8 +158,10 @@ public class ChatServiceImpl implements ChatService {
 
 		ChatMessage updated = chatMessageRepository.save(message);
 
+		User user = userRepository.findById(message.getSender()).get();
+		
 		// Optional: Notify receiver about edit
-		notificationService.sendNotification(message.getReceiver(), "Message edited by " + message.getSender());
+		notificationService.sendNotification(message.getReceiver(), "Message edited by " + user.getName());
 
 		return updated;
 	}

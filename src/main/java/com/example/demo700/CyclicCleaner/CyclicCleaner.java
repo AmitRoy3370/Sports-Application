@@ -20,6 +20,7 @@ import com.example.demo700.Models.ChatModels.ChatMessage;
 import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
 import com.example.demo700.Models.FileUploadModel.CVUploadModel;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
@@ -43,6 +44,7 @@ import com.example.demo700.Repositories.AthleteRepository.AthleteLocationReposit
 import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.CVUploadRepository;
@@ -135,6 +137,9 @@ public class CyclicCleaner {
 	
 	@Autowired
 	private TeamLocationRepository teamLocationRepository;
+	
+	@Autowired
+	private MatchNameRepository matchNameRepository;
 
 	public void removeUser(String userId) {
 
@@ -916,6 +921,20 @@ public class CyclicCleaner {
 				if (count != matchRepository.count()) {
 
 					try {
+						
+						MatchName matchName = matchNameRepository.findByMatchId(match.getId());
+						
+						if(matchName != null) {
+							
+							removeMatchName(matchName.getId());
+							
+						}
+						
+					} catch(Exception e) {
+						
+					}
+					
+					try {
 
 						MatchVenue matchVenues = matchVenueRepository.findByMatchId(match.getId());
 
@@ -1677,6 +1696,32 @@ public class CyclicCleaner {
 				if(count != teamLocationRepository.count()) {
 					
 					removeTeam(teamLocation.getTeamId());
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
+	}
+	
+	public void removeMatchName(String matchNameId) {
+		
+		try {
+			
+			MatchName matchName = matchNameRepository.findById(matchNameId).get();
+			
+			if(matchName != null) {
+				
+				long count = matchNameRepository.count();
+				
+				matchNameRepository.deleteById(matchNameId);
+				
+				if(count != matchNameRepository.count()) {
+					
+					removeMatch(matchName.getMatchId());
 					
 				}
 				
