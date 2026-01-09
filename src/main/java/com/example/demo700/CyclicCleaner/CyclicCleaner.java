@@ -24,6 +24,7 @@ import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
 import com.example.demo700.Models.FileUploadModel.CVUploadModel;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
+import com.example.demo700.Models.GymModels.Gyms;
 import com.example.demo700.Models.NotificationModels.Notification;
 import com.example.demo700.Models.PaymentGateway.BkashTransaction;
 import com.example.demo700.Models.TeamLocationModels.TeamLocationModel;
@@ -49,6 +50,7 @@ import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.CVUploadRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
+import com.example.demo700.Repositories.GymRepositories.GymsRepository;
 import com.example.demo700.Repositories.NotificationRepositories.NotificationRepository;
 import com.example.demo700.Repositories.PaymentRepositories.BkashTransactionRepository;
 import com.example.demo700.Repositories.TeamLocationRepositories.TeamLocationRepository;
@@ -141,6 +143,9 @@ public class CyclicCleaner {
 	@Autowired
 	private MatchNameRepository matchNameRepository;
 
+	@Autowired
+	private GymsRepository gymsRepository;
+	
 	public void removeUser(String userId) {
 
 		try {
@@ -1733,4 +1738,28 @@ public class CyclicCleaner {
 		
 	}
 
+	public void removeGym(String gymId) {
+		
+		try {
+			
+			Gyms gyms = gymsRepository.findById(gymId).get();
+			
+			if(gyms != null) {
+				
+				long count = gymsRepository.count();
+				
+				gymsRepository.deleteById(gymId);
+				
+				if(count != gymsRepository.count()) {
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
+	}
+	
 }
