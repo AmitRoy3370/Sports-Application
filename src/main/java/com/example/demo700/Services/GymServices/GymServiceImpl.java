@@ -82,7 +82,7 @@ public class GymServiceImpl implements GymService {
 
 			}
 
-			Gyms _gyms = gymsRepository.findByGymName(gyms.getGymName());
+			Gyms _gyms = gymsRepository.findByGymNameIgnoreCase(gyms.getGymName().trim());
 
 			if (_gyms != null) {
 
@@ -186,7 +186,7 @@ public class GymServiceImpl implements GymService {
 
 			}
 
-			Gyms _gyms = gymsRepository.findByGymName(gyms.getGymName());
+			Gyms _gyms = gymsRepository.findByGymNameIgnoreCase(gyms.getGymName().trim());
 
 			if (_gyms != null) {
 
@@ -248,7 +248,7 @@ public class GymServiceImpl implements GymService {
 
 		try {
 
-			Gyms gyms = gymsRepository.findByGymName(gymName);
+			Gyms gyms = gymsRepository.findByGymNameIgnoreCase(gymName.trim());
 
 			if (gyms == null) {
 
@@ -275,7 +275,7 @@ public class GymServiceImpl implements GymService {
 
 		}
 
-		List<Gyms> list = gymsRepository.findByLocationName(locationName);
+		List<Gyms> list = gymsRepository.findByLocationNameIgnoreCase(locationName.trim());
 
 		if (list.isEmpty()) {
 

@@ -11,8 +11,8 @@ import com.example.demo700.Models.GymModels.Gyms;
 public interface GymsRepository extends MongoRepository<Gyms, String> {
 	
 	public List<Gyms> findByGymTrainer(String gymTrainer);
-	public Gyms findByGymName(String gymName);
-	public List<Gyms> findByLocationName(String locationName);
+	public Gyms findByGymNameIgnoreCase(String gymName);
+	public List<Gyms> findByLocationNameIgnoreCase(String locationName);
 	public List<Gyms> findByLatitudeAndLongtitude(double latitude, double longtitude);
 	public List<Gyms> findByEntryFeeLessThanEqual(double entryFee);
 	public List<Gyms> findByMonthlyFeeLessThanEqual(double monthlyFee);
