@@ -303,7 +303,7 @@ public class GymServiceImpl implements GymService {
 	@Override
 	public List<Gyms> findByEntryFeeLessThanOrEqual(double entryFee) {
 
-		List<Gyms> list = gymsRepository.findByEntryFeeLessThanOrEqual(entryFee);
+		List<Gyms> list = gymsRepository.findByEntryFeeLessThanEqual(entryFee);
 
 		if (list.isEmpty()) {
 
@@ -317,7 +317,7 @@ public class GymServiceImpl implements GymService {
 	@Override
 	public List<Gyms> findByMonthlyFeeLessThanOrEqual(double monthlyFee) {
 
-		List<Gyms> list = gymsRepository.findByMonthlyFeeLessThanOrEqual(monthlyFee);
+		List<Gyms> list = gymsRepository.findByMonthlyFeeLessThanEqual(monthlyFee);
 
 		if (list.isEmpty()) {
 

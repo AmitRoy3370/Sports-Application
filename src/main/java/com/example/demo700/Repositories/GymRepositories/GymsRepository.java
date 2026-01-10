@@ -14,8 +14,8 @@ public interface GymsRepository extends MongoRepository<Gyms, String> {
 	public Gyms findByGymName(String gymName);
 	public List<Gyms> findByLocationName(String locationName);
 	public List<Gyms> findByLatitudeAndLongtitude(double latitude, double longtitude);
-	public List<Gyms> findByEntryFeeLessThanOrEqual(double entryFee);
-	public List<Gyms> findByMonthlyFeeLessThanOrEqual(double monthlyFee);
+	public List<Gyms> findByEntryFeeLessThanEqual(double entryFee);
+	public List<Gyms> findByMonthlyFeeLessThanEqual(double monthlyFee);
 	
 }
 
