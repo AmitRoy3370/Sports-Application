@@ -275,7 +275,7 @@ public class GymServiceImpl implements GymService {
 
 		}
 
-		List<Gyms> list = gymsRepository.findByLocationNameIgnoreCase(locationName.trim());
+		List<Gyms> list = gymsRepository.findByLocationNameContainingIgnoreCase(locationName.trim());
 
 		if (list.isEmpty()) {
 
