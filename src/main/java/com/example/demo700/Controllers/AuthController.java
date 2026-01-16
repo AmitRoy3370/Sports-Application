@@ -36,6 +36,8 @@ public class AuthController {
 
 		try {
 
+			request.setName(request.getName().trim());
+			
 			JwtResponse resp = authService.register(request);
 			return ResponseEntity.ok(resp);
 
@@ -51,6 +53,8 @@ public class AuthController {
 
 		try {
 
+			request.setEmail(request.getEmail().trim());
+			
 			JwtResponse resp = authService.login(request);
 			return ResponseEntity.ok(resp);
 

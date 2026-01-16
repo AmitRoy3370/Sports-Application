@@ -7,6 +7,7 @@ import com.example.demo700.Models.PaymentGateway.BkashTransaction;
 public interface BkashService {
 	
 	public BkashTransaction sendMoney(BkashTransaction bkashTransaction);
+	public BkashTransaction updateSendMoney(BkashTransaction bkashTransaction, String userId, String id);
 	public boolean removePayment(String bkashTransactionId, String userId);
 	public List<BkashTransaction> seeAll();
 	List<BkashTransaction> findBySenderId(String senderId);
@@ -14,5 +15,6 @@ public interface BkashService {
     List<BkashTransaction> findByBookingId(String bookingId);
     BkashTransaction findByTransactionId(String transactionId);
     List<BkashTransaction> findByAmountLessThan(double amount);
+    public BkashTransaction approveOrDenyPayment(boolean approve, String userId, String paymentId);
 
 }

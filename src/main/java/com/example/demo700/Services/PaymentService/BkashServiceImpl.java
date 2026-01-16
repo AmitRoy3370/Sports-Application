@@ -147,7 +147,7 @@ public class BkashServiceImpl implements BkashService {
 				throw new ArithmeticException("Two payment's transaction id can't be the same...");
 
 			}
-			
+
 			System.out.println(_bikashTransaction.toString());
 
 		} catch (ArithmeticException e) {
@@ -155,7 +155,7 @@ public class BkashServiceImpl implements BkashService {
 			throw new ArithmeticException("Two payment's transaction id can't be the same...");
 
 		} catch (Exception e) {
-			
+
 			System.out.println(e);
 
 		}
@@ -297,6 +297,251 @@ public class BkashServiceImpl implements BkashService {
 	public List<BkashTransaction> findByAmountLessThan(double amount) {
 
 		return bikashRepository.findByAmountLessThan(amount);
+	}
+
+	@Override
+	public BkashTransaction approveOrDenyPayment(boolean approve, String userId, String paymentId) {
+
+		if (userId == null || paymentId == null) {
+
+			throw new NullPointerException("False request......");
+
+		}
+
+		String bookingId = null;
+
+		try {
+
+			BkashTransaction bkashTransaction = bikashRepository.findById(paymentId).get();
+
+			if (bkashTransaction == null) {
+
+				throw new Exception();
+
+			}
+
+			bookingId = bkashTransaction.getBookingId();
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such payment find at here...");
+
+		}
+
+		try {
+
+			User user = userRepository.findById(userId).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+			Booking booking = bookingRepository.findById(bookingId).get();
+
+			if (booking == null) {
+
+				throw new Exception();
+
+			}
+
+			Venue venue = venueRepository.findById(booking.getVenueId()).get();
+
+			if (venue == null) {
+
+				throw new Exception();
+
+			}
+
+			if (!venue.getOwnerId().equals(user.getId())) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such user find at here to approve or deny....");
+
+		}
+
+		BkashTransaction bkashTransaction = bikashRepository.findById(paymentId).get();
+
+		bkashTransaction.setApprove(approve);
+
+		bkashTransaction = bikashRepository.save(bkashTransaction);
+
+		if (bkashTransaction == null) {
+
+			throw new ArithmeticException("approval not count....");
+
+		}
+
+		return bkashTransaction;
+	}
+
+	@Override
+	public BkashTransaction updateSendMoney(BkashTransaction bkashTransaction, String userId, String id) {
+
+		if (bkashTransaction == null || userId == null || id == null) {
+
+			throw new NullPointerException("False request...");
+
+		}
+
+		try {
+
+			BkashTransaction transaction = bikashRepository.findById(id).get();
+
+			if (transaction == null) {
+
+				throw new Exception();
+
+			}
+
+			if (!transaction.getSenderId().equals(userId)) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such payment find at here...");
+
+		}
+
+		try {
+
+			Booking booking = bookingRepository.findById(bkashTransaction.getBookingId()).get();
+
+			if (booking == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such valid booking is present...");
+
+		}
+
+		try {
+
+			User user = userRepository.findById(bkashTransaction.getSenderId()).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+			List<Booking> booking = bookingRepository.findByUserId(bkashTransaction.getSenderId());
+
+			if (booking.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			List<String> ownersId = new ArrayList<>();
+
+			for (Booking i : booking) {
+
+				ownersId.add(i.getUserId());
+
+			}
+
+			if (!ownersId.contains(user.getId())) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No valid sender user find at here...");
+
+		}
+
+		try {
+
+			User user = userRepository.findById(bkashTransaction.getReceiverId()).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+			Booking booking = bookingRepository.findById(bkashTransaction.getBookingId()).get();
+
+			if (booking == null) {
+
+				throw new Exception();
+
+			}
+
+			Venue venue = venueRepository.findById(booking.getVenueId()).get();
+
+			if (venue == null) {
+
+				throw new Exception();
+
+			}
+
+			if (!venue.getOwnerId().equals(bkashTransaction.getReceiverId())) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No valid receiver user find at here...");
+
+		}
+
+		try {
+
+			BkashTransaction _bikashTransaction = bikashRepository
+					.findByTransactionId(bkashTransaction.getTransactionId());
+
+			if (_bikashTransaction != null) {
+
+				if (!_bikashTransaction.getId().equals(id)) {
+
+					throw new ArithmeticException("Two payment's transaction id can't be the same...");
+
+				}
+
+			}
+
+			System.out.println(_bikashTransaction.toString());
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("Two payment's transaction id can't be the same...");
+
+		} catch (Exception e) {
+
+			System.out.println(e);
+
+		}
+
+		bkashTransaction.setId(id);
+
+		bkashTransaction = bikashRepository.save(bkashTransaction);
+
+		if (bkashTransaction == null) {
+
+			return null;
+
+		}
+
+		return bkashTransaction;
 	}
 
 }

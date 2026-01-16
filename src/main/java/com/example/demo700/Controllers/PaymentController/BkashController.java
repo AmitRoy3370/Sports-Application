@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo700.Models.PaymentGateway.BkashTransaction;
@@ -41,6 +43,46 @@ public class BkashController {
             return new ResponseEntity<>("Unexpected error occurred while sending money", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    // ================================
+    // UPDATE SEND MONEY
+    // ================================
+    @PutMapping("/update/{paymentId}/{userId}")
+    public ResponseEntity<?> updateSendMoney(
+            @RequestBody BkashTransaction bkashTransaction,
+            @PathVariable String paymentId,
+            @PathVariable String userId) {
+        try {
+            BkashTransaction updated = bkashService.updateSendMoney(bkashTransaction, userId, paymentId);
+            return ResponseEntity.ok(updated);
+        } catch (NullPointerException | NoSuchElementException | ArithmeticException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected error occurred while updating payment");
+        }
+    }
+
+    // ================================
+    // APPROVE OR DENY PAYMENT
+    // ================================
+    @PutMapping("/approve/{paymentId}/{userId}")
+    public ResponseEntity<?> approveOrDenyPayment(
+            @PathVariable String paymentId,
+            @PathVariable String userId,
+            @RequestParam boolean approve) {
+        try {
+            BkashTransaction transaction =
+                    bkashService.approveOrDenyPayment(approve, userId, paymentId);
+            return ResponseEntity.ok(transaction);
+        } catch (NullPointerException | NoSuchElementException | ArithmeticException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Unexpected error occurred while approving/denying payment");
+        }
+    }
+
 
     /**
      * ✅ Delete / Remove Payment Record

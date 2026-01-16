@@ -29,6 +29,8 @@ public class BkashTransaction {
 
 	private Instant transactionTime = Instant.now();;
 
+	private boolean approve;
+	
 	public BkashTransaction(String senderId, String senderName, String senderPhone, String receiverId,
 			String receiverName, String receiverPhone, double amount, String transactionId, String bookingId) {
 		super();
@@ -136,12 +138,20 @@ public class BkashTransaction {
 		this.bookingId = bookingId;
 	}
 
+	public boolean isApprove() {
+		return approve;
+	}
+
+	public void setApprove(boolean approve) {
+		this.approve = approve;
+	}
+
 	@Override
 	public String toString() {
 		return "BkashTransaction [id=" + id + ", senderId=" + senderId + ", senderName=" + senderName + ", senderPhone="
 				+ senderPhone + ", receiverId=" + receiverId + ", receiverName=" + receiverName + ", receiverPhone="
 				+ receiverPhone + ", bookingId=" + bookingId + ", amount=" + amount + ", transactionId=" + transactionId
-				+ ", transactionTime=" + transactionTime + "]";
+				+ ", transactionTime=" + transactionTime + ", approve=" + approve + "]";
 	}
 
 }
