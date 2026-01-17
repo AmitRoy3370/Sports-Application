@@ -39,6 +39,7 @@ public class CoachServiceImpl implements CoachService {
 
 	private URLValidator urlValidator = new URLValidator();
 
+	@Autowired
 	private AthleteClassificationRepository athleteClassificationRepository;
 
 	@Autowired
@@ -430,11 +431,15 @@ public class CoachServiceImpl implements CoachService {
 
 		try {
 
+			System.out.println("sending type :- " + athleteClassificationTypes.toString());
+			
 			List<Coach> list = new ArrayList<>();
 
 			List<AthleteClassification> athletes = athleteClassificationRepository
 					.findByAthleteClassificationTypes(athleteClassificationTypes);
 
+			System.out.println("athletes :- " + athletes.size());
+			
 			if (athletes.isEmpty()) {
 
 				System.out.println("can't find any athlete....");
@@ -479,6 +484,8 @@ public class CoachServiceImpl implements CoachService {
 
 		} catch (Exception e) {
 
+			System.out.println(e.getMessage());
+			
 			throw new NoSuchElementException("No such coach find at here....");
 
 		}
