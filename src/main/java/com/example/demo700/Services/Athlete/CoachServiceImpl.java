@@ -437,6 +437,8 @@ public class CoachServiceImpl implements CoachService {
 
 			if (athletes.isEmpty()) {
 
+				System.out.println("can't find any athlete....");
+				
 				throw new Exception();
 
 			}
