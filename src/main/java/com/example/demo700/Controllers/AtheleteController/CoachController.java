@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.ENUMS.AthleteClassificationTypes;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Services.Athlete.CoachService;
 
@@ -126,6 +127,21 @@ public class CoachController {
 		}
 		
 		return ResponseEntity.status(200).body(coach);
+		
+	}
+	
+	@GetMapping("/findByClassification")
+	public ResponseEntity<?> findByCoachClassification(@RequestParam String classification) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(coachService.findByCoachClassification(AthleteClassificationTypes.valueOf(classification)));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
 		
 	}
 	

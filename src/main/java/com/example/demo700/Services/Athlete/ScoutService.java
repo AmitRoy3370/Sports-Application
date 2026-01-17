@@ -2,6 +2,7 @@ package com.example.demo700.Services.Athlete;
 
 import java.util.List;
 
+import com.example.demo700.ENUMS.AthleteClassificationTypes;
 import com.example.demo700.Models.Athlete.Scouts;
 
 public interface ScoutService {
@@ -14,5 +15,6 @@ public interface ScoutService {
 	boolean deleteScouts(String scoutId, String userId);
 	List<Scouts> findByEventsContainingIgnoreCase(String scoutId);
 	List<Scouts> findByMatchesContainingIgnoreCase(String scoutId);
+	List<Scouts> findByAthleteClassification(AthleteClassificationTypes athleteClassificationTypes);
 
 }

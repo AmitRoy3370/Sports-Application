@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo700.ENUMS.TeamJoinRequestRole;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
+import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
@@ -36,6 +37,7 @@ import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Models.Turf.VenueLocation;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
+import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
@@ -145,6 +147,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private GymsRepository gymsRepository;
+	
+	@Autowired
+	private AthleteClassificationRepository athleteClassificationRepository;
 	
 	public void removeUser(String userId) {
 
@@ -398,6 +403,20 @@ public class CyclicCleaner {
 			atheleteRepository.deleteById(athelteId);
 
 			if (count != atheleteRepository.count()) {
+				
+				try {
+					
+					AthleteClassification athleteClassification = athleteClassificationRepository.findByAthleteId(athelete.getId());
+					
+					if(athleteClassification != null) {
+						
+						removeAthleteClassification(athleteClassification.getId());
+						
+					}
+					
+				} catch(Exception e) {
+					
+				}
 
 				try {
 
@@ -1751,6 +1770,32 @@ public class CyclicCleaner {
 				gymsRepository.deleteById(gymId);
 				
 				if(count != gymsRepository.count()) {
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
+	}
+	
+	public void removeAthleteClassification(String id) {
+		
+		try {
+			
+			AthleteClassification athleteClassification = athleteClassificationRepository.findById(id).get();
+			
+			if(athleteClassification != null) {
+				
+				long count = athleteClassificationRepository.count();
+				
+				athleteClassificationRepository.deleteById(id);
+				
+				if(count != athleteClassificationRepository.count()) {
+					
+					removeAthelete(athleteClassification.getAthleteId());
 					
 				}
 				

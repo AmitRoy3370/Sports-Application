@@ -1,5 +1,6 @@
 package com.example.demo700.Services.Athlete;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -7,13 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.ENUMS.AthleteClassificationTypes;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
+import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
+import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Validator.URLValidator;
@@ -34,6 +38,8 @@ public class CoachServiceImpl implements CoachService {
 	private TeamRepository teamRepository;
 
 	private URLValidator urlValidator = new URLValidator();
+
+	private AthleteClassificationRepository athleteClassificationRepository;
 
 	@Autowired
 	private CyclicCleaner cleaner;
@@ -166,9 +172,9 @@ public class CoachServiceImpl implements CoachService {
 		try {
 
 			User user = userRepository.findById(userId).get();
-			
+
 			System.out.println("User find...");
-			
+
 			System.out.println(user.getId());
 
 			Athelete athelete = atheleteRepository.findByUserId(user.getId()).get();
@@ -180,7 +186,7 @@ public class CoachServiceImpl implements CoachService {
 			}
 
 			System.out.println("Athlete find...");
-			
+
 			Coach _coach = coachRepository.findByAtheleteId(athelete.getId());
 
 			if (_coach == null) {
@@ -188,7 +194,7 @@ public class CoachServiceImpl implements CoachService {
 				throw new Exception();
 
 			}
-			
+
 			System.out.println("Coach find by athlete...");
 
 			if (_coach.getId().equals(coachId) && !user.getRoles().contains(Role.ROLE_COACH)) {
@@ -198,7 +204,7 @@ public class CoachServiceImpl implements CoachService {
 			}
 
 			System.out.println("Everything is ok...");
-			
+
 		} catch (Exception e) {
 
 			throw new ArithmeticException("Your given actioned user is not valid...");
@@ -267,11 +273,11 @@ public class CoachServiceImpl implements CoachService {
 					throw new Exception();
 
 				}
-				
-				if(!team.getTeamName().equalsIgnoreCase(coach.getTeamName())) {
-					
+
+				if (!team.getTeamName().equalsIgnoreCase(coach.getTeamName())) {
+
 					throw new Exception();
-					
+
 				}
 
 			} catch (Exception e) {
@@ -365,52 +371,99 @@ public class CoachServiceImpl implements CoachService {
 
 	@Override
 	public Coach findByAthleteId(String athleteId) {
-		
-		if(athleteId == null) {
-			
+
+		if (athleteId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
+
 			Coach coach = coachRepository.findByAtheleteId(athleteId);
-			
-			if(coach == null) {
-				
+
+			if (coach == null) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			return coach;
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such coach find at here...");
-			
+
 		}
-		
+
 	}
 
 	@Override
 	public Coach findByCoachId(String coachId) {
-		
-		if(coachId == null) {
-			
+
+		if (coachId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
+
 			return coachRepository.findById(coachId).get();
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such coach find at here...");
-			
+
 		}
-		
+
+	}
+
+	@Override
+	public List<Coach> findByCoachClassification(AthleteClassificationTypes athleteClassificationTypes) {
+
+		if (athleteClassificationTypes == null) {
+
+			throw new NullPointerException("False request....");
+
+		}
+
+		List<Coach> list = new ArrayList<>();
+
+		try {
+
+			List<AthleteClassification> athletes = athleteClassificationRepository
+					.findByAthleteClassificationTypes(athleteClassificationTypes);
+
+			if (list.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			for (AthleteClassification i : athletes) {
+
+				Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
+
+				Coach coach = coachRepository.findByAtheleteId(athlete.getId());
+
+				list.add(coach);
+
+			}
+
+			if (list.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such coach find at here....");
+
+		}
+
+		return list;
 	}
 
 }

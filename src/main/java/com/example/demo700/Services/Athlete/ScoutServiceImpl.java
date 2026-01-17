@@ -1,5 +1,6 @@
 package com.example.demo700.Services.Athlete;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -7,14 +8,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.ENUMS.AthleteClassificationTypes;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
+import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
+import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
@@ -36,7 +40,10 @@ public class ScoutServiceImpl implements ScoutService {
 
 	@Autowired
 	private MatchRepository matchRepository;
-	
+
+	@Autowired
+	private AthleteClassificationRepository athleteClassificationRepository;
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -330,8 +337,8 @@ public class ScoutServiceImpl implements ScoutService {
 
 			User user = userRepository.findById(userId).get();
 
-			Athelete _athlete = atheleteRepository.findByUserId(user.getId()).get(); 
-			
+			Athelete _athlete = atheleteRepository.findByUserId(user.getId()).get();
+
 			Scouts _scout = scoutsRepository.findByAtheleteId(_athlete.getId());
 
 			if (_scout == null) {
@@ -430,23 +437,70 @@ public class ScoutServiceImpl implements ScoutService {
 
 	@Override
 	public Scouts findByScoutsId(String scoutId) {
-		
-		if(scoutId == null) {
-			
+
+		if (scoutId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
+
 			return scoutsRepository.findById(scoutId).get();
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException(e.getMessage());
-			
+
 		}
-		
+
+	}
+
+	@Override
+	public List<Scouts> findByAthleteClassification(AthleteClassificationTypes athleteClassificationTypes) {
+
+		if (athleteClassificationTypes == null) {
+
+			throw new NullPointerException("False request...");
+
+		}
+
+		List<Scouts> list = new ArrayList<>();
+
+		try {
+
+			List<AthleteClassification> athletes = athleteClassificationRepository
+					.findByAthleteClassificationTypes(athleteClassificationTypes);
+
+			if (athletes.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			for (AthleteClassification i : athletes) {
+
+				Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
+
+				Scouts scout = scoutsRepository.findByAtheleteId(athlete.getId());
+
+				list.add(scout);
+
+			}
+
+			if (list.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such scouts find at here...");
+
+		}
+
+		return list;
 	}
 
 }
