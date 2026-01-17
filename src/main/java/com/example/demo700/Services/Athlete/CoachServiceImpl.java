@@ -428,9 +428,9 @@ public class CoachServiceImpl implements CoachService {
 
 		}
 
-		List<Coach> list = new ArrayList<>();
-
 		try {
+
+			List<Coach> list = new ArrayList<>();
 
 			List<AthleteClassification> athletes = athleteClassificationRepository
 					.findByAthleteClassificationTypes(athleteClassificationTypes);
@@ -441,15 +441,21 @@ public class CoachServiceImpl implements CoachService {
 
 			}
 
+			System.out.println("athletes :- " + athletes.toString());
+
 			for (AthleteClassification i : athletes) {
 
 				try {
 
 					Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
 
+					System.out.println("getting athlete :- " + athlete.toString());
+
 					Coach coach = coachRepository.findByAtheleteId(athlete.getId());
 
 					if (coach != null) {
+
+						System.out.println("getting coach :- " + coach.toString());
 
 						list.add(coach);
 
@@ -467,13 +473,14 @@ public class CoachServiceImpl implements CoachService {
 
 			}
 
+			return list;
+
 		} catch (Exception e) {
 
 			throw new NoSuchElementException("No such coach find at here....");
 
 		}
 
-		return list;
 	}
 
 }
