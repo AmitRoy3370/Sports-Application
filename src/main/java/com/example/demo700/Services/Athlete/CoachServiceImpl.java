@@ -443,11 +443,21 @@ public class CoachServiceImpl implements CoachService {
 
 			for (AthleteClassification i : athletes) {
 
-				Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
+				try {
 
-				Coach coach = coachRepository.findByAtheleteId(athlete.getId());
+					Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
 
-				list.add(coach);
+					Coach coach = coachRepository.findByAtheleteId(athlete.getId());
+
+					if (coach != null) {
+
+						list.add(coach);
+
+					}
+
+				} catch (Exception e) {
+
+				}
 
 			}
 

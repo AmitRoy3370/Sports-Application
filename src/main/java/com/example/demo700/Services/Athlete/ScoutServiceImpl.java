@@ -480,11 +480,21 @@ public class ScoutServiceImpl implements ScoutService {
 
 			for (AthleteClassification i : athletes) {
 
-				Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
+				try {
 
-				Scouts scout = scoutsRepository.findByAtheleteId(athlete.getId());
+					Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
 
-				list.add(scout);
+					Scouts scout = scoutsRepository.findByAtheleteId(athlete.getId());
+
+					if (scout != null) {
+
+						list.add(scout);
+
+					}
+
+				} catch (Exception e) {
+
+				}
 
 			}
 
