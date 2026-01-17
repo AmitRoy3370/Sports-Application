@@ -131,11 +131,11 @@ public class CoachController {
 	}
 	
 	@GetMapping("/findByClassification")
-	public ResponseEntity<?> findByCoachClassification(@RequestParam String classification) {
+	public ResponseEntity<?> findByCoachClassification(@RequestParam AthleteClassificationTypes classification) {
 		
 		try {
 			
-			return ResponseEntity.status(200).body(coachService.findByCoachClassification(AthleteClassificationTypes.valueOf(classification)));
+			return ResponseEntity.status(200).body(coachService.findByCoachClassification(classification));
 			
 		} catch(Exception e) {
 			
