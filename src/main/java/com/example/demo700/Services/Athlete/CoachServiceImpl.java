@@ -435,7 +435,7 @@ public class CoachServiceImpl implements CoachService {
 			List<AthleteClassification> athletes = athleteClassificationRepository
 					.findByAthleteClassificationTypes(athleteClassificationTypes);
 
-			if (list.isEmpty()) {
+			if (athletes.isEmpty()) {
 
 				throw new Exception();
 
