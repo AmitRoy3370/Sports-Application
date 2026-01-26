@@ -103,7 +103,7 @@ public class GymJoinRequestServiceImpl implements GymJoinRequestService {
 		try {
 
 			List<GymMember> gymMembers = gymMemberRepository
-					.findByGymMembersContaingingIgnoreCase(gymJoinRequest.getUserId());
+					.findByGymMembersContainingIgnoreCase(gymJoinRequest.getUserId());
 
 			if (!gymMembers.isEmpty()) {
 
@@ -220,7 +220,7 @@ public class GymJoinRequestServiceImpl implements GymJoinRequestService {
 		try {
 
 			List<GymMember> gymMembers = gymMemberRepository
-					.findByGymMembersContaingingIgnoreCase(gymJoinRequest.getUserId());
+					.findByGymMembersContainingIgnoreCase(gymJoinRequest.getUserId());
 
 			if (!gymMembers.isEmpty()) {
 
