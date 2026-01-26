@@ -5,6 +5,8 @@ import com.mongodb.DBObject;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,10 +33,24 @@ public class ImageService {
 		return id.toHexString();
 	}
 
+	private ObjectId parseObjectId(String id) {
+		if (!ObjectId.isValid(id)) {
+			throw new IllegalArgumentException("Invalid attachment id");
+		}
+		return new ObjectId(id);
+	}
+
+	public boolean attachmentExists(String id) {
+		try {
+			return gridFsTemplate.findOne(new Query(Criteria.where("_id").is(parseObjectId(id)))) != null;
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
+	}
+
 	// GET FILE
 	public GridFSFile getFile(String id) {
-		return gridFsTemplate.findOne(new org.springframework.data.mongodb.core.query.Query(
-				org.springframework.data.mongodb.core.query.Criteria.where("_id").is(id)));
+		return gridFsTemplate.findOne(new Query(Criteria.where("_id").is(parseObjectId(id))));
 	}
 
 	// GET STREAM
@@ -45,7 +61,7 @@ public class ImageService {
 	// DELETE
 	public void delete(String id) {
 		gridFsTemplate.delete(new org.springframework.data.mongodb.core.query.Query(
-				org.springframework.data.mongodb.core.query.Criteria.where("_id").is(id)));
+				org.springframework.data.mongodb.core.query.Criteria.where("_id").is(parseObjectId(id))));
 	}
 
 	// UPDATE = delete + new upload

@@ -1,5 +1,8 @@
 package com.example.demo700.Models.GymModels;
 
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,6 +18,17 @@ public class Gyms {
 	private String gymTrainer;// this is basically an userId
 
 	@NonNull
+	private String gymOwner; // this is also an user id
+
+	private String tradeLicenseId;
+	private String tinNumber;
+	
+	private Instant openingTime, closingTime;
+
+	private String coverImageId;     // GridFS / Cloud image id
+    private List<String> gymImages;  // image ids
+
+	@NonNull
 	private String gymName;
 
 	@NonNull
@@ -27,7 +41,7 @@ public class Gyms {
 	private double entryFee, monthlyFee;
 
 	public Gyms(String gymTrainer, String gymName, String locationName, double latitude, double longtitude,
-			double entryFee, double monthlyFee) {
+			double entryFee, double monthlyFee, String gymOwner) {
 		super();
 		this.gymTrainer = gymTrainer;
 		this.gymName = gymName;
@@ -36,6 +50,7 @@ public class Gyms {
 		this.longtitude = longtitude;
 		this.entryFee = entryFee;
 		this.monthlyFee = monthlyFee;
+		this.gymOwner = gymOwner;
 	}
 
 	public Gyms() {
@@ -106,11 +121,69 @@ public class Gyms {
 		this.monthlyFee = monthlyFee;
 	}
 
+	public String getGymOwner() {
+		return gymOwner;
+	}
+
+	public void setGymOwner(String gymOwner) {
+		this.gymOwner = gymOwner;
+	}
+
+	public String getTradeLicenseId() {
+		return tradeLicenseId;
+	}
+
+	public void setTradeLicenseId(String tradeLicenseId) {
+		this.tradeLicenseId = tradeLicenseId;
+	}
+
+	public String getTinNumber() {
+		return tinNumber;
+	}
+
+	public void setTinNumber(String tinNumber) {
+		this.tinNumber = tinNumber;
+	}
+
+	public Instant getOpeningTime() {
+		return openingTime;
+	}
+
+	public void setOpeningTime(Instant openingTime) {
+		this.openingTime = openingTime;
+	}
+
+	public Instant getClosingTime() {
+		return closingTime;
+	}
+
+	public void setClosingTime(Instant closingTime) {
+		this.closingTime = closingTime;
+	}
+
+	public String getCoverImageId() {
+		return coverImageId;
+	}
+
+	public void setCoverImageId(String coverImageId) {
+		this.coverImageId = coverImageId;
+	}
+
+	public List<String> getGymImages() {
+		return gymImages;
+	}
+
+	public void setGymImages(List<String> gymImages) {
+		this.gymImages = gymImages;
+	}
+
 	@Override
 	public String toString() {
-		return "Gyms [id=" + id + ", gymTrainer=" + gymTrainer + ", gymName=" + gymName + ", locationName="
-				+ locationName + ", latitude=" + latitude + ", longtitude=" + longtitude + ", entryFee=" + entryFee
-				+ ", monthlyFee=" + monthlyFee + "]";
+		return "Gyms [id=" + id + ", gymTrainer=" + gymTrainer + ", gymOwner=" + gymOwner + ", tradeLicenseId="
+				+ tradeLicenseId + ", tinNumber=" + tinNumber + ", openingTime=" + openingTime + ", closingTime="
+				+ closingTime + ", coverImageId=" + coverImageId + ", gymImages=" + gymImages + ", gymName=" + gymName
+				+ ", locationName=" + locationName + ", latitude=" + latitude + ", longtitude=" + longtitude
+				+ ", entryFee=" + entryFee + ", monthlyFee=" + monthlyFee + "]";
 	}
 
 }

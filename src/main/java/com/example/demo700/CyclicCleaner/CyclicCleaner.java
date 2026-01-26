@@ -25,6 +25,8 @@ import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
 import com.example.demo700.Models.FileUploadModel.CVUploadModel;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
+import com.example.demo700.Models.GymModels.GymJoinRequest;
+import com.example.demo700.Models.GymModels.GymMember;
 import com.example.demo700.Models.GymModels.Gyms;
 import com.example.demo700.Models.NotificationModels.Notification;
 import com.example.demo700.Models.PaymentGateway.BkashTransaction;
@@ -52,6 +54,8 @@ import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.CVUploadRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
+import com.example.demo700.Repositories.GymRepositories.GymJoinRequestRepository;
+import com.example.demo700.Repositories.GymRepositories.GymMemberRepository;
 import com.example.demo700.Repositories.GymRepositories.GymsRepository;
 import com.example.demo700.Repositories.NotificationRepositories.NotificationRepository;
 import com.example.demo700.Repositories.PaymentRepositories.BkashTransactionRepository;
@@ -138,19 +142,25 @@ public class CyclicCleaner {
 
 	@Autowired
 	private AthleteLocationRepository athleteLocationRepository;
-	
+
 	@Autowired
 	private TeamLocationRepository teamLocationRepository;
-	
+
 	@Autowired
 	private MatchNameRepository matchNameRepository;
 
 	@Autowired
 	private GymsRepository gymsRepository;
-	
+
+	@Autowired
+	private GymJoinRequestRepository gymJoinRequestRepository;
+
+	@Autowired
+	private GymMemberRepository gymMemberRepository;
+
 	@Autowired
 	private AthleteClassificationRepository athleteClassificationRepository;
-	
+
 	public void removeUser(String userId) {
 
 		try {
@@ -168,6 +178,102 @@ public class CyclicCleaner {
 			userRepository.deleteById(userId);
 
 			if (count != userRepository.count()) {
+
+				try {
+
+					List<GymJoinRequest> gymJoinRequests = gymJoinRequestRepository.findByUserId(user.getId());
+
+					if (!gymJoinRequests.isEmpty()) {
+
+						for (GymJoinRequest i : gymJoinRequests) {
+
+							try {
+
+								removeGymJoinRequest(i.getId());
+
+							} catch (Exception e) {
+
+							}
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					List<GymMember> list = gymMemberRepository.findByGymMembersContaingingIgnoreCase(user.getId());
+
+					if (!list.isEmpty()) {
+
+						for (GymMember i : list) {
+
+							try {
+
+								i.getGymMembers().remove(user.getId());
+								gymMemberRepository.save(i);
+
+							} catch (Exception e) {
+
+							}
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					List<Gyms> gyms = gymsRepository.findByGymOwner(user.getId());
+
+					if (gyms.isEmpty()) {
+
+						throw new Exception();
+
+					}
+
+					for (Gyms i : gyms) {
+
+						removeGym(i.getId());
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					List<Gyms> list = gymsRepository.findByGymTrainer(user.getId());
+
+					if (list.isEmpty()) {
+
+						throw new Exception();
+
+					}
+
+					for (Gyms i : list) {
+
+						try {
+
+							i.setGymTrainer("");
+							gymsRepository.save(i);
+
+						} catch (Exception e) {
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
 
 				try {
 
@@ -403,19 +509,20 @@ public class CyclicCleaner {
 			atheleteRepository.deleteById(athelteId);
 
 			if (count != atheleteRepository.count()) {
-				
+
 				try {
-					
-					AthleteClassification athleteClassification = athleteClassificationRepository.findByAthleteId(athelete.getId());
-					
-					if(athleteClassification != null) {
-						
+
+					AthleteClassification athleteClassification = athleteClassificationRepository
+							.findByAthleteId(athelete.getId());
+
+					if (athleteClassification != null) {
+
 						removeAthleteClassification(athleteClassification.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
 
 				try {
@@ -889,21 +996,21 @@ public class CyclicCleaner {
 					} catch (Exception e) {
 
 					}
-					
+
 					try {
-						
-						TeamLocationModel  teamLocation = teamLocationRepository.findByTeamId(teamId);
-						
-						if(teamLocation == null) {
-							
+
+						TeamLocationModel teamLocation = teamLocationRepository.findByTeamId(teamId);
+
+						if (teamLocation == null) {
+
 							throw new Exception();
-							
+
 						}
-						
+
 						removeTeamLocation(teamLocation.getId());
-						
-					} catch(Exception e) {
-						
+
+					} catch (Exception e) {
+
 					}
 
 					List<Match> matches = matchRepository.findByTeamsContainingIgnoreCase(team.getId());
@@ -945,19 +1052,19 @@ public class CyclicCleaner {
 				if (count != matchRepository.count()) {
 
 					try {
-						
+
 						MatchName matchName = matchNameRepository.findByMatchId(match.getId());
-						
-						if(matchName != null) {
-							
+
+						if (matchName != null) {
+
 							removeMatchName(matchName.getId());
-							
+
 						}
-						
-					} catch(Exception e) {
-						
+
+					} catch (Exception e) {
+
 					}
-					
+
 					try {
 
 						MatchVenue matchVenues = matchVenueRepository.findByMatchId(match.getId());
@@ -1704,107 +1811,193 @@ public class CyclicCleaner {
 		}
 
 	}
-	
+
 	public void removeTeamLocation(String id) {
-		
+
 		try {
-			
+
 			TeamLocationModel teamLocation = teamLocationRepository.findById(id).get();
-			
-			if(teamLocation != null) {
-				
+
+			if (teamLocation != null) {
+
 				long count = teamLocationRepository.count();
-				
+
 				teamLocationRepository.deleteById(id);
-				
-				if(count != teamLocationRepository.count()) {
-					
+
+				if (count != teamLocationRepository.count()) {
+
 					removeTeam(teamLocation.getTeamId());
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 	public void removeMatchName(String matchNameId) {
-		
+
 		try {
-			
+
 			MatchName matchName = matchNameRepository.findById(matchNameId).get();
-			
-			if(matchName != null) {
-				
+
+			if (matchName != null) {
+
 				long count = matchNameRepository.count();
-				
+
 				matchNameRepository.deleteById(matchNameId);
-				
-				if(count != matchNameRepository.count()) {
-					
+
+				if (count != matchNameRepository.count()) {
+
 					removeMatch(matchName.getMatchId());
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
 
 	public void removeGym(String gymId) {
-		
+
 		try {
-			
+
 			Gyms gyms = gymsRepository.findById(gymId).get();
-			
-			if(gyms != null) {
-				
+
+			if (gyms != null) {
+
 				long count = gymsRepository.count();
-				
+
 				gymsRepository.deleteById(gymId);
-				
-				if(count != gymsRepository.count()) {
-					
+
+				if (count != gymsRepository.count()) {
+
+					try {
+
+						GymMember gymMember = gymMemberRepository.findByGymId(gyms.getId());
+
+						if (gymMember != null) {
+
+							removeGymMember(gymMember.getId());
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						List<GymJoinRequest> list = gymJoinRequestRepository.findByGymId(gyms.getId());
+
+						if (!list.isEmpty()) {
+
+							for (GymJoinRequest i : list) {
+
+								try {
+
+									removeGymJoinRequest(i.getId());
+
+								} catch (Exception e) {
+
+								}
+
+							}
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
 	public void removeAthleteClassification(String id) {
-		
+
 		try {
-			
+
 			AthleteClassification athleteClassification = athleteClassificationRepository.findById(id).get();
-			
-			if(athleteClassification != null) {
-				
+
+			if (athleteClassification != null) {
+
 				long count = athleteClassificationRepository.count();
-				
+
 				athleteClassificationRepository.deleteById(id);
-				
-				if(count != athleteClassificationRepository.count()) {
-					
+
+				if (count != athleteClassificationRepository.count()) {
+
 					removeAthelete(athleteClassification.getAthleteId());
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
+	public void removeGymJoinRequest(String id) {
+
+		try {
+
+			GymJoinRequest gymJoinRequest = gymJoinRequestRepository.findById(id).get();
+
+			if (gymJoinRequest != null) {
+
+				long count = gymJoinRequestRepository.count();
+
+				gymJoinRequestRepository.deleteById(id);
+
+				if (count != gymJoinRequestRepository.count()) {
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
+	public void removeGymMember(String id) {
+
+		try {
+
+			GymMember gymMember = gymMemberRepository.findById(id).get();
+
+			if (gymMember != null) {
+
+				long count = gymMemberRepository.count();
+
+				gymMemberRepository.deleteById(id);
+
+				if (count != gymMemberRepository.count()) {
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
 }
