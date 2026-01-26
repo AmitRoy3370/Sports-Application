@@ -205,7 +205,7 @@ public class CyclicCleaner {
 
 				try {
 
-					List<GymMember> list = gymMemberRepository.findByGymMembersContaingingIgnoreCase(user.getId());
+					List<GymMember> list = gymMemberRepository.findByGymMembersContainingIgnoreCase(user.getId());
 
 					if (!list.isEmpty()) {
 
