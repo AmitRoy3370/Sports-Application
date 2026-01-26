@@ -188,7 +188,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 
 		try {
 
-			List<GymMember> list = gymMemberRepository.findByGymMembersContaingingIgnoreCase(gymMembers);
+			List<GymMember> list = gymMemberRepository.findByGymMembersContainingIgnoreCase(gymMembers);
 
 			if (list.isEmpty()) {
 
