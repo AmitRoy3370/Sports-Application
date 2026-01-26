@@ -1,9 +1,12 @@
 package com.example.demo700.Controllers.GymController;
 
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo700.Models.GymModels.Gyms;
+import com.example.demo700.Services.FileUploadServices.ImageService;
 import com.example.demo700.Services.GymServices.GymService;
+import com.mongodb.client.gridfs.model.GridFSFile;
+
+import io.jsonwebtoken.io.IOException;
 
 @RestController
 @RequestMapping("/api/gyms")
@@ -19,6 +26,9 @@ public class GymController {
 
 	@Autowired
 	private GymService gymService;
+
+	@Autowired
+	private ImageService imageService;
 
 	// ✅ ADD GYM
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -150,6 +160,58 @@ public class GymController {
 
 			return ResponseEntity.status(400).body(e.getMessage());
 
+		}
+
+	}
+
+	// -------------- view the attachment ---------------------
+
+	@GetMapping("/attachment/view/{attachmentId}")
+	public ResponseEntity<?> viewAttachment(@PathVariable String attachmentId) {
+		try {
+			GridFSFile file = imageService.getFile(attachmentId);
+
+			if (file == null) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found");
+			}
+
+			InputStream stream = imageService.getStream(file);
+
+			return ResponseEntity.ok().contentType(MediaType.parseMediaType(file.getMetadata().get("type").toString()))
+					.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
+					.body(new InputStreamResource(stream));
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to load file");
+		}
+	}
+
+	// ------------------- download attachment -----------------
+
+	@GetMapping("/attachment/{attachmentId}")
+	public ResponseEntity<?> downloadAttachment(@PathVariable String attachmentId) {
+
+		try {
+			GridFSFile file = imageService.getFile(attachmentId);
+
+			if (file == null) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Image not found");
+			}
+
+			InputStream stream = imageService.getStream(file);
+
+			return ResponseEntity.ok().contentType(MediaType.parseMediaType(file.getMetadata().get("type").toString()))
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+					.body(new InputStreamResource(stream));
+
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to download image");
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to download image");
+		} catch (java.io.IOException e) {
+			// TODO Auto-generated catch block
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to download image");
 		}
 
 	}
