@@ -31,7 +31,7 @@ public class GymController {
 	private ImageService imageService;
 
 	// ✅ ADD GYM
-	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value="/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> addGym(@RequestPart("gymTrainer") String gymTrainer,
 			@RequestPart("gymOwner") String gymOwner,
 			@RequestPart(value = "tradeLicenseId", required = false) String tradeLicenseId,
@@ -42,7 +42,7 @@ public class GymController {
 			@RequestPart("latitude") double latitude, @RequestPart("longtitude") double longtitude,
 			@RequestPart("entryFee") double entryFee, @RequestPart("monthlyFee") double monthlyFee,
 			@RequestPart(value = "CoverImage", required = false) MultipartFile coverImage,
-			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestParam String userId) {
+			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestPart("userId") String userId) {
 
 		try {
 
@@ -94,7 +94,7 @@ public class GymController {
 	}
 
 	// ✅ UPDATE GYM
-	@PutMapping(value = "/{gymId}/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> updateGym(@RequestPart("gymTrainer") String gymTrainer,
 			@RequestPart("gymOwner") String gymOwner,
 			@RequestPart(value = "tradeLicenseId", required = false) String tradeLicenseId,
@@ -105,9 +105,9 @@ public class GymController {
 			@RequestPart("latitude") double latitude, @RequestPart("longtitude") double longtitude,
 			@RequestPart("entryFee") double entryFee, @RequestPart("monthlyFee") double monthlyFee,
 			@RequestPart(value = "CoverImage", required = false) MultipartFile coverImage,
-			@RequestPart(value = "attachments", required = false) MultipartFile files[], @PathVariable String gymId,
+			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestPart("gymId") String gymId,
 			@RequestPart(value = "existingFiles", required = false) List<String> existingFiles,
-			@PathVariable String userId) {
+			@RequestPart("userId") String userId) {
 
 		try {
 
