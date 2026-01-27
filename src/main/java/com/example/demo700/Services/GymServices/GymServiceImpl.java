@@ -363,7 +363,7 @@ public class GymServiceImpl implements GymService {
 
 			}
 
-			if (!user.getId().equals(gyms.getGymOwner())) {
+			if (!user.getId().equals(gyms.getGymTrainer())) {
 
 				throw new Exception();
 
