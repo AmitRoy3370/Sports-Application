@@ -32,17 +32,17 @@ public class GymController {
 
 	// ✅ ADD GYM
 	@PostMapping(value="/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> addGym(@RequestPart("gymTrainer") String gymTrainer,
-			@RequestPart("gymOwner") String gymOwner,
-			@RequestPart(value = "tradeLicenseId", required = false) String tradeLicenseId,
-			@RequestPart("tinNumber") String tinNumber,
-			@RequestPart(value = "openingTime", required = false) String openingTime,
-			@RequestPart(value = "closingTime", required = false) String closingTime,
-			@RequestPart("gymName") String gymName, @RequestPart("locationName") String locationName,
-			@RequestPart("latitude") double latitude, @RequestPart("longtitude") double longtitude,
-			@RequestPart("entryFee") double entryFee, @RequestPart("monthlyFee") double monthlyFee,
+	public ResponseEntity<?> addGym(@RequestParam("gymTrainer") String gymTrainer,
+			@RequestParam("gymOwner") String gymOwner,
+			@RequestParam(value = "tradeLicenseId", required = false) String tradeLicenseId,
+			@RequestParam("tinNumber") String tinNumber,
+			@RequestParam(value = "openingTime", required = false) String openingTime,
+			@RequestParam(value = "closingTime", required = false) String closingTime,
+			@RequestParam("gymName") String gymName, @RequestPart("locationName") String locationName,
+			@RequestParam("latitude") double latitude, @RequestParam("longtitude") double longtitude,
+			@RequestParam("entryFee") double entryFee, @RequestParam("monthlyFee") double monthlyFee,
 			@RequestPart(value = "CoverImage", required = false) MultipartFile coverImage,
-			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestPart("userId") String userId) {
+			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestParam("userId") String userId) {
 
 		try {
 
@@ -95,19 +95,19 @@ public class GymController {
 
 	// ✅ UPDATE GYM
 	@PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> updateGym(@RequestPart("gymTrainer") String gymTrainer,
-			@RequestPart("gymOwner") String gymOwner,
-			@RequestPart(value = "tradeLicenseId", required = false) String tradeLicenseId,
-			@RequestPart("tinNumber") String tinNumber,
-			@RequestPart(value = "openingTime", required = false) String openingTime,
-			@RequestPart(value = "closingTime", required = false) String closingTime,
-			@RequestPart("gymName") String gymName, @RequestPart("locationName") String locationName,
-			@RequestPart("latitude") double latitude, @RequestPart("longtitude") double longtitude,
-			@RequestPart("entryFee") double entryFee, @RequestPart("monthlyFee") double monthlyFee,
+	public ResponseEntity<?> updateGym(@RequestParam("gymTrainer") String gymTrainer,
+			@RequestParam("gymOwner") String gymOwner,
+			@RequestParam(value = "tradeLicenseId", required = false) String tradeLicenseId,
+			@RequestParam("tinNumber") String tinNumber,
+			@RequestParam(value = "openingTime", required = false) String openingTime,
+			@RequestParam(value = "closingTime", required = false) String closingTime,
+			@RequestParam("gymName") String gymName, @RequestParam("locationName") String locationName,
+			@RequestParam("latitude") double latitude, @RequestParam("longtitude") double longtitude,
+			@RequestParam("entryFee") double entryFee, @RequestParam("monthlyFee") double monthlyFee,
 			@RequestPart(value = "CoverImage", required = false) MultipartFile coverImage,
 			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestPart("gymId") String gymId,
 			@RequestPart(value = "existingFiles", required = false) List<String> existingFiles,
-			@RequestPart("userId") String userId) {
+			@RequestParam("userId") String userId) {
 
 		try {
 
