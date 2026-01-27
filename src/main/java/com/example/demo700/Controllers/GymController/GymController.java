@@ -78,6 +78,8 @@ public class GymController {
 			gyms.setEntryFee(entryFee);
 			gyms.setMonthlyFee(monthlyFee);
 
+			gyms.setLocationName(locationName);
+			
 			gyms.setGymName(gymName);
 			gyms.setLatitude(latitude);
 			gyms.setLongtitude(longtitude);
