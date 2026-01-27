@@ -108,7 +108,7 @@ public class GymController {
 			@RequestParam("entryFee") double entryFee, @RequestParam("monthlyFee") double monthlyFee,
 			@RequestPart(value = "CoverImage", required = false) MultipartFile coverImage,
 			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestPart("gymId") String gymId,
-			@RequestPart(value = "existingFiles", required = false) List<String> existingFiles,
+			@RequestParam(value = "existingFiles", required = false) List<String> existingFiles,
 			@RequestParam("userId") String userId) {
 
 		try {
