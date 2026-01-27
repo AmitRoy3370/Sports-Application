@@ -43,7 +43,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 
 		try {
 
-			User user = userRepository.findById(memberId).get();
+			User user = userRepository.findById(userId).get();
 
 			if (user == null) {
 
