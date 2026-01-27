@@ -16,6 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo700.Models.GymModels.Gyms;
 import com.example.demo700.Services.FileUploadServices.ImageService;
 import com.example.demo700.Services.GymServices.GymService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.mongodb.client.gridfs.model.GridFSFile;
 
 import io.jsonwebtoken.io.IOException;
@@ -108,7 +111,7 @@ public class GymController {
 			@RequestParam("entryFee") double entryFee, @RequestParam("monthlyFee") double monthlyFee,
 			@RequestPart(value = "CoverImage", required = false) MultipartFile coverImage,
 			@RequestPart(value = "attachments", required = false) MultipartFile files[], @RequestPart("gymId") String gymId,
-			@RequestParam(value = "existingFiles", required = false) List<String> existingFiles,
+			@RequestParam(value = "existingFiles", required = false) String existingFilesJSON,
 			@RequestParam("userId") String userId) {
 
 		try {
@@ -142,9 +145,14 @@ public class GymController {
 
 			}
 
-			if (existingFiles != null && !existingFiles.isEmpty()) {
+			if (existingFilesJSON != null && !existingFilesJSON.isBlank()) {
 
-				gyms.setGymImages(existingFiles);
+				ObjectMapper mapper = new ObjectMapper();
+	            List<String> existingFiles = mapper.readValue(
+	                    existingFilesJSON,
+	                    new TypeReference<List<String>>() {}
+	            );
+	            gyms.setGymImages(existingFiles);
 
 			}
 
