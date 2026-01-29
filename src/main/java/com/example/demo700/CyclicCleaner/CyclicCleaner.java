@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo700.ENUMS.TeamJoinRequestRole;
 import com.example.demo700.Models.User;
+import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Coach;
@@ -37,6 +38,7 @@ import com.example.demo700.Models.Turf.GroupBooking;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Models.Turf.VenueLocation;
+import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
@@ -161,6 +163,9 @@ public class CyclicCleaner {
 	@Autowired
 	private AthleteClassificationRepository athleteClassificationRepository;
 
+	@Autowired
+	private UserGenderRepository userGenderRepository;
+	
 	public void removeUser(String userId) {
 
 		try {
@@ -179,6 +184,20 @@ public class CyclicCleaner {
 
 			if (count != userRepository.count()) {
 
+				try {
+					
+					UserGender gender = userGenderRepository.findById(user.getId()).get();
+					
+					if(gender != null) {
+						
+						removeUserGender(gender.getId());
+						
+					}
+					
+				} catch(Exception e) {
+					
+				}
+				
 				try {
 
 					List<GymJoinRequest> gymJoinRequests = gymJoinRequestRepository.findByUserId(user.getId());
@@ -1998,6 +2017,32 @@ public class CyclicCleaner {
 
 		}
 
+	}
+	
+	public void removeUserGender(String id) {
+		
+		try {
+			
+			UserGender gender = userGenderRepository.findById(id).get();
+			
+			if(gender != null) {
+				
+				long count = userGenderRepository.count();
+				
+				userGenderRepository.deleteById(id);
+				
+				if(count != userGenderRepository.count()) {
+					
+					//removeUser(gender.getUserId());
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
 	}
 
 }

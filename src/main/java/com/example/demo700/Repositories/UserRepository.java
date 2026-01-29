@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 
 @Repository
@@ -18,5 +19,6 @@ public interface UserRepository extends MongoRepository<User, String> {
 	User findByNameIgnoreCase(String userName);
 	
 	List<User> findByNameContainingIgnoreCase(String namePrefix);
+	List<User> findByRolesContainingIgnoreCase(Role role);
 	
 }
