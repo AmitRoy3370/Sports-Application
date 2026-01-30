@@ -585,9 +585,15 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 			List<User> responseGymTrainer = new ArrayList<>();
 
-			List<User> list = userRepository.findByRoles(Role.ROLE_GYM_TRAINER);
+			List<User> list = userRepository.findAll();
 
 			for (User i : list) {
+				
+				if(!i.getRoles().contains(Role.ROLE_GYM_TRAINER)) {
+					
+					continue;
+					
+				}
 
 				UserGender userGender = userGenderRepository.findByUserId(i.getId());
 
@@ -628,10 +634,16 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 			List<User> responseGymTrainer = new ArrayList<>();
 
-			List<User> list = userRepository.findByRoles(Role.ROLE_GYM_OWNER);
+			List<User> list = userRepository.findAll();
 
 			for (User i : list) {
 
+				if(!i.getRoles().contains(Role.ROLE_GYM_OWNER)) {
+					
+					continue;
+					
+				}
+				
 				UserGender userGender = userGenderRepository.findByUserId(i.getId());
 
 				if (userGender.getGender() == gender) {
