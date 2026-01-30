@@ -9,6 +9,7 @@ import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.TeamOwner;
+import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.Turf.Owner;
 
 public interface UserGenderService {
@@ -27,6 +28,7 @@ public interface UserGenderService {
 	public List<User> findAllGymTrainer(Gender gender);
 	public List<User> findAllGymOwner(Gender gender);
 	public List<TeamOwner> findAllTeamOwner(Gender gender);
+	public List<Doctor> findAllDoctor(Gender gender);
 	
 	public boolean deleteUserGender(String id, String userId);
 

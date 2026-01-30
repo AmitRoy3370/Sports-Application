@@ -16,6 +16,7 @@ import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.TeamOwner;
+import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
@@ -23,6 +24,7 @@ import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
+import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.Turf.OwnerRepository;
 
 @Service
@@ -48,6 +50,9 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 	@Autowired
 	private TeamOwnerRepository teamOwnerRepository;
+
+	@Autowired
+	private DoctorRepository doctorRepository;
 
 	@Autowired
 	private CyclicCleaner cleaner;
@@ -580,7 +585,7 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 			List<User> responseGymTrainer = new ArrayList<>();
 
-			List<User> list = userRepository.findByRolesContainingIgnoreCase(Role.ROLE_GYM_TRAINER);
+			List<User> list = userRepository.findByRoles(Role.ROLE_GYM_TRAINER);
 
 			for (User i : list) {
 
@@ -623,7 +628,7 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 			List<User> responseGymTrainer = new ArrayList<>();
 
-			List<User> list = userRepository.findByRolesContainingIgnoreCase(Role.ROLE_GYM_OWNER);
+			List<User> list = userRepository.findByRoles(Role.ROLE_GYM_OWNER);
 
 			for (User i : list) {
 
@@ -647,7 +652,7 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 		} catch (Exception e) {
 
-			throw new NoSuchElementException("No such gym triner find at here...");
+			throw new NoSuchElementException("No such gym owner find at here...");
 
 		}
 	}
@@ -697,7 +702,56 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 		} catch (Exception e) {
 
-			throw new NoSuchElementException("No such gym triner find at here...");
+			throw new NoSuchElementException("No such team owner find at here...");
+
+		}
+
+	}
+
+	@Override
+	public List<Doctor> findAllDoctor(Gender gender) {
+
+		if (gender == null) {
+
+			throw new NullPointerException("False request....");
+
+		}
+
+		try {
+
+			List<Doctor> responseDoctor = new ArrayList<>();
+
+			List<Doctor> list = doctorRepository.findAll();
+
+			for (Doctor i : list) {
+
+				try {
+
+					UserGender userGender = userGenderRepository.findByUserId(i.getUserId());
+
+					if (userGender.getGender() == gender) {
+
+						responseDoctor.add(i);
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+			}
+
+			if (responseDoctor.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			return responseDoctor;
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such doctor find at here...");
 
 		}
 
