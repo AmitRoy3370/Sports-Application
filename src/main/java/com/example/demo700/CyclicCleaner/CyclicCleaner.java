@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.ENUMS.TeamJoinRequestRole;
+import com.example.demo700.Model.UserActiveModel.UserActive;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -68,6 +69,7 @@ import com.example.demo700.Repositories.Turf.GroupBookingRepository;
 import com.example.demo700.Repositories.Turf.OwnerRepository;
 import com.example.demo700.Repositories.Turf.VenueLocationServiceRepository;
 import com.example.demo700.Repositories.Turf.VenueRepository;
+import com.example.demo700.Repositories.UserActiveRepositories.UserActiveRepository;
 import com.example.demo700.Services.FileUploadServices.ImageService;
 
 @Service
@@ -166,6 +168,9 @@ public class CyclicCleaner {
 	@Autowired
 	private UserGenderRepository userGenderRepository;
 	
+	@Autowired
+	private UserActiveRepository userActiveRepository;
+	
 	public void removeUser(String userId) {
 
 		try {
@@ -184,6 +189,20 @@ public class CyclicCleaner {
 
 			if (count != userRepository.count()) {
 
+				try {
+					
+					UserActive active = userActiveRepository.findByUserId(user.getId());
+					
+					if(active != null) {
+						
+						removeUserActive(active.getId());
+						
+					}
+					
+				} catch(Exception e) {
+					
+				}
+				
 				try {
 					
 					UserGender gender = userGenderRepository.findById(user.getId()).get();
@@ -2045,4 +2064,28 @@ public class CyclicCleaner {
 		
 	}
 
+	public void removeUserActive(String id) {
+		
+		try {
+			
+			UserActive userActive = userActiveRepository.findById(id).get();
+			
+			if(userActive != null) {
+				
+				long count = userActiveRepository.count();
+				
+				userActiveRepository.deleteById(id);
+				
+				if(count != userActiveRepository.count()) {
+					
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			
+		}
+		
+	}
+	
 }
