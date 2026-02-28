@@ -24,26 +24,26 @@ public class SecurityConfig {
 	@Autowired
 	private JwtFilter jwtFilter;
 
-	/*
-	 * @Bean public SecurityFilterChain securityFilterChain(HttpSecurity http)
-	 * throws Exception {
-	 * http.cors().and().csrf().disable().sessionManagement().sessionCreationPolicy(
-	 * SessionCreationPolicy.STATELESS)
-	 * .and().authorizeHttpRequests().anyRequest().permitAll();
-	 * 
-	 * return http.build(); }
-	 */
-
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
 		http.cors().and().csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and().authorizeHttpRequests().requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-				.anyRequest().authenticated().and()
-				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+				.and().authorizeHttpRequests().anyRequest().permitAll();
 
 		return http.build();
 	}
+
+	/*
+	 * @Bean public SecurityFilterChain securityFilterChain(HttpSecurity http)
+	 * throws Exception {
+	 * 
+	 * http.cors().and().csrf().disable().sessionManagement().sessionCreationPolicy(
+	 * SessionCreationPolicy.STATELESS)
+	 * .and().authorizeHttpRequests().requestMatchers("/api/auth/register",
+	 * "/api/auth/login").permitAll() .anyRequest().authenticated().and()
+	 * .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+	 * 
+	 * return http.build(); }
+	 */
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
