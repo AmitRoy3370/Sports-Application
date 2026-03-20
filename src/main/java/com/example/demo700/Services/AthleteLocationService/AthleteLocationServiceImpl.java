@@ -62,9 +62,11 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
+		Athelete athlete;
+
 		try {
 
-			Athelete athlete = athleteRepository.findById(athleteLocation.getAthleteId()).get();
+			athlete = athleteRepository.findById(athleteLocation.getAthleteId()).get();
 
 			if (athlete == null) {
 
@@ -81,6 +83,24 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 		} catch (Exception e) {
 
 			throw new ArithmeticException("Invalid Athlete credential...");
+
+		}
+
+		try {
+
+			AthleteLocation location = athleteLocationRepository.findByAthleteId(athlete.getId());
+
+			if (location != null) {
+
+				throw new ArithmeticException();
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("This athlete location is already setted...");
+
+		} catch (Exception e) {
 
 		}
 
@@ -220,9 +240,11 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
+		Athelete athlete;
+		
 		try {
 
-			Athelete athlete = athleteRepository.findById(athleteLocation.getAthleteId()).get();
+			athlete = athleteRepository.findById(athleteLocation.getAthleteId()).get();
 
 			if (athlete == null) {
 
@@ -252,7 +274,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 			}
 
-			Athelete athlete = athleteRepository.findByUserId(userId).get();
+			athlete = athleteRepository.findByUserId(userId).get();
 
 			if (athlete == null) {
 
@@ -269,6 +291,28 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 		} catch (Exception e) {
 
 			throw new NoSuchElementException("No such athlete location find at hete...");
+
+		}
+
+		try {
+
+			AthleteLocation location = athleteLocationRepository.findByAthleteId(athlete.getId());
+
+			if (location != null) {
+
+				if (!location.getId().equals(athleteId)) {
+
+					throw new ArithmeticException();
+
+				}
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("This athlete location is already setted...");
+
+		} catch (Exception e) {
 
 		}
 

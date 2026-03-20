@@ -3,45 +3,46 @@ package com.example.demo700.Services.Athlete;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.demo700.DTOFiles.AthleteRequestDTO;
 import com.example.demo700.Models.Athlete.Athelete;
 
 public interface AtheleteService {
 
 	Athelete addAthelete(Athelete athelete, String userId);
 
-	List<Athelete> seeAll();
+	List<AthleteRequestDTO> seeAll();
 
 	Athelete updateAthelete(Athelete athelete, String userId, String atheleteId);
 
 	boolean deleteAthelete(String atheleteId, String userId);
 
-	Athelete searchByAthleteId(String athleteId);
+	AthleteRequestDTO searchByAthleteId(String athleteId);
 	
-	List<Athelete> searchAtheleteByTeamName(String teamName);
+	List<AthleteRequestDTO> searchAtheleteByTeamName(String teamName);
 
-	List<Athelete> findByAgeLessThan(int age);
+	List<AthleteRequestDTO> findByAgeLessThan(int age);
 
-	List<Athelete> findByHeightGreaterThan(double height);
+	List<AthleteRequestDTO> findByHeightGreaterThan(double height);
 
-	List<Athelete> findByWeightLessThan(double weight);
+	List<AthleteRequestDTO> findByWeightLessThan(double weight);
 
-	List<Athelete> findByPresentTeamIgnoreCase(String presentTeam);
+	List<AthleteRequestDTO> findByPresentTeamIgnoreCase(String presentTeam);
 
-	List<Athelete> findByPosition(String position);
+	List<AthleteRequestDTO> findByPosition(String position);
 
-	List<Athelete> findByEventAttendenceContainingIgnoreCase(String eventName);
+	List<AthleteRequestDTO> findByEventAttendenceContainingIgnoreCase(String eventName);
 
-	List<Athelete> findByGameLogsContainingIgnoreCase(String gameLog);
+	List<AthleteRequestDTO> findByGameLogsContainingIgnoreCase(String gameLog);
 
-	List<Athelete> findByAgeLessThanAndHeightGreaterThan(int age, double height);
+	List<AthleteRequestDTO> findByAgeLessThanAndHeightGreaterThan(int age, double height);
 
-	List<Athelete> searchByTeamNamePartial(String partialName);
+	List<AthleteRequestDTO> searchByTeamNamePartial(String partialName);
 
-	List<Athelete> findByMultipleEvents(List<String> eventNames);
+	List<AthleteRequestDTO> findByMultipleEvents(List<String> eventNames);
 
-	List<Athelete> findByWeightRange(double min, double max);
+	List<AthleteRequestDTO> findByWeightRange(double min, double max);
 
-	Optional<Athelete> findByUserId(String userId);
+	Optional<AthleteRequestDTO> findByUserId(String userId);
 
 	boolean deleteByUserId(String userId, String actionUser);
 

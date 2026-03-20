@@ -1,5 +1,6 @@
 package com.example.demo700.Services.Athlete;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -9,14 +10,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.AthleteRequestDTO;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
+import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
+import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Team;
+import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
+import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
+import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Validator.URLValidator;
 
@@ -24,7 +32,16 @@ import com.example.demo700.Validator.URLValidator;
 public class AtheleteServiceImpl implements AtheleteService {
 
 	@Autowired
-	AtheleteRepository autheleteRepository;
+	AtheleteRepository athleteRepository;
+
+	@Autowired
+	AthleteLocationRepository athleteLocationRepository;
+
+	@Autowired
+	AthleteClassificationRepository athleteClassificationRepository;
+
+	@Autowired
+	UserGenderRepository athleteGenderRepository;
 
 	@Autowired
 	UserRepository userRepository;
@@ -81,7 +98,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		try {
 
-			Athelete _athelete = autheleteRepository.findByUserId(athelete.getUserId()).get();
+			Athelete _athelete = athleteRepository.findByUserId(athelete.getUserId()).get();
 
 			if (_athelete != null) {
 
@@ -155,7 +172,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		athelete = autheleteRepository.save(athelete);
+		athelete = athleteRepository.save(athelete);
 
 		if (athelete == null) {
 
@@ -167,13 +184,21 @@ public class AtheleteServiceImpl implements AtheleteService {
 	}
 
 	@Override
-	public List<Athelete> seeAll() {
+	public List<AthleteRequestDTO> seeAll() {
 
-		List<Athelete> list = autheleteRepository.findAll();
+		List<Athelete> _list = athleteRepository.findAll();
 
-		if (list == null) {
+		if (_list.isEmpty()) {
 
 			return null;
+
+		}
+
+		List<AthleteRequestDTO> list = new ArrayList<>();
+
+		for (Athelete i : _list) {
+
+			list.add(getDetailsFromAthleteId(i.getId()));
 
 		}
 
@@ -189,7 +214,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		Athelete _athelete = autheleteRepository.findById(atheleteId).get();
+		Athelete _athelete = athleteRepository.findById(atheleteId).get();
 
 		if (_athelete == null) {
 
@@ -221,7 +246,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		Athelete __athlete = autheleteRepository.findByUserId(user.getId()).get();
+		Athelete __athlete = athleteRepository.findByUserId(user.getId()).get();
 
 		if (!user.getRoles().contains(Role.ROLE_ATHLETE) || !__athlete.getId().equals(atheleteId)) {
 
@@ -257,7 +282,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		try {
 
-			Athelete __athelete = autheleteRepository.findByUserId(athelete.getId()).get();
+			Athelete __athelete = athleteRepository.findByUserId(athelete.getId()).get();
 
 			if (__athelete != null) {
 
@@ -356,7 +381,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		athelete.setId(_athelete.getId());
 
-		athelete = autheleteRepository.save(athelete);
+		athelete = athleteRepository.save(athelete);
 
 		if (athelete == null) {
 
@@ -379,7 +404,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		try {
 
-			Athelete athelete = autheleteRepository.findById(atheleteId).get();
+			Athelete athelete = athleteRepository.findById(atheleteId).get();
 
 			if (athelete == null) {
 
@@ -410,13 +435,13 @@ public class AtheleteServiceImpl implements AtheleteService {
 		}
 
 		if (userRepository.findById(userId).get().getRoles().contains(Role.ROLE_ADMIN)
-				|| autheleteRepository.findByUserId(userId).equals(atheleteId)) {
+				|| athleteRepository.findByUserId(userId).equals(atheleteId)) {
 
-			long count = autheleteRepository.count();
+			long count = athleteRepository.count();
 
 			cleaner.removeAthelete(atheleteId);
 
-			boolean yes = count != autheleteRepository.count();
+			boolean yes = count != athleteRepository.count();
 
 			if (yes) {
 
@@ -447,7 +472,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 	}
 
 	@Override
-	public List<Athelete> searchAtheleteByTeamName(String teamName) {
+	public List<AthleteRequestDTO> searchAtheleteByTeamName(String teamName) {
 
 		if (teamName == null) {
 
@@ -455,161 +480,268 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		List<Athelete> list = autheleteRepository.findBypresentTeam(teamName);
+		List<Athelete> _list = athleteRepository.findBypresentTeam(teamName);
 
-		return list;
-	}
+		List<AthleteRequestDTO> list = new ArrayList<>();
 
-	@Override
-	public List<Athelete> findByAgeLessThan(int age) {
+		for (Athelete i : _list) {
 
-		List<Athelete> list = autheleteRepository.findByAgeLessThan(age);
-
-		return list;
-	}
-
-	@Override
-	public List<Athelete> findByHeightGreaterThan(double height) {
-
-		List<Athelete> list = autheleteRepository.findByHeightGreaterThan(height);
-
-		return list;
-	}
-
-	@Override
-	public List<Athelete> findByWeightLessThan(double weight) {
-		List<Athelete> list = autheleteRepository.findByWeightLessThan(weight);
-
-		return list;
-	}
-
-	@Override
-	public List<Athelete> findByPresentTeamIgnoreCase(String teamName) {
-		if (teamName == null) {
-
-			throw new NullPointerException("No athelete find at here...");
+			list.add(getDetailsFromAthleteId(i.getId()));
 
 		}
 
-		List<Athelete> list = autheleteRepository.findByPresentTeamIgnoreCase(teamName);
+		return list;
+	}
+
+	@Override
+	public List<AthleteRequestDTO> findByAgeLessThan(int age) {
+
+		List<Athelete> _list = athleteRepository.findByAgeLessThan(age);
+
+		List<AthleteRequestDTO> list = new ArrayList<>();
+
+		for (Athelete i : _list) {
+
+			list.add(getDetailsFromAthleteId(i.getId()));
+
+		}
 
 		return list;
 	}
 
 	@Override
-	public List<Athelete> findByPosition(String position) {
-		List<Athelete> list = autheleteRepository.findByPositionContainingIgnoreCase(position);
+	public List<AthleteRequestDTO> findByHeightGreaterThan(double height) {
+
+		List<Athelete> _list = athleteRepository.findByHeightGreaterThan(height);
+
+		List<AthleteRequestDTO> list = new ArrayList<>();
+
+		for (Athelete i : _list) {
+
+			list.add(getDetailsFromAthleteId(i.getId()));
+
+		}
 
 		return list;
 	}
 
 	@Override
-	public List<Athelete> findByEventAttendenceContainingIgnoreCase(String eventName) {
+	public List<AthleteRequestDTO> findByWeightLessThan(double weight) {
+		List<Athelete> _list = athleteRepository.findByWeightLessThan(weight);
+
+		List<AthleteRequestDTO> list = new ArrayList<>();
+
+		for (Athelete i : _list) {
+
+			list.add(getDetailsFromAthleteId(i.getId()));
+
+		}
+
+		return list;
+	}
+
+	@Override
+	public List<AthleteRequestDTO> findByPresentTeamIgnoreCase(String teamName) {
+
+		if (teamName == null) {
+			throw new NullPointerException("Invalid request...");
+		}
+
+		List<Athelete> list = athleteRepository.findByPresentTeamIgnoreCase(teamName);
+
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
+
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
+	}
+
+	@Override
+	public List<AthleteRequestDTO> findByPosition(String position) {
+
+		List<Athelete> list = athleteRepository.findByPositionContainingIgnoreCase(position);
+
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
+
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
+	}
+
+	@Override
+	public List<AthleteRequestDTO> findByEventAttendenceContainingIgnoreCase(String eventName) {
 
 		if (eventName == null) {
-
-			throw new NullPointerException("in valid request...");
-
+			throw new NullPointerException("Invalid request...");
 		}
 
-		List<Athelete> list = autheleteRepository.findByEventAttendenceContainingIgnoreCase(eventName);
+		List<Athelete> list = athleteRepository.findByEventAttendenceContainingIgnoreCase(eventName);
 
-		return list;
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
+
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public List<Athelete> findByGameLogsContainingIgnoreCase(String gameLog) {
+	public List<AthleteRequestDTO> findByGameLogsContainingIgnoreCase(String gameLog) {
 
 		if (gameLog == null) {
-
-			throw new NullPointerException("in valid request...");
-
+			throw new NullPointerException("Invalid request...");
 		}
 
-		List<Athelete> list = autheleteRepository.findByGameLogsContainingIgnoreCase(gameLog);
+		List<Athelete> list = athleteRepository.findByGameLogsContainingIgnoreCase(gameLog);
 
-		return list;
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
+
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public List<Athelete> findByAgeLessThanAndHeightGreaterThan(int age, double height) {
+	public List<AthleteRequestDTO> findByAgeLessThanAndHeightGreaterThan(int age, double height) {
 
-		List<Athelete> list = autheleteRepository.findByAgeLessThanAndHeightGreaterThan(age, height);
+		List<Athelete> list = athleteRepository.findByAgeLessThanAndHeightGreaterThan(age, height);
 
-		return list;
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
 
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public List<Athelete> searchByTeamNamePartial(String partialName) {
+	public List<AthleteRequestDTO> searchByTeamNamePartial(String partialName) {
+
 		if (partialName == null) {
-
-			throw new NullPointerException("in valid request...");
-
+			throw new NullPointerException("Invalid request...");
 		}
 
-		List<Athelete> list = autheleteRepository.searchByTeamNamePartial(partialName);
+		List<Athelete> list = athleteRepository.searchByTeamNamePartial(partialName);
 
-		return list;
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
+
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public List<Athelete> findByMultipleEvents(List<String> eventNames) {
+	public List<AthleteRequestDTO> findByMultipleEvents(List<String> eventNames) {
 
 		if (eventNames == null) {
-
-			throw new NullPointerException("False request...");
-
+			throw new NullPointerException("Invalid request...");
 		}
 
-		List<Athelete> list = autheleteRepository.findByMultipleEvents(eventNames);
+		List<Athelete> list = athleteRepository.findByMultipleEvents(eventNames);
 
-		return list;
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
 
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public List<Athelete> findByWeightRange(double min, double max) {
+	public List<AthleteRequestDTO> findByWeightRange(double min, double max) {
 
-		List<Athelete> list = autheleteRepository.findByWeightRange(min, max);
+		List<Athelete> list = athleteRepository.findByWeightRange(min, max);
 
-		return list;
+		if (list.isEmpty()) {
+			throw new NoSuchElementException("No athletes found...");
+		}
 
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete athlete : list) {
+			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public Optional<Athelete> findByUserId(String userId) {
+	public Optional<AthleteRequestDTO> findByUserId(String userId) {
 
 		if (userId == null) {
-
-			throw new NullPointerException("false request...");
-
+			throw new NullPointerException("Invalid request...");
 		}
 
-		return autheleteRepository.findByUserId(userId);
+		Optional<Athelete> athleteOpt = athleteRepository.findByUserId(userId);
+
+		if (athleteOpt.isEmpty()) {
+			throw new NoSuchElementException("No athlete found...");
+		}
+
+		AthleteRequestDTO dto = getDetailsFromAthleteId(athleteOpt.get().getId());
+
+		return Optional.of(dto);
 	}
 
-	
-	public Athelete searchByAthleteId(String athleteId) {
-		
-		if(athleteId == null) {
-			
+	public AthleteRequestDTO searchByAthleteId(String athleteId) {
+
+		if (athleteId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
-			return autheleteRepository.findById(athleteId).get();
-			
-		} catch(Exception e) {
-			
+
+			return getDetailsFromAthleteId(athleteId);
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such athlete fin at here...");
-			
+
 		}
-		
+
 	}
-	
+
 	@Override
 	public boolean deleteByUserId(String userId, String actionUserId) {
 
@@ -627,7 +759,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		Athelete athelete = autheleteRepository.findById(userId).get();
+		Athelete athelete = athleteRepository.findById(userId).get();
 
 		if (athelete == null) {
 
@@ -641,13 +773,84 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		long count = autheleteRepository.count();
+		long count = athleteRepository.count();
 
 		cleaner.removeAthelete(athelete.getId());
 
-		boolean yes = count != autheleteRepository.count();
+		boolean yes = count != athleteRepository.count();
 
 		return yes;
+	}
+
+	private AthleteRequestDTO getDetailsFromAthleteId(String athleteId) {
+
+		AthleteRequestDTO athlete = new AthleteRequestDTO();
+
+		Athelete athleteDetails = athleteRepository.findById(athleteId).get();
+
+		athlete.setId(athleteDetails.getId());
+		athlete.setAge(athleteDetails.getAge());
+		athlete.setGameLogs(athleteDetails.getGameLogs());
+		athlete.setEventAttendence(athleteDetails.getEventAttendence());
+		athlete.setHeight(athleteDetails.getHeight());
+		athlete.setWeight(athleteDetails.getWeight());
+		athlete.setUserId(athleteDetails.getUserId());
+		athlete.setPosition(athleteDetails.getPosition());
+		athlete.setPresentTeam(athleteDetails.getPresentTeam());
+		athlete.setHighlightReels(athleteDetails.getHighlightReels());
+
+		User user = userRepository.findById(athleteDetails.getUserId()).get();
+
+		athlete.setName(user.getName());
+		athlete.setEmail(user.getEmail());
+		athlete.setRoles(user.getRoles());
+
+		try {
+
+			AthleteLocation location = athleteLocationRepository.findByAthleteId(athleteId);
+
+			if (location != null) {
+
+				athlete.setLattitude(location.getLattitude());
+				athlete.setLongitude(location.getLongitude());
+				athlete.setLocationName(location.getLocationName());
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			UserGender userGender = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
+
+			if (userGender != null) {
+
+				athlete.setGender(userGender.getGender());
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			AthleteClassification classification = athleteClassificationRepository.findByAthleteId(athleteId);
+
+			if (classification != null) {
+
+				athlete.setAthleteClassificationTypes(classification.getAthleteClassificationTypes());
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		return athlete;
+
 	}
 
 }

@@ -18,11 +18,11 @@ public class Athelete {
 	private String id;
 	@NonNull
 	private String userId;
-	@NonNull
+	
 	private int age;
-	@NonNull
+	
 	private String position;
-	@NonNull
+	
 	private double height, weight;
 	private List<String> gameLogs;
 	private List<String> eventAttendence;

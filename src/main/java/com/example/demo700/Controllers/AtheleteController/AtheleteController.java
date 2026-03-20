@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.AthleteRequestDTO;
 import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Services.Athlete.AtheleteService;
 
@@ -50,7 +51,7 @@ public class AtheleteController {
 	@GetMapping("/seeAll")
 	public ResponseEntity<?> seeAllAthelete() {
 
-		List<Athelete> list = atheleteService.seeAll();
+		List<AthleteRequestDTO> list = atheleteService.seeAll();
 
 		if (list == null) {
 
@@ -68,7 +69,7 @@ public class AtheleteController {
 		try {
 			int _age = Integer.parseInt(age);
 
-			List<Athelete> list = atheleteService.findByAgeLessThan(_age);
+			List<AthleteRequestDTO> list = atheleteService.findByAgeLessThan(_age);
 
 			if (list == null) {
 
@@ -94,7 +95,7 @@ public class AtheleteController {
 			
 			double _height = Double.parseDouble(height);
 			
-			List<Athelete> list = atheleteService.findByHeightGreaterThan(_height);
+			List<AthleteRequestDTO> list = atheleteService.findByHeightGreaterThan(_height);
 			
 			return ResponseEntity.status(200).body(list);
 			
@@ -111,7 +112,7 @@ public class AtheleteController {
 		
 		try {
 			
-			List<Athelete> list = atheleteService.findByPresentTeamIgnoreCase(teamName);
+			List<AthleteRequestDTO> list = atheleteService.findByPresentTeamIgnoreCase(teamName);
 			
 			if(list ==  null) {
 				
@@ -137,7 +138,7 @@ public class AtheleteController {
 			int _minHeight = Integer.parseInt(minHeight);
 			int _maxHeight = Integer.parseInt(maxHeight);
 			
-			List<Athelete> list = atheleteService.findByWeightRange(_minHeight, _maxHeight);
+			List<AthleteRequestDTO> list = atheleteService.findByWeightRange(_minHeight, _maxHeight);
 			
 			if(list == null) {
 				
@@ -163,7 +164,7 @@ public class AtheleteController {
 			double _height = Double.parseDouble(height);
 			int _age = Integer.parseInt(age);
 			
-			List<Athelete> list = atheleteService.findByAgeLessThanAndHeightGreaterThan(_age, _height);
+			List<AthleteRequestDTO> list = atheleteService.findByAgeLessThanAndHeightGreaterThan(_age, _height);
 			
 			return ResponseEntity.status(200).body(list);
 			
@@ -180,7 +181,7 @@ public class AtheleteController {
 		
 		try {
 			
-			List<Athelete> list = atheleteService.findByPosition(position);
+			List<AthleteRequestDTO> list = atheleteService.findByPosition(position);
 			
 			if(list == null) {
 				
@@ -219,7 +220,7 @@ public class AtheleteController {
     @GetMapping("/findByEventAttendence")
     public ResponseEntity<?> findByEventAttendence(@RequestParam String eventName) {
         try {
-            List<Athelete> list = atheleteService.findByEventAttendenceContainingIgnoreCase(eventName);
+            List<AthleteRequestDTO> list = atheleteService.findByEventAttendenceContainingIgnoreCase(eventName);
             if (list == null || list.isEmpty())
                 return ResponseEntity.status(404).body("No athlete found for this event...");
             return ResponseEntity.status(200).body(list);
@@ -232,7 +233,7 @@ public class AtheleteController {
     @GetMapping("/findByGameLog")
     public ResponseEntity<?> findByGameLog(@RequestParam String log) {
         try {
-            List<Athelete> list = atheleteService.findByGameLogsContainingIgnoreCase(log);
+            List<AthleteRequestDTO> list = atheleteService.findByGameLogsContainingIgnoreCase(log);
             if (list == null || list.isEmpty())
                 return ResponseEntity.status(404).body("No athlete found for this game log...");
             return ResponseEntity.status(200).body(list);
@@ -245,7 +246,7 @@ public class AtheleteController {
     @GetMapping("/searchByPartialTeamName")
     public ResponseEntity<?> searchByPartialTeamName(@RequestParam String partialName) {
         try {
-            List<Athelete> list = atheleteService.searchByTeamNamePartial(partialName);
+            List<AthleteRequestDTO> list = atheleteService.searchByTeamNamePartial(partialName);
             if (list == null || list.isEmpty())
                 return ResponseEntity.status(404).body("No athlete found matching team name...");
             return ResponseEntity.status(200).body(list);
@@ -258,7 +259,7 @@ public class AtheleteController {
     @PostMapping("/findByMultipleEvents")
     public ResponseEntity<?> findByMultipleEvents(@RequestBody List<String> eventNames) {
         try {
-            List<Athelete> list = atheleteService.findByMultipleEvents(eventNames);
+            List<AthleteRequestDTO> list = atheleteService.findByMultipleEvents(eventNames);
             if (list == null || list.isEmpty())
                 return ResponseEntity.status(404).body("No athlete found attending all these events...");
             return ResponseEntity.status(200).body(list);
@@ -271,7 +272,7 @@ public class AtheleteController {
     @GetMapping("/findByUserId")
     public ResponseEntity<?> findByUserId(@RequestParam String userId) {
         try {
-            Optional<Athelete> athlete = atheleteService.findByUserId(userId);
+            Optional<AthleteRequestDTO> athlete = atheleteService.findByUserId(userId);
             if (!athlete.isPresent())
                 return ResponseEntity.status(404).body("No athlete found with this userId...");
             return ResponseEntity.status(200).body(athlete);
@@ -298,7 +299,7 @@ public class AtheleteController {
     public ResponseEntity<?> findByWeightLessThan(@RequestParam String weight) {
         try {
             double _weight = Double.parseDouble(weight);
-            List<Athelete> list = atheleteService.findByWeightLessThan(_weight);
+            List<AthleteRequestDTO> list = atheleteService.findByWeightLessThan(_weight);
             if (list == null || list.isEmpty())
                 return ResponseEntity.status(404).body("No athlete found under this weight...");
             return ResponseEntity.status(200).body(list);
