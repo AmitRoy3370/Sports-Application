@@ -812,9 +812,9 @@ public class AtheleteServiceImpl implements AtheleteService {
         athlete.setRoles(user.getRoles());
 
         try {
-            Optional<AthleteLocation> locationOpt = athleteLocationRepository.findByAthleteId(athleteId);
-            if (locationOpt.isPresent()) {
-                AthleteLocation location = locationOpt.get();
+            AthleteLocation location = athleteLocationRepository.findByAthleteId(athleteId);
+            if (location != null) {
+                //AthleteLocation location = locationOpt.get();
                 athlete.setLattitude(location.getLattitude());
                 athlete.setLongitude(location.getLongitude());
                 athlete.setLocationName(location.getLocationName());
@@ -824,18 +824,18 @@ public class AtheleteServiceImpl implements AtheleteService {
         }
 
         try {
-            Optional<UserGender> genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
-            if (genderOpt.isPresent()) {
-                athlete.setGender(genderOpt.get().getGender());
+            UserGender genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
+            if (genderOpt != null) {
+                athlete.setGender(genderOpt.getGender());
             }
         } catch (Exception e) {
             // Gender not found
         }
 
         try {
-            Optional<AthleteClassification> classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
-            if (classificationOpt.isPresent()) {
-                athlete.setAthleteClassificationTypes(classificationOpt.get().getAthleteClassificationTypes());
+            AthleteClassification classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
+            if (classificationOpt != null) {
+                athlete.setAthleteClassificationTypes(classificationOpt.getAthleteClassificationTypes());
             }
         } catch (Exception e) {
             // Classification not found
