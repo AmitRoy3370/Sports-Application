@@ -304,6 +304,7 @@ public class AtheleteServiceImpl implements AtheleteService {
                     Team team = teamRepository.findByAtheletesContainingIgnoreCase(atheleteId);
                     if (team != null) {
                         team.getAtheletes().remove(atheleteId);
+                        teamRepository.save(team);
                     }
                 } catch (Exception e) {
                     // Log error but continue
