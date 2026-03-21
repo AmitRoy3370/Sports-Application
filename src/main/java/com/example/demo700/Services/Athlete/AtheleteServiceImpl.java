@@ -857,6 +857,180 @@ public class AtheleteServiceImpl implements AtheleteService {
         return size;
     }
     
+ // Add these methods to your AtheleteServiceImpl class
+
+    @Override
+    public AthleteListResponseDTO findByPresentTeamIgnoreCase(String teamName, int page, int size) {
+        if (teamName == null) {
+            throw new NullPointerException("Invalid request...");
+        }
+        
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "presentTeam"));
+        Page<Athelete> athletePage = athleteRepository.findByPresentTeamIgnoreCase(teamName, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+
+    @Override
+    public AthleteListResponseDTO findByPosition(String position, int page, int size) {
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "position"));
+        Page<Athelete> athletePage = athleteRepository.findByPositionContainingIgnoreCase(position, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+
+    @Override
+    public AthleteListResponseDTO findByEventAttendenceContainingIgnoreCase(String eventName, int page, int size) {
+        if (eventName == null) {
+            throw new NullPointerException("Invalid request...");
+        }
+        
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Athelete> athletePage = athleteRepository.findByEventAttendenceContainingIgnoreCase(eventName, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+
+    @Override
+    public AthleteListResponseDTO findByGameLogsContainingIgnoreCase(String gameLog, int page, int size) {
+        if (gameLog == null) {
+            throw new NullPointerException("Invalid request...");
+        }
+        
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Athelete> athletePage = athleteRepository.findByGameLogsContainingIgnoreCase(gameLog, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+
+    @Override
+    public AthleteListResponseDTO findByAgeLessThanAndHeightGreaterThan(int age, double height, int page, int size) {
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Athelete> athletePage = athleteRepository.findByAgeLessThanAndHeightGreaterThan(age, height, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+
+    @Override
+    public AthleteListResponseDTO searchByTeamNamePartial(String partialName, int page, int size) {
+        if (partialName == null) {
+            throw new NullPointerException("Invalid request...");
+        }
+        
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Athelete> athletePage = athleteRepository.searchByTeamNamePartial(partialName, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+
+    @Override
+    public AthleteListResponseDTO findByMultipleEvents(List<String> eventNames, int page, int size) {
+        if (eventNames == null || eventNames.isEmpty()) {
+            throw new NullPointerException("Invalid request...");
+        }
+        
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Athelete> athletePage = athleteRepository.findByMultipleEvents(eventNames, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+
+    @Override
+    public AthleteListResponseDTO findByWeightRange(double min, double max, int page, int size) {
+        page = Math.max(0, page);
+        size = validatePageSize(size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Athelete> athletePage = athleteRepository.findByWeightRange(min, max, pageable);
+        
+        if (!athletePage.hasContent()) {
+            return new AthleteListResponseDTO(new ArrayList<>(), page, size, 0, 0);
+        }
+        
+        List<AthleteRequestDTO> athletes = getListDetailsFromAthleteList(athletePage.getContent());
+        
+        return new AthleteListResponseDTO(athletes, page, size, 
+                                          athletePage.getTotalElements(), 
+                                          athletePage.getTotalPages());
+    }
+    
     // 🔥 Helper method to get total count
     public long getTotalAthleteCount() {
         return athleteRepository.count();
