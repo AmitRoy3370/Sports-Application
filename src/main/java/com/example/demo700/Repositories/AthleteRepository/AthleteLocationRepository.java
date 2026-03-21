@@ -13,5 +13,5 @@ public interface AthleteLocationRepository extends MongoRepository<AthleteLocati
 	public AthleteLocation findByAthleteId(String athleteId);
 	public List<AthleteLocation> findByLocationNameIgnoreCase(String locationName);
 	public List<AthleteLocation> findByLattitudeAndLongitude(double lattitude, double longitude);
-	
+	List<AthleteLocation> findByAthleteIdIn(List<String> athleteIds);
 }

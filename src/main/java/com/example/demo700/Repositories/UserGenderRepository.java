@@ -13,5 +13,6 @@ public interface UserGenderRepository extends MongoRepository<UserGender, String
 
 	public UserGender findByUserId(String userId);
 	public List<UserGender> findByGender(Gender gender);
+	List<UserGender> findByUserIdIn(List<String> userIds);
 	
 }

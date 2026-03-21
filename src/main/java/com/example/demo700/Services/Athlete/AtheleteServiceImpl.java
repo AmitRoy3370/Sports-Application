@@ -1,7 +1,9 @@
 package com.example.demo700.Services.Athlete;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -482,15 +484,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		List<Athelete> _list = athleteRepository.findBypresentTeam(teamName);
 
-		List<AthleteRequestDTO> list = new ArrayList<>();
-
-		for (Athelete i : _list) {
-
-			list.add(getDetailsFromAthleteId(i.getId()));
-
-		}
-
-		return list;
+		return getListDetailsFromAthleteList(_list);
 	}
 
 	@Override
@@ -498,15 +492,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		List<Athelete> _list = athleteRepository.findByAgeLessThan(age);
 
-		List<AthleteRequestDTO> list = new ArrayList<>();
-
-		for (Athelete i : _list) {
-
-			list.add(getDetailsFromAthleteId(i.getId()));
-
-		}
-
-		return list;
+		return getListDetailsFromAthleteList(_list);
 	}
 
 	@Override
@@ -514,30 +500,14 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		List<Athelete> _list = athleteRepository.findByHeightGreaterThan(height);
 
-		List<AthleteRequestDTO> list = new ArrayList<>();
-
-		for (Athelete i : _list) {
-
-			list.add(getDetailsFromAthleteId(i.getId()));
-
-		}
-
-		return list;
+		return getListDetailsFromAthleteList(_list);
 	}
 
 	@Override
 	public List<AthleteRequestDTO> findByWeightLessThan(double weight) {
 		List<Athelete> _list = athleteRepository.findByWeightLessThan(weight);
 
-		List<AthleteRequestDTO> list = new ArrayList<>();
-
-		for (Athelete i : _list) {
-
-			list.add(getDetailsFromAthleteId(i.getId()));
-
-		}
-
-		return list;
+		return getListDetailsFromAthleteList(_list);
 	}
 
 	@Override
@@ -553,13 +523,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -571,13 +535,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -593,13 +551,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -615,13 +567,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -633,13 +579,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -655,13 +595,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -677,13 +611,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -695,13 +623,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 			throw new NoSuchElementException("No athletes found...");
 		}
 
-		List<AthleteRequestDTO> dtoList = new ArrayList<>();
-
-		for (Athelete athlete : list) {
-			dtoList.add(getDetailsFromAthleteId(athlete.getId()));
-		}
-
-		return dtoList;
+		return getListDetailsFromAthleteList(list);
 	}
 
 	@Override
@@ -799,8 +721,9 @@ public class AtheleteServiceImpl implements AtheleteService {
 		athlete.setPresentTeam(athleteDetails.getPresentTeam());
 		athlete.setHighlightReels(athleteDetails.getHighlightReels());
 
-		User user = userRepository.findById(athleteDetails.getUserId()).get();
-
+		User user = userRepository.findById(athleteDetails.getUserId())
+		        .orElseThrow(() -> new NoSuchElementException("User not found"));
+		
 		athlete.setName(user.getName());
 		athlete.setEmail(user.getEmail());
 		athlete.setRoles(user.getRoles());
@@ -850,6 +773,97 @@ public class AtheleteServiceImpl implements AtheleteService {
 		}
 
 		return athlete;
+
+	}
+
+	public List<AthleteRequestDTO> getListDetailsFromAthleteList(List<Athelete> athletes) {
+
+		// Collect IDs
+		List<String> athleteIds = new ArrayList<>();
+		List<String> userIds = new ArrayList<>();
+
+		for (Athelete a : athletes) {
+			athleteIds.add(a.getId());
+			userIds.add(a.getUserId());
+		}
+
+		// 🔥 Batch fetch (ONLY 1 query each)
+		List<User> users = userRepository.findByIdIn(userIds);
+		List<AthleteLocation> locations = athleteLocationRepository.findByAthleteIdIn(athleteIds);
+		List<UserGender> genders = athleteGenderRepository.findByUserIdIn(userIds);
+		List<AthleteClassification> classifications = athleteClassificationRepository.findByAthleteIdIn(athleteIds);
+
+		// Convert to Map for FAST lookup (O(1))
+		Map<String, User> userMap = new HashMap<>();
+		for (User u : users) {
+			userMap.put(u.getId(), u);
+		}
+
+		Map<String, AthleteLocation> locationMap = new HashMap<>();
+		for (AthleteLocation l : locations) {
+			locationMap.put(l.getAthleteId(), l);
+		}
+
+		Map<String, UserGender> genderMap = new HashMap<>();
+		for (UserGender g : genders) {
+			genderMap.put(g.getUserId(), g);
+		}
+
+		Map<String, AthleteClassification> classificationMap = new HashMap<>();
+		for (AthleteClassification c : classifications) {
+			classificationMap.put(c.getAthleteId(), c);
+		}
+
+		// Build DTO
+		List<AthleteRequestDTO> dtoList = new ArrayList<>();
+
+		for (Athelete a : athletes) {
+
+			AthleteRequestDTO dto = new AthleteRequestDTO();
+
+			dto.setId(a.getId());
+			dto.setAge(a.getAge());
+			dto.setHeight(a.getHeight());
+			dto.setWeight(a.getWeight());
+			dto.setUserId(a.getUserId());
+			dto.setPosition(a.getPosition());
+			dto.setPresentTeam(a.getPresentTeam());
+			dto.setGameLogs(a.getGameLogs());
+			dto.setEventAttendence(a.getEventAttendence());
+			dto.setHighlightReels(a.getHighlightReels());
+
+			// User
+			User user = userMap.get(a.getUserId());
+			if (user != null) {
+				dto.setName(user.getName());
+				dto.setEmail(user.getEmail());
+				dto.setRoles(user.getRoles());
+			}
+
+			// Location
+			AthleteLocation loc = locationMap.get(a.getId());
+			if (loc != null) {
+				dto.setLattitude(loc.getLattitude());
+				dto.setLongitude(loc.getLongitude());
+				dto.setLocationName(loc.getLocationName());
+			}
+
+			// Gender
+			UserGender gender = genderMap.get(a.getUserId());
+			if (gender != null) {
+				dto.setGender(gender.getGender());
+			}
+
+			// Classification
+			AthleteClassification cls = classificationMap.get(a.getId());
+			if (cls != null) {
+				dto.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
+			}
+
+			dtoList.add(dto);
+		}
+
+		return dtoList;
 
 	}
 

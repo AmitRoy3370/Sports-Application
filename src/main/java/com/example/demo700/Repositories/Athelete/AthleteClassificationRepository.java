@@ -13,5 +13,5 @@ public interface AthleteClassificationRepository extends MongoRepository<Athlete
 
 	public AthleteClassification findByAthleteId(String athleteId);
 	public List<AthleteClassification> findByAthleteClassificationTypes(AthleteClassificationTypes athleteClassificationTypes);
-	
+	List<AthleteClassification> findByAthleteIdIn(List<String> athleteIds);
 }
