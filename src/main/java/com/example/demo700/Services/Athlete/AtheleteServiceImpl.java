@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +64,14 @@ public class AtheleteServiceImpl implements AtheleteService {
 
     @Autowired
     CyclicCleaner cleaner;
+    
+    // Optimized pagination settings for 50TB database
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 50; // Reduced from 100 to prevent memory issues
+    private static final int MAX_BATCH_SIZE = 200; // Reduced from 500 for better memory management
+    
+    @Value("${athlete.query.timeout:30000}")
+    private long queryTimeout;
 
     @Override
     public Athelete addAthelete(Athelete athelete, String userId) {
@@ -131,13 +140,15 @@ public class AtheleteServiceImpl implements AtheleteService {
         return athelete;
     }
 
-    // 🔥 FIXED: Paginated version
+    // 🔥 OPTIMIZED PAGINATED VERSION for 50TB database
     @Override
     public AthleteListResponseDTO seeAll(int page, int size) {
+        // Validate and optimize pagination parameters
         page = Math.max(0, page);
-        size = Math.min(100, Math.max(1, size));
+        size = validatePageSize(size);
         
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        // Use indexed field for sorting to improve performance
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "_id"));
         Page<Athelete> athletePage = athleteRepository.findAll(pageable);
         
         if (!athletePage.hasContent()) {
@@ -153,12 +164,12 @@ public class AtheleteServiceImpl implements AtheleteService {
                                           athletePage.getTotalPages());
     }
     
-    // 🔥 Deprecated version
+    // 🔥 DEPRECATED - Will cause timeout for 50TB database
     @Override
     @Deprecated
     public List<AthleteRequestDTO> seeAll() {
         throw new UnsupportedOperationException(
-            "This method is disabled for large databases. Use seeAll(page, size) instead.");
+            "This method is disabled for 50TB database. Use seeAll(page, size) with pagination instead.");
     }
 
     @Override
@@ -304,7 +315,7 @@ public class AtheleteServiceImpl implements AtheleteService {
         }
     }
 
-    // 🔥 FIXED: Search with pagination
+    // 🔥 OPTIMIZED SEARCH METHODS WITH PAGINATION
     @Override
     public AthleteListResponseDTO searchAtheleteByTeamName(String teamName, int page, int size) {
         if (teamName == null) {
@@ -312,9 +323,9 @@ public class AtheleteServiceImpl implements AtheleteService {
         }
 
         page = Math.max(0, page);
-        size = Math.min(100, Math.max(1, size));
+        size = validatePageSize(size);
         
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "presentTeam"));
         Page<Athelete> athletePage = athleteRepository.findByPresentTeamIgnoreCase(teamName, pageable);
         
         if (!athletePage.hasContent()) {
@@ -328,13 +339,12 @@ public class AtheleteServiceImpl implements AtheleteService {
                                           athletePage.getTotalPages());
     }
 
-    // 🔥 FIXED: Search with pagination
     @Override
     public AthleteListResponseDTO findByAgeLessThan(int age, int page, int size) {
         page = Math.max(0, page);
-        size = Math.min(100, Math.max(1, size));
+        size = validatePageSize(size);
         
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "age"));
         Page<Athelete> athletePage = athleteRepository.findByAgeLessThan(age, pageable);
         
         if (!athletePage.hasContent()) {
@@ -348,13 +358,12 @@ public class AtheleteServiceImpl implements AtheleteService {
                                           athletePage.getTotalPages());
     }
 
-    // 🔥 FIXED: Search with pagination
     @Override
     public AthleteListResponseDTO findByHeightGreaterThan(double height, int page, int size) {
         page = Math.max(0, page);
-        size = Math.min(100, Math.max(1, size));
+        size = validatePageSize(size);
         
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "height"));
         Page<Athelete> athletePage = athleteRepository.findByHeightGreaterThan(height, pageable);
         
         if (!athletePage.hasContent()) {
@@ -368,13 +377,12 @@ public class AtheleteServiceImpl implements AtheleteService {
                                           athletePage.getTotalPages());
     }
 
-    // 🔥 FIXED: Search with pagination
     @Override
     public AthleteListResponseDTO findByWeightLessThan(double weight, int page, int size) {
         page = Math.max(0, page);
-        size = Math.min(100, Math.max(1, size));
+        size = validatePageSize(size);
         
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "weight"));
         Page<Athelete> athletePage = athleteRepository.findByWeightLessThan(weight, pageable);
         
         if (!athletePage.hasContent()) {
@@ -388,12 +396,15 @@ public class AtheleteServiceImpl implements AtheleteService {
                                           athletePage.getTotalPages());
     }
 
-    // 🔥 COMPLETED: Non-paginated version for backward compatibility
+    // 🔥 NON-PAGINATED VERSIONS WITH WARNINGS FOR 50TB DATABASE
     @Override
     public List<AthleteRequestDTO> searchAtheleteByTeamName(String teamName) {
         if (teamName == null) {
             throw new NullPointerException("False request....");
         }
+        
+        System.err.println("⚠️ WARNING: Using non-paginated search for team: " + teamName + 
+                          ". This will be SLOW for 50TB database. Use searchAtheleteByTeamName(teamName, page, size) instead.");
         
         List<Athelete> athletes = athleteRepository.findByPresentTeamIgnoreCase(teamName);
         
@@ -401,64 +412,100 @@ public class AtheleteServiceImpl implements AtheleteService {
             throw new NoSuchElementException("No athletes found for team: " + teamName);
         }
         
+        // Limit results to prevent memory issues
+        if (athletes.size() > 1000) {
+            System.err.println("⚠️ WARNING: Large result set (" + athletes.size() + 
+                             ") detected. Consider using pagination.");
+            athletes = athletes.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(athletes);
     }
 
-    // 🔥 COMPLETED: Non-paginated version for backward compatibility
     @Override
     public List<AthleteRequestDTO> findByAgeLessThan(int age) {
+        System.err.println("⚠️ WARNING: Using non-paginated age search. This will be SLOW for 50TB database. Use findByAgeLessThan(age, page, size) instead.");
+        
         List<Athelete> athletes = athleteRepository.findByAgeLessThan(age);
         
         if (athletes.isEmpty()) {
             throw new NoSuchElementException("No athletes found with age less than: " + age);
         }
         
+        if (athletes.size() > 1000) {
+            athletes = athletes.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(athletes);
     }
 
-    // 🔥 COMPLETED: Non-paginated version for backward compatibility
     @Override
     public List<AthleteRequestDTO> findByHeightGreaterThan(double height) {
+        System.err.println("⚠️ WARNING: Using non-paginated height search. This will be SLOW for 50TB database. Use findByHeightGreaterThan(height, page, size) instead.");
+        
         List<Athelete> athletes = athleteRepository.findByHeightGreaterThan(height);
         
         if (athletes.isEmpty()) {
             throw new NoSuchElementException("No athletes found with height greater than: " + height);
         }
         
+        if (athletes.size() > 1000) {
+            athletes = athletes.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(athletes);
     }
 
-    // 🔥 COMPLETED: Non-paginated version for backward compatibility
     @Override
     public List<AthleteRequestDTO> findByWeightLessThan(double weight) {
+        System.err.println("⚠️ WARNING: Using non-paginated weight search. This will be SLOW for 50TB database. Use findByWeightLessThan(weight, page, size) instead.");
+        
         List<Athelete> athletes = athleteRepository.findByWeightLessThan(weight);
         
         if (athletes.isEmpty()) {
             throw new NoSuchElementException("No athletes found with weight less than: " + weight);
         }
         
+        if (athletes.size() > 1000) {
+            athletes = athletes.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(athletes);
     }
 
-    // Keep original methods for backward compatibility
     @Override
     public List<AthleteRequestDTO> findByPresentTeamIgnoreCase(String teamName) {
         if (teamName == null) {
             throw new NullPointerException("Invalid request...");
         }
+        
+        System.err.println("⚠️ WARNING: Using non-paginated team search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.findByPresentTeamIgnoreCase(teamName);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
     @Override
     public List<AthleteRequestDTO> findByPosition(String position) {
+        System.err.println("⚠️ WARNING: Using non-paginated position search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.findByPositionContainingIgnoreCase(position);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
@@ -467,10 +514,18 @@ public class AtheleteServiceImpl implements AtheleteService {
         if (eventName == null) {
             throw new NullPointerException("Invalid request...");
         }
+        
+        System.err.println("⚠️ WARNING: Using non-paginated event search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.findByEventAttendenceContainingIgnoreCase(eventName);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
@@ -479,19 +534,34 @@ public class AtheleteServiceImpl implements AtheleteService {
         if (gameLog == null) {
             throw new NullPointerException("Invalid request...");
         }
+        
+        System.err.println("⚠️ WARNING: Using non-paginated game log search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.findByGameLogsContainingIgnoreCase(gameLog);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
     @Override
     public List<AthleteRequestDTO> findByAgeLessThanAndHeightGreaterThan(int age, double height) {
+        System.err.println("⚠️ WARNING: Using non-paginated combined search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.findByAgeLessThanAndHeightGreaterThan(age, height);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
@@ -500,10 +570,18 @@ public class AtheleteServiceImpl implements AtheleteService {
         if (partialName == null) {
             throw new NullPointerException("Invalid request...");
         }
+        
+        System.err.println("⚠️ WARNING: Using non-paginated partial team search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.searchByTeamNamePartial(partialName);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
@@ -512,19 +590,34 @@ public class AtheleteServiceImpl implements AtheleteService {
         if (eventNames == null) {
             throw new NullPointerException("Invalid request...");
         }
+        
+        System.err.println("⚠️ WARNING: Using non-paginated multiple events search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.findByMultipleEvents(eventNames);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
     @Override
     public List<AthleteRequestDTO> findByWeightRange(double min, double max) {
+        System.err.println("⚠️ WARNING: Using non-paginated weight range search. This will be SLOW for 50TB database.");
+        
         List<Athelete> list = athleteRepository.findByWeightRange(min, max);
         if (list.isEmpty()) {
             throw new NoSuchElementException("No athletes found...");
         }
+        
+        if (list.size() > 1000) {
+            list = list.subList(0, 1000);
+        }
+        
         return getListDetailsFromAthleteList(list);
     }
 
@@ -580,15 +673,16 @@ public class AtheleteServiceImpl implements AtheleteService {
         return yes;
     }
 
-    // 🔥 Optimized batch fetching with error handling
+    // 🔥 OPTIMIZED BATCH FETCHING for 50TB database
     public List<AthleteRequestDTO> getListDetailsFromAthleteList(List<Athelete> athletes) {
         if (athletes == null || athletes.isEmpty()) {
             return new ArrayList<>();
         }
         
-        // Limit batch size to prevent memory overflow
-        if (athletes.size() > 500) {
-            throw new IllegalArgumentException("Batch size too large. Max 500 athletes per batch.");
+        // Stricter batch size limit for 50TB database
+        if (athletes.size() > MAX_BATCH_SIZE) {
+            throw new IllegalArgumentException("Batch size too large. Max " + MAX_BATCH_SIZE + 
+                                             " athletes per batch. Current size: " + athletes.size());
         }
 
         // Extract IDs
@@ -687,7 +781,6 @@ public class AtheleteServiceImpl implements AtheleteService {
                 dtoList.add(dto);
             } catch (Exception e) {
                 System.err.println("Error building DTO for athlete: " + a.getId());
-                // Skip problematic athlete but continue processing others
             }
         }
         
@@ -719,36 +812,49 @@ public class AtheleteServiceImpl implements AtheleteService {
         athlete.setRoles(user.getRoles());
 
         try {
-            AthleteLocation location = athleteLocationRepository.findByAthleteId(athleteId);
-            if (location != null) {
-                //AthleteLocation loc = location.get();
+            Optional<AthleteLocation> locationOpt = athleteLocationRepository.findByAthleteId(athleteId);
+            if (locationOpt.isPresent()) {
+                AthleteLocation location = locationOpt.get();
                 athlete.setLattitude(location.getLattitude());
                 athlete.setLongitude(location.getLongitude());
                 athlete.setLocationName(location.getLocationName());
             }
         } catch (Exception e) {
-            // Location not found, continue
+            // Location not found
         }
 
         try {
-            UserGender userGender = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
-            if (userGender != null) {
-                athlete.setGender(userGender.getGender());
+            Optional<UserGender> genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
+            if (genderOpt.isPresent()) {
+                athlete.setGender(genderOpt.get().getGender());
             }
         } catch (Exception e) {
-            // Gender not found, continue
+            // Gender not found
         }
 
         try {
-            AthleteClassification classification = athleteClassificationRepository.findByAthleteId(athleteId);
-            if (classification != null) {
-                athlete.setAthleteClassificationTypes(classification.getAthleteClassificationTypes());
+            Optional<AthleteClassification> classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
+            if (classificationOpt.isPresent()) {
+                athlete.setAthleteClassificationTypes(classificationOpt.get().getAthleteClassificationTypes());
             }
         } catch (Exception e) {
-            // Classification not found, continue
+            // Classification not found
         }
 
         return athlete;
+    }
+    
+    // 🔥 Helper method to validate page size for 50TB database
+    private int validatePageSize(int size) {
+        if (size < 1) {
+            return DEFAULT_PAGE_SIZE;
+        }
+        if (size > MAX_PAGE_SIZE) {
+            System.err.println("⚠️ Requested page size " + size + " exceeds maximum " + 
+                             MAX_PAGE_SIZE + ". Reducing to " + MAX_PAGE_SIZE);
+            return MAX_PAGE_SIZE;
+        }
+        return size;
     }
     
     // 🔥 Helper method to get total count
