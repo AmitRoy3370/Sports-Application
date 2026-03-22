@@ -69,8 +69,8 @@ public class AthleteLocationController {
     // ---------------------------------------------------
     // FIND BY LOCATION NAME
     // ---------------------------------------------------
-    @GetMapping("/location/{locationName}")
-    public ResponseEntity<?> findByLocationName(@PathVariable String locationName) {
+    @GetMapping("/location")
+    public ResponseEntity<?> findByLocationName(@RequestParam String locationName) {
         try {
             return ResponseEntity.ok(
                     athleteLocationService.findByLocationName(locationName));
