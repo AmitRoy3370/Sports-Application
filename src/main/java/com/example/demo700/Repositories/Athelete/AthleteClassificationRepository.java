@@ -16,4 +16,5 @@ public interface AthleteClassificationRepository extends MongoRepository<Athlete
 	public AthleteClassification findByAthleteId(String athleteId);
 	public Page<AthleteClassification> findByAthleteClassificationTypes(AthleteClassificationTypes athleteClassificationTypes, Pageable pageable);
 	List<AthleteClassification> findByAthleteIdIn(List<String> athleteIds);
+	List<AthleteClassification> findByAthleteClassificationTypes(AthleteClassificationTypes athleteClassificationTypes);
 }
