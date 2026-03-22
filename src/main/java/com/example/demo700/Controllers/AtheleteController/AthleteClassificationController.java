@@ -124,7 +124,24 @@ public class AthleteClassificationController {
 			HttpServletRequest request) {
 
 		try {
-			return handleAutoPagination(request, null, null, null);
+
+			try {
+
+				String value = AthleteClassificationTypes.valueOf(type.toString()).toString();
+
+				if (value == null) {
+
+					throw new Exception();
+
+				}
+
+			} catch (Exception e) {
+
+				return ResponseEntity.status(400).body("You have to choice a valid classification type....");
+
+			}
+
+			return handleAutoPagination(request, "type", type.toString(), null);
 
 		} catch (NullPointerException | NoSuchElementException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
