@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo700.DTOFiles.AthleteRequestDTO;
 import com.example.demo700.ENUMS.Gender;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.UserGender;
@@ -101,7 +102,7 @@ public class UserGenderController {
 	@GetMapping("/athletes/{gender}")
 	public ResponseEntity<?> findAllAthletes(@PathVariable Gender gender) {
 		try {
-			List<Athelete> list = userGenderService.findAllAthlete(gender);
+			List<AthleteRequestDTO> list = userGenderService.findAllAthlete(gender);
 			return ResponseEntity.ok(list);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

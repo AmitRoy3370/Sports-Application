@@ -2,6 +2,7 @@ package com.example.demo700.Services;
 
 import java.util.List;
 
+import com.example.demo700.DTOFiles.AthleteRequestDTO;
 import com.example.demo700.ENUMS.Gender;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.UserGender;
@@ -21,7 +22,7 @@ public interface UserGenderService {
 	public List<UserGender> seeAll();
 	public UserGender findByUserId(String userId);
 	public List<UserGender> findByGender(Gender gender);
-	public List<Athelete> findAllAthlete(Gender gender);
+	public List<AthleteRequestDTO> findAllAthlete(Gender gender);
 	public List<Coach> findAllCoach(Gender gender);
 	public List<Scouts> findAllScouts(Gender gender);
 	public List<Owner> findAllVenueOwner(Gender gender);

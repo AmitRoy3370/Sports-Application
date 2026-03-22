@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo700.DTOFiles.AthleteLocationDTO;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Services.AthleteLocationService.AthleteLocationService;
 
@@ -42,7 +43,7 @@ public class AthleteLocationController {
     @GetMapping("/all")
     public ResponseEntity<?> seeAll() {
         try {
-            List<AthleteLocation> list = athleteLocationService.seeAllAthleteLocation();
+            List<AthleteLocationDTO> list = athleteLocationService.seeAllAthleteLocation();
             return ResponseEntity.ok(list);
 
         } catch (Exception e) {
@@ -53,10 +54,10 @@ public class AthleteLocationController {
     // ---------------------------------------------------
     // FIND BY ATHLETE ID
     // ---------------------------------------------------
-    @GetMapping("/athlete/{athleteId}")
-    public ResponseEntity<?> findByAthleteId(@PathVariable String athleteId) {
+    @GetMapping("/athlete")
+    public ResponseEntity<?> findByAthleteId(@RequestParam String athleteId) {
         try {
-            AthleteLocation location =
+        	AthleteLocationDTO location =
                     athleteLocationService.findByAthleteId(athleteId);
             return ResponseEntity.ok(location);
 

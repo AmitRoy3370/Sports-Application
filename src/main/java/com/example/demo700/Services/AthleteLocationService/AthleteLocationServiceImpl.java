@@ -1,5 +1,6 @@
 package com.example.demo700.Services.AthleteLocationService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.AthleteLocationDTO;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -116,7 +118,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 	}
 
 	@Override
-	public List<AthleteLocation> seeAllAthleteLocation() {
+	public List<AthleteLocationDTO> seeAllAthleteLocation() {
 
 		List<AthleteLocation> list = athleteLocationRepository.findAll();
 
@@ -126,11 +128,19 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
-		return list;
+		List<AthleteLocationDTO> dtoList = new ArrayList<>();
+
+		for (AthleteLocation i : list) {
+
+			dtoList.add(findDetailsOfAthleteLocation(i));
+
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public AthleteLocation findByAthleteId(String athleteId) {
+	public AthleteLocationDTO findByAthleteId(String athleteId) {
 
 		if (athleteId == null) {
 
@@ -148,7 +158,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 			}
 
-			return athleteLocation;
+			return findDetailsOfAthleteLocation(athleteLocation);
 
 		} catch (Exception e) {
 
@@ -159,7 +169,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 	}
 
 	@Override
-	public List<AthleteLocation> findByLocationName(String locationName) {
+	public List<AthleteLocationDTO> findByLocationName(String locationName) {
 
 		if (locationName == null) {
 
@@ -167,7 +177,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
-		List<AthleteLocation> list = athleteLocationRepository.findByLocationNameIgnoreCase(locationName);
+		List<AthleteLocation> list = athleteLocationRepository.findByLocationNameContainingIgnoreCase(locationName);
 
 		if (list.isEmpty()) {
 
@@ -175,11 +185,19 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
-		return list;
+		List<AthleteLocationDTO> dtoList = new ArrayList<>();
+
+		for (AthleteLocation i : list) {
+
+			dtoList.add(findDetailsOfAthleteLocation(i));
+
+		}
+
+		return dtoList;
 	}
 
 	@Override
-	public List<AthleteLocation> findByLattitudeAndLongitude(double lattitude, double longitude) {
+	public List<AthleteLocationDTO> findByLattitudeAndLongitude(double lattitude, double longitude) {
 
 		List<AthleteLocation> list = athleteLocationRepository.findByLattitudeAndLongitude(lattitude, longitude);
 
@@ -189,7 +207,15 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
-		return list;
+		List<AthleteLocationDTO> dtoList = new ArrayList<>();
+
+		for (AthleteLocation i : list) {
+
+			dtoList.add(findDetailsOfAthleteLocation(i));
+
+		}
+
+		return dtoList;
 	}
 
 	@Override
@@ -241,7 +267,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 		}
 
 		Athelete athlete;
-		
+
 		try {
 
 			athlete = athleteRepository.findById(athleteLocation.getAthleteId()).get();
@@ -415,6 +441,26 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 		cleaner.removeAthleteLocation(athleteId);
 
 		return count != athleteRepository.count();
+	}
+
+	public AthleteLocationDTO findDetailsOfAthleteLocation(AthleteLocation athleteLocation) {
+
+		AthleteLocationDTO location = new AthleteLocationDTO();
+
+		location.setId(athleteLocation.getId());
+		location.setAthleteId(athleteLocation.getAthleteId());
+		location.setLattitude(athleteLocation.getLattitude());
+		location.setLocationName(athleteLocation.getLocationName());
+		location.setLongitude(athleteLocation.getLongitude());
+
+		Athelete athlete = athleteRepository.findById(athleteLocation.getAthleteId()).get();
+
+		User user = userRepository.findById(athlete.getUserId()).get();
+
+		location.setUserName(user.getName());
+
+		return location;
+
 	}
 
 }

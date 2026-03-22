@@ -8,22 +8,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.AthleteRequestDTO;
 import com.example.demo700.ENUMS.Gender;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
+import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Coach;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.TeamOwner;
+import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
+import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
+import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.Turf.OwnerRepository;
 
@@ -53,6 +58,15 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 	@Autowired
 	private DoctorRepository doctorRepository;
+
+	@Autowired
+	AthleteLocationRepository athleteLocationRepository;
+
+	@Autowired
+	AthleteClassificationRepository athleteClassificationRepository;
+
+	@Autowired
+	UserGenderRepository athleteGenderRepository;
 
 	@Autowired
 	private CyclicCleaner cleaner;
@@ -388,7 +402,7 @@ public class UserGenderServiceImpl implements UserGenderService {
 	}
 
 	@Override
-	public List<Athelete> findAllAthlete(Gender gender) {
+	public List<AthleteRequestDTO> findAllAthlete(Gender gender) {
 
 		if (gender == null) {
 
@@ -396,7 +410,7 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 		}
 
-		List<Athelete> responseAthlete = new ArrayList<>();
+		List<AthleteRequestDTO> responseAthlete = new ArrayList<>();
 
 		List<Athelete> list = athleteRepository.findAll();
 
@@ -408,7 +422,7 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 				if (userGender.getGender() == gender) {
 
-					responseAthlete.add(i);
+					responseAthlete.add(getDetailsFromAthleteId(i.getId()));
 
 				}
 
@@ -588,11 +602,11 @@ public class UserGenderServiceImpl implements UserGenderService {
 			List<User> list = userRepository.findAll();
 
 			for (User i : list) {
-				
-				if(!i.getRoles().contains(Role.ROLE_GYM_TRAINER)) {
-					
+
+				if (!i.getRoles().contains(Role.ROLE_GYM_TRAINER)) {
+
 					continue;
-					
+
 				}
 
 				UserGender userGender = userGenderRepository.findByUserId(i.getId());
@@ -638,12 +652,12 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 			for (User i : list) {
 
-				if(!i.getRoles().contains(Role.ROLE_GYM_OWNER)) {
-					
+				if (!i.getRoles().contains(Role.ROLE_GYM_OWNER)) {
+
 					continue;
-					
+
 				}
-				
+
 				UserGender userGender = userGenderRepository.findByUserId(i.getId());
 
 				if (userGender.getGender() == gender) {
@@ -767,6 +781,66 @@ public class UserGenderServiceImpl implements UserGenderService {
 
 		}
 
+	}
+
+	private AthleteRequestDTO getDetailsFromAthleteId(String athleteId) {
+		Athelete athleteDetails = athleteRepository.findById(athleteId)
+				.orElseThrow(() -> new NoSuchElementException("Athlete not found"));
+
+		AthleteRequestDTO athlete = new AthleteRequestDTO();
+
+		athlete.setId(athleteDetails.getId());
+		athlete.setAge(athleteDetails.getAge());
+		athlete.setGameLogs(athleteDetails.getGameLogs());
+		athlete.setEventAttendence(athleteDetails.getEventAttendence());
+		athlete.setHeight(athleteDetails.getHeight());
+		athlete.setWeight(athleteDetails.getWeight());
+		athlete.setUserId(athleteDetails.getUserId());
+		athlete.setPosition(athleteDetails.getPosition());
+		athlete.setPresentTeam(athleteDetails.getPresentTeam());
+		athlete.setHighlightReels(athleteDetails.getHighlightReels());
+
+		User user = userRepository.findById(athleteDetails.getUserId())
+				.orElseThrow(() -> new NoSuchElementException("User not found"));
+
+		athlete.setName(user.getName());
+		athlete.setEmail(user.getEmail());
+		athlete.setRoles(user.getRoles());
+
+		try {
+			AthleteLocation location = athleteLocationRepository.findByAthleteId(athleteId);
+			if (location != null) {
+				// AthleteLocation location = locationOpt.get();
+				athlete.setLattitude(location.getLattitude());
+				athlete.setLongitude(location.getLongitude());
+				athlete.setLocationName(location.getLocationName());
+				athlete.setLocationId(location.getId());
+			}
+		} catch (Exception e) {
+			// Location not found
+		}
+
+		try {
+			UserGender genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
+			if (genderOpt != null) {
+				athlete.setGender(genderOpt.getGender());
+				athlete.setUserGenderId(genderOpt.getId());
+			}
+		} catch (Exception e) {
+			// Gender not found
+		}
+
+		try {
+			AthleteClassification classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
+			if (classificationOpt != null) {
+				athlete.setAthleteClassificationTypes(classificationOpt.getAthleteClassificationTypes());
+				athlete.setAthleteClassificationId(classificationOpt.getId());
+			}
+		} catch (Exception e) {
+			// Classification not found
+		}
+
+		return athlete;
 	}
 
 }

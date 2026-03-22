@@ -11,7 +11,7 @@ import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 public interface AthleteLocationRepository extends MongoRepository<AthleteLocation, String> {
 
 	public AthleteLocation findByAthleteId(String athleteId);
-	public List<AthleteLocation> findByLocationNameIgnoreCase(String locationName);
+	public List<AthleteLocation> findByLocationNameContainingIgnoreCase(String locationName);
 	public List<AthleteLocation> findByLattitudeAndLongitude(double lattitude, double longitude);
 	List<AthleteLocation> findByAthleteIdIn(List<String> athleteIds);
 }
