@@ -188,7 +188,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
-		List<AthleteLocation> list = athleteLocationRepository.searchByLocationNamePartial(locationName);
+		List<AthleteLocation> list = athleteLocationRepository.findByLocationNameContainingIgnoreCase(locationName);
 
 		if (list.isEmpty()) {
 
@@ -200,7 +200,13 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		for (AthleteLocation i : list) {
 
-			dtoList.add(findDetailsOfAthleteLocation(i));
+			try {
+
+				dtoList.add(findDetailsOfAthleteLocation(i));
+
+			} catch (Exception e) {
+
+			}
 
 		}
 
