@@ -568,6 +568,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 				athlete.setLattitude(location.getLattitude());
 				athlete.setLongitude(location.getLongitude());
 				athlete.setLocationName(location.getLocationName());
+				athlete.setLocationId(location.getId());
 			}
 		} catch (Exception e) {
 			// Location not found
@@ -577,6 +578,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 			UserGender genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
 			if (genderOpt != null) {
 				athlete.setGender(genderOpt.getGender());
+				athlete.setUserGenderId(genderOpt.getId());
 			}
 		} catch (Exception e) {
 			// Gender not found
@@ -586,6 +588,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 			AthleteClassification classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
 			if (classificationOpt != null) {
 				athlete.setAthleteClassificationTypes(classificationOpt.getAthleteClassificationTypes());
+				athlete.setAthleteClassificationId(classificationOpt.getId());
 			}
 		} catch (Exception e) {
 			// Classification not found

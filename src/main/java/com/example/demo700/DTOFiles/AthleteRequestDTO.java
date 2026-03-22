@@ -9,7 +9,7 @@ import com.example.demo700.ENUMS.Role;
 
 public class AthleteRequestDTO {
 
-	private String id, userId, name;
+	private String id, userId, name, userGenderId, athleteClassificationId, locationId;
 	String email;
 	private Gender gender;
 	private String position, presentTeam, locationName;
@@ -167,6 +167,30 @@ public class AthleteRequestDTO {
 
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
+	}
+
+	public String getUserGenderId() {
+		return userGenderId;
+	}
+
+	public void setUserGenderId(String userGenderId) {
+		this.userGenderId = userGenderId;
+	}
+
+	public String getAthleteClassificationId() {
+		return athleteClassificationId;
+	}
+
+	public void setAthleteClassificationId(String athleteClassificationId) {
+		this.athleteClassificationId = athleteClassificationId;
+	}
+
+	public String getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(String locationId) {
+		this.locationId = locationId;
 	}
 
 }

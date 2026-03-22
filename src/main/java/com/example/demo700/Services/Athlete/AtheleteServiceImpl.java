@@ -767,16 +767,19 @@ public class AtheleteServiceImpl implements AtheleteService {
                     dto.setLattitude(loc.getLattitude());
                     dto.setLongitude(loc.getLongitude());
                     dto.setLocationName(loc.getLocationName());
+                    dto.setLocationId(loc.getId());
                 }
                 
                 UserGender gender = genderMap.get(a.getUserId());
                 if (gender != null) {
                     dto.setGender(gender.getGender());
+                    dto.setUserGenderId(gender.getId());
                 }
                 
                 AthleteClassification cls = classificationMap.get(a.getId());
                 if (cls != null) {
                     dto.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
+                    dto.setAthleteClassificationId(cls.getId());
                 }
                 
                 dtoList.add(dto);
@@ -819,6 +822,7 @@ public class AtheleteServiceImpl implements AtheleteService {
                 athlete.setLattitude(location.getLattitude());
                 athlete.setLongitude(location.getLongitude());
                 athlete.setLocationName(location.getLocationName());
+                athlete.setLocationId(location.getId());
             }
         } catch (Exception e) {
             // Location not found
@@ -828,6 +832,7 @@ public class AtheleteServiceImpl implements AtheleteService {
             UserGender genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
             if (genderOpt != null) {
                 athlete.setGender(genderOpt.getGender());
+                athlete.setUserGenderId(genderOpt.getId());
             }
         } catch (Exception e) {
             // Gender not found
@@ -837,6 +842,7 @@ public class AtheleteServiceImpl implements AtheleteService {
             AthleteClassification classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
             if (classificationOpt != null) {
                 athlete.setAthleteClassificationTypes(classificationOpt.getAthleteClassificationTypes());
+                athlete.setAthleteClassificationId(classificationOpt.getId());
             }
         } catch (Exception e) {
             // Classification not found
