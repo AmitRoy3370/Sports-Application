@@ -177,7 +177,7 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
-		List<AthleteLocation> list = athleteLocationRepository.findByLocationNameContainingIgnoreCase(locationName);
+		List<AthleteLocation> list = athleteLocationRepository.findByLocationNamePartialIgnoreCase(locationName);
 
 		if (list.isEmpty()) {
 
