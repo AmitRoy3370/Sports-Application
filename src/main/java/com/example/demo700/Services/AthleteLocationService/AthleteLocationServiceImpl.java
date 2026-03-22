@@ -129,15 +129,21 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 		}
 
 		System.out.println("collected total athlete location :- " + list.size());
-		
+
 		List<AthleteLocationDTO> dtoList = new ArrayList<>();
 
 		System.out.println("response details :- ");
-		
+
 		for (AthleteLocation i : list) {
 
-			dtoList.add(findDetailsOfAthleteLocation(i));
-			System.out.println(i.toString());
+			try {
+
+				dtoList.add(findDetailsOfAthleteLocation(i));
+				System.out.println(i.toString());
+
+			} catch (Exception e) {
+
+			}
 
 		}
 
@@ -460,9 +466,15 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		Athelete athlete = athleteRepository.findById(athleteLocation.getAthleteId()).get();
 
-		User user = userRepository.findById(athlete.getUserId()).get();
+		try {
 
-		location.setUserName(user.getName());
+			User user = userRepository.findById(athlete.getUserId()).get();
+
+			location.setUserName(user.getName());
+
+		} catch (Exception e) {
+
+		}
 
 		return location;
 
