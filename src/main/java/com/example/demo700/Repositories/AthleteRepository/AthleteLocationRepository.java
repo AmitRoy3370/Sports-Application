@@ -13,7 +13,7 @@ public interface AthleteLocationRepository extends MongoRepository<AthleteLocati
 
 	public AthleteLocation findByAthleteId(String athleteId);
 	@Query("{ 'locationName': { $regex: ?0, $options: 'i' } }")
-	public List<AthleteLocation> findByLocationNamePartialIgnoreCase(String locationName);
+	public List<AthleteLocation> searchByLocationNamePartial(String locationName);
 	public List<AthleteLocation> findByLattitudeAndLongitude(double lattitude, double longitude);
 	List<AthleteLocation> findByAthleteIdIn(List<String> athleteIds);
 }
