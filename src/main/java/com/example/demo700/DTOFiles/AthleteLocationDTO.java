@@ -77,4 +77,10 @@ public class AthleteLocationDTO {
 		this.userName = userName;
 	}
 
+	@Override
+	public String toString() {
+		return "AthleteLocationDTO [id=" + id + ", athleteId=" + athleteId + ", locationName=" + locationName
+				+ ", lattitude=" + lattitude + ", longitude=" + longitude + ", userName=" + userName + "]";
+	}
+
 }

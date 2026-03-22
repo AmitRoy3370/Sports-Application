@@ -128,11 +128,16 @@ public class AthleteLocationServiceImpl implements AthleteLocationService {
 
 		}
 
+		System.out.println("collected total athlete location :- " + list.size());
+		
 		List<AthleteLocationDTO> dtoList = new ArrayList<>();
 
+		System.out.println("response details :- ");
+		
 		for (AthleteLocation i : list) {
 
 			dtoList.add(findDetailsOfAthleteLocation(i));
+			System.out.println(i.toString());
 
 		}
 
