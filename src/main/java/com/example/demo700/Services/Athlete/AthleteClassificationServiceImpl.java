@@ -24,6 +24,7 @@ import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
+import com.example.demo700.Models.FileUploadModel.ProfileIamge;
 import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
@@ -31,6 +32,7 @@ import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
+import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Validator.URLValidator;
 
 @Service
@@ -56,6 +58,9 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 	@Autowired
 	MatchRepository matchRepository;
+
+	@Autowired
+	ProfileImageRepository profileImageRepository;
 
 	URLValidator urlValidator = new URLValidator();
 
@@ -528,6 +533,24 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 					dto.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
 				}
 
+				try {
+
+					ProfileIamge image = profileImageRepository.findByUserId(user.getId());
+
+					if (image != null) {
+
+						if (image.getImageHex() != null) {
+
+							dto.setImageHex(image.getImageHex());
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
 				dtoList.add(dto);
 			} catch (Exception e) {
 				System.err.println("Error building DTO for athlete: " + a.getId());
@@ -592,6 +615,24 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 			}
 		} catch (Exception e) {
 			// Classification not found
+		}
+
+		try {
+
+			ProfileIamge image = profileImageRepository.findByUserId(user.getId());
+
+			if (image != null) {
+
+				if (image.getImageHex() != null) {
+
+					athlete.setImageHex(image.getImageHex());
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
 		}
 
 		return athlete;

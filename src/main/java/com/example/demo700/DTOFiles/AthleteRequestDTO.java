@@ -10,7 +10,7 @@ import com.example.demo700.ENUMS.Role;
 public class AthleteRequestDTO {
 
 	private String id, userId, name, userGenderId, athleteClassificationId, locationId;
-	String email;
+	private String email, imageHex;
 	private Gender gender;
 	private String position, presentTeam, locationName;
 	private double height, weight, lattitude, longitude;
@@ -191,6 +191,25 @@ public class AthleteRequestDTO {
 
 	public void setLocationId(String locationId) {
 		this.locationId = locationId;
+	}
+
+	public String getImageHex() {
+		return imageHex;
+	}
+
+	public void setImageHex(String imageHex) {
+		this.imageHex = imageHex;
+	}
+
+	@Override
+	public String toString() {
+		return "AthleteRequestDTO [id=" + id + ", userId=" + userId + ", name=" + name + ", userGenderId="
+				+ userGenderId + ", athleteClassificationId=" + athleteClassificationId + ", locationId=" + locationId
+				+ ", email=" + email + ", imageHex=" + imageHex + ", gender=" + gender + ", position=" + position
+				+ ", presentTeam=" + presentTeam + ", locationName=" + locationName + ", height=" + height + ", weight="
+				+ weight + ", lattitude=" + lattitude + ", longitude=" + longitude + ", age=" + age + ", gameLogs="
+				+ gameLogs + ", eventAttendence=" + eventAttendence + ", highlightReels=" + highlightReels
+				+ ", athleteClassificationTypes=" + athleteClassificationTypes + ", roles=" + roles + "]";
 	}
 
 }

@@ -20,6 +20,7 @@ import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.DoctorModels.Doctor;
+import com.example.demo700.Models.FileUploadModel.ProfileIamge;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
@@ -30,6 +31,7 @@ import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
+import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Repositories.Turf.OwnerRepository;
 
 @Service
@@ -68,6 +70,9 @@ public class UserGenderServiceImpl implements UserGenderService {
 	@Autowired
 	UserGenderRepository athleteGenderRepository;
 
+	@Autowired
+	ProfileImageRepository profileImageRepository;
+	
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -840,6 +845,42 @@ public class UserGenderServiceImpl implements UserGenderService {
 			// Classification not found
 		}
 
+		try {
+
+			ProfileIamge image = profileImageRepository.findByUserId(user.getId());
+
+			if (image != null) {
+
+				if (image.getImageHex() != null) {
+
+					athlete.setImageHex(image.getImageHex());
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+		
+		try {
+
+			ProfileIamge image = profileImageRepository.findByUserId(user.getId());
+
+			if (image != null) {
+
+				if (image.getImageHex() != null) {
+
+					athlete.setImageHex(image.getImageHex());
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+		
 		return athlete;
 	}
 
