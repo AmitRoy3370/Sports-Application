@@ -832,7 +832,7 @@ public class MatchServiceImpl implements MatchService {
 
 						Team team = teamRepository.findById(i).get();
 
-						TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getTeamName());
+						TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
 
 						teamOwner.getMatches().remove(matchId);
 
@@ -920,7 +920,7 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
-				TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getTeamName());
+				TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
 
 				if (teamOwner.getMatches().isEmpty()) {
 
@@ -932,12 +932,12 @@ public class MatchServiceImpl implements MatchService {
 
 				teamOwnerRepository.save(teamOwner);
 
-				if(team.getMatches().isEmpty()) {
-					
+				if (team.getMatches().isEmpty()) {
+
 					team.setMatches(new ArrayList<>());
-					
+
 				}
-				
+
 				if (!team.getMatches().contains(matchId)) {
 
 					team.getMatches().add(matchId);
@@ -946,49 +946,56 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
-				for (String j : team.getAtheletes()) {
+				if (!team.getAtheletes().isEmpty()) {
+					for (String j : team.getAtheletes()) {
 
-					Athelete athelete = atheleteRepository.findById(j).get();
+						Athelete athelete = atheleteRepository.findById(j).get();
 
-					if (athelete == null) {
+						if (athelete == null) {
 
-						throw new Exception();
+							throw new Exception();
+
+						}
+
+						if (!athelete.getEventAttendence().contains(matchId)) {
+
+							athelete.getEventAttendence().add(matchId);
+
+						}
+
+						atheleteRepository.save(athelete);
 
 					}
-
-					if (!athelete.getEventAttendence().contains(matchId)) {
-
-						athelete.getEventAttendence().add(matchId);
-
-					}
-
-					atheleteRepository.save(athelete);
 
 				}
 
-				for (String j : team.getScouts()) {
+				if (!team.getScouts().isEmpty()) {
 
-					Scouts scouts = scoutsRepository.findById(j).get();
+					for (String j : team.getScouts()) {
 
-					if (scouts == null) {
+						Scouts scouts = scoutsRepository.findById(j).get();
 
-						throw new Exception();
+						if (scouts == null) {
+
+							throw new Exception();
+
+						}
+
+						if (!scouts.getMatches().contains(matchId)) {
+
+							scouts.getMatches().add(matchId);
+
+						}
+
+						if (!scouts.getEvents().contains(matchId)) {
+
+							scouts.getEvents().add(matchId);
+
+						}
+
+						scoutsRepository.save(scouts);
 
 					}
-
-					if (!scouts.getMatches().contains(matchId)) {
-
-						scouts.getMatches().add(matchId);
-
-					}
-
-					if (!scouts.getEvents().contains(matchId)) {
-
-						scouts.getEvents().add(matchId);
-
-					}
-
-					scoutsRepository.save(scouts);
 
 				}
 
