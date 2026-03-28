@@ -439,13 +439,20 @@ public class MatchServiceImpl implements MatchService {
 
 						if (teamOwner != null) {
 
-							if (!teamOwner.getMatches().contains(match.getId())) {
+							if (teamOwner.getMatches().isEmpty()) {
+
+								teamOwner.setMatches(new ArrayList<>());
+								teamOwner.getMatches().add(match.getId());
+
+							}
+
+							else if (!teamOwner.getMatches().contains(match.getId())) {
 
 								teamOwner.getMatches().add(match.getId());
 
-								teamOwnerRepository.save(teamOwner);
-
 							}
+
+							teamOwnerRepository.save(teamOwner);
 
 						}
 
@@ -767,6 +774,12 @@ public class MatchServiceImpl implements MatchService {
 
 		try {
 
+			if (match.getTeams().isEmpty() || match.getTeams().size() < 2) {
+
+				throw new Exception();
+
+			}
+
 			for (String i : match.getTeams()) {
 
 				if (i == null) {
@@ -818,6 +831,12 @@ public class MatchServiceImpl implements MatchService {
 					try {
 
 						Team team = teamRepository.findById(i).get();
+
+						TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getTeamName());
+
+						teamOwner.getMatches().remove(matchId);
+
+						teamOwnerRepository.save(teamOwner);
 
 						if (match.getTeams().contains(team.getId())) {
 
@@ -901,6 +920,24 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
+				TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getTeamName());
+
+				if (teamOwner.getMatches().isEmpty()) {
+
+					teamOwner.setMatches(new ArrayList<>());
+
+				}
+
+				teamOwner.getMatches().add(matchId);
+
+				teamOwnerRepository.save(teamOwner);
+
+				if(team.getMatches().isEmpty()) {
+					
+					team.setMatches(new ArrayList<>());
+					
+				}
+				
 				if (!team.getMatches().contains(matchId)) {
 
 					team.getMatches().add(matchId);
