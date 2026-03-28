@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.MatchResponse;
 import com.example.demo700.Models.EventOrganaizer.Match;
 import com.example.demo700.Services.EventOrganaizer.MatchService;
 
@@ -96,7 +97,7 @@ public class MatchController {
     @GetMapping("/all")
     public ResponseEntity<?> getAllMatches() {
         try {
-            List<Match> matches = matchService.seeAllMatch();
+            List<MatchResponse> matches = matchService.seeAllMatch();
             return ResponseEntity.ok(matches);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving matches.");
@@ -124,7 +125,7 @@ public class MatchController {
     @GetMapping("/organizer/{organaizerId}")
     public ResponseEntity<?> getByOrganizer(@PathVariable String organaizerId) {
         try {
-            List<Match> matches = matchService.findByOrganaizerId(organaizerId);
+            List<MatchResponse> matches = matchService.findByOrganaizerId(organaizerId);
             return ResponseEntity.ok(matches);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -137,7 +138,7 @@ public class MatchController {
     @GetMapping("/team/{teamId}")
     public ResponseEntity<?> getByTeam(@PathVariable String teamId) {
         try {
-            List<Match> matches = matchService.findByTeamsContainingIgnoreCase(teamId);
+            List<MatchResponse> matches = matchService.findByTeamsContainingIgnoreCase(teamId);
             return ResponseEntity.ok(matches);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -150,7 +151,7 @@ public class MatchController {
     @GetMapping("/gamelogs")
     public ResponseEntity<?> getByGameLogs(@RequestParam String keyword) {
         try {
-            List<Match> matches = matchService.findByGameLogsContainingIgnoreCase(keyword);
+            List<MatchResponse> matches = matchService.findByGameLogsContainingIgnoreCase(keyword);
             return ResponseEntity.ok(matches);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -163,7 +164,7 @@ public class MatchController {
     @GetMapping("/videos")
     public ResponseEntity<?> getByVideos(@RequestParam String keyword) {
         try {
-            List<Match> matches = matchService.findByVideosContainingIgnoreCase(keyword);
+            List<MatchResponse> matches = matchService.findByVideosContainingIgnoreCase(keyword);
             return ResponseEntity.ok(matches);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -178,7 +179,7 @@ public class MatchController {
             @RequestParam Instant startTime,
             @RequestParam Instant endTime) {
         try {
-            Match match = matchService.findByMatchStartTimeAndMatchEndTime(startTime, endTime);
+        	MatchResponse match = matchService.findByMatchStartTimeAndMatchEndTime(startTime, endTime);
             return ResponseEntity.ok(match);
         } catch (NoSuchElementException | NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -193,7 +194,7 @@ public class MatchController {
     @GetMapping("/price/greater-than/{price}")
     public ResponseEntity<?> getByPriceGreaterThan(@PathVariable double price) {
         try {
-            List<Match> matches = matchService.findByPriceGreaterThan(price);
+            List<MatchResponse> matches = matchService.findByPriceGreaterThan(price);
             return ResponseEntity.ok(matches);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error fetching matches: " + e.getMessage());

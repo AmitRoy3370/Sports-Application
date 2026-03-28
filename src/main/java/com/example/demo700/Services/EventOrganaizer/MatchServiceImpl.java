@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.MatchResponse;
 import com.example.demo700.ENUMS.BookingStatus;
 
 import com.example.demo700.ENUMS.Role;
@@ -22,8 +23,10 @@ import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Models.EventOrganaizer.MatchVenue;
 import com.example.demo700.Models.Turf.Booking;
+import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
@@ -31,9 +34,11 @@ import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
 import com.example.demo700.Repositories.Turf.BookingRepository;
+import com.example.demo700.Repositories.Turf.VenueRepository;
 import com.example.demo700.Validator.URLValidator;
 
 @Service
@@ -55,10 +60,16 @@ public class MatchServiceImpl implements MatchService {
 	private TeamRepository teamRepository;
 
 	@Autowired
+	private VenueRepository venueRepository;
+
+	@Autowired
 	private AtheleteRepository atheleteRepository;
 
 	@Autowired
 	private CoachRepository coachRepository;
+
+	@Autowired
+	private MatchNameRepository matchNameRepository;
 
 	@Autowired
 	private ScoutsRepository scoutsRepository;
@@ -399,7 +410,7 @@ public class MatchServiceImpl implements MatchService {
 						}
 
 						scouts.getMatches().add(match.getId());
-						
+
 						scouts.getEvents().add(match.getId());
 
 						scoutsRepository.save(scouts);
@@ -458,13 +469,24 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public List<Match> seeAllMatch() {
+	public List<MatchResponse> seeAllMatch() {
 
-		return matchRepository.findAll();
+		List<Match> list = matchRepository.findAll();
+
+		List<MatchResponse> response = new ArrayList<>();
+
+		for (Match i : list) {
+
+			response.add(getMatchResponseFromMatch(i));
+
+		}
+
+		return response;
+
 	}
 
 	@Override
-	public List<Match> findByOrganaizerId(String organaizerId) {
+	public List<MatchResponse> findByOrganaizerId(String organaizerId) {
 
 		if (organaizerId == null) {
 
@@ -472,11 +494,22 @@ public class MatchServiceImpl implements MatchService {
 
 		}
 
-		return matchRepository.findByOrganaizerId(organaizerId);
+		List<Match> list = matchRepository.findByOrganaizerId(organaizerId);
+
+		List<MatchResponse> response = new ArrayList<>();
+
+		for (Match i : list) {
+
+			response.add(getMatchResponseFromMatch(i));
+
+		}
+
+		return response;
+
 	}
 
 	@Override
-	public List<Match> findByTeamsContainingIgnoreCase(String teamId) {
+	public List<MatchResponse> findByTeamsContainingIgnoreCase(String teamId) {
 
 		if (teamId == null) {
 
@@ -484,11 +517,22 @@ public class MatchServiceImpl implements MatchService {
 
 		}
 
-		return matchRepository.findByTeamsContainingIgnoreCase(teamId);
+		List<Match> list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
+
+		List<MatchResponse> response = new ArrayList<>();
+
+		for (Match i : list) {
+
+			response.add(getMatchResponseFromMatch(i));
+
+		}
+
+		return response;
+
 	}
 
 	@Override
-	public List<Match> findByGameLogsContainingIgnoreCase(String gameLogs) {
+	public List<MatchResponse> findByGameLogsContainingIgnoreCase(String gameLogs) {
 
 		if (gameLogs == null) {
 
@@ -496,11 +540,22 @@ public class MatchServiceImpl implements MatchService {
 
 		}
 
-		return matchRepository.findByGameLogsContainingIgnoreCase(gameLogs);
+		List<Match> list = matchRepository.findByGameLogsContainingIgnoreCase(gameLogs);
+
+		List<MatchResponse> response = new ArrayList<>();
+
+		for (Match i : list) {
+
+			response.add(getMatchResponseFromMatch(i));
+
+		}
+
+		return response;
+
 	}
 
 	@Override
-	public List<Match> findByVideosContainingIgnoreCase(String video) {
+	public List<MatchResponse> findByVideosContainingIgnoreCase(String video) {
 
 		if (video == null) {
 
@@ -508,11 +563,22 @@ public class MatchServiceImpl implements MatchService {
 
 		}
 
-		return matchRepository.findByVideosContainingIgnoreCase(video);
+		List<Match> list = matchRepository.findByVideosContainingIgnoreCase(video);
+
+		List<MatchResponse> response = new ArrayList<>();
+
+		for (Match i : list) {
+
+			response.add(getMatchResponseFromMatch(i));
+
+		}
+
+		return response;
+
 	}
 
 	@Override
-	public Match findByMatchStartTimeAndMatchEndTime(Instant matchStartTime, Instant matchEndTime) {
+	public MatchResponse findByMatchStartTimeAndMatchEndTime(Instant matchStartTime, Instant matchEndTime) {
 
 		if (matchStartTime == null || matchEndTime == null) {
 
@@ -526,7 +592,8 @@ public class MatchServiceImpl implements MatchService {
 
 		}
 
-		return matchRepository.findByMatchStartTimeAndMatchEndTime(matchStartTime, matchEndTime);
+		return getMatchResponseFromMatch(
+				matchRepository.findByMatchStartTimeAndMatchEndTime(matchStartTime, matchEndTime));
 	}
 
 	@Override
@@ -535,6 +602,22 @@ public class MatchServiceImpl implements MatchService {
 		if (match == null || userId == null || matchId == null) {
 
 			throw new NullPointerException("False request...");
+
+		}
+
+		try {
+
+			Match _match = matchRepository.findById(matchId).get();
+
+			if (_match == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("There is no such match find at here...");
 
 		}
 
@@ -575,22 +658,6 @@ public class MatchServiceImpl implements MatchService {
 		} catch (Exception e) {
 
 			throw new NoSuchElementException("No such user find at here...");
-
-		}
-
-		try {
-
-			Match _match = matchRepository.findById(matchId).get();
-
-			if (_match == null) {
-
-				throw new Exception();
-
-			}
-
-		} catch (Exception e) {
-
-			throw new NoSuchElementException("Match information is not valid...");
 
 		}
 
@@ -700,9 +767,121 @@ public class MatchServiceImpl implements MatchService {
 
 		try {
 
+			for (String i : match.getTeams()) {
+
+				if (i == null) {
+
+					throw new Exception();
+
+				} else {
+
+					Team team = teamRepository.findById(i).get();
+
+					if (team == null) {
+
+						throw new Exception();
+
+					}
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("Match team information is not valid...");
+
+		}
+
+		try {
+
 			if (match.getTeams().isEmpty() || match.getTeams().size() < 2) {
 
 				throw new Exception();
+
+			}
+
+			try {
+
+				Match _match = matchRepository.findById(matchId).get();
+
+				if (_match == null) {
+
+					throw new Exception();
+
+				}
+
+				List<String> teams = _match.getTeams();
+
+				for (String i : teams) {
+
+					try {
+
+						Team team = teamRepository.findById(i).get();
+
+						if (match.getTeams().contains(team.getId())) {
+
+						} else {
+
+							try {
+
+								team.getMatches().remove(matchId);
+
+								teamRepository.save(team);
+
+							} catch (Exception e) {
+
+							}
+
+							List<String> athletes = team.getAtheletes();
+
+							for (String athleteId : athletes) {
+
+								Athelete athlete = atheleteRepository.findById(athleteId).get();
+
+								athlete.getEventAttendence().remove(matchId);
+
+								atheleteRepository.save(athlete);
+
+							}
+
+							List<String> scouts = team.getScouts();
+
+							for (String scoutId : scouts) {
+
+								Scouts scout = scoutsRepository.findById(scoutId).get();
+
+								try {
+
+									scout.getEvents().remove(matchId);
+
+								} catch (Exception e) {
+
+								}
+
+								try {
+
+									scout.getMatches().remove(matchId);
+
+								} catch (Exception e) {
+
+								}
+
+								scoutsRepository.save(scout);
+
+							}
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
+				}
+
+			} catch (Exception e) {
+
+				throw new NoSuchElementException("Match information is not valid...");
 
 			}
 
@@ -742,7 +921,7 @@ public class MatchServiceImpl implements MatchService {
 
 					if (!athelete.getEventAttendence().contains(matchId)) {
 
-						//athelete.getEventAttendence().add(matchId);
+						athelete.getEventAttendence().add(matchId);
 
 					}
 
@@ -762,13 +941,13 @@ public class MatchServiceImpl implements MatchService {
 
 					if (!scouts.getMatches().contains(matchId)) {
 
-						//scouts.getMatches().add(matchId);
+						scouts.getMatches().add(matchId);
 
 					}
 
 					if (!scouts.getEvents().contains(matchId)) {
 
-						//scouts.getEvents().add(matchId);
+						scouts.getEvents().add(matchId);
 
 					}
 
@@ -781,22 +960,6 @@ public class MatchServiceImpl implements MatchService {
 		} catch (Exception e1) {
 
 			throw new NoSuchElementException("Team's are not valid...");
-
-		}
-
-		try {
-
-			Match _match = matchRepository.findById(matchId).get();
-
-			if (_match == null) {
-
-				throw new Exception();
-
-			}
-
-		} catch (Exception e) {
-
-			throw new NoSuchElementException("There is no such match find at here...");
 
 		}
 
@@ -1034,30 +1197,131 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
-	public List<Match> findByPriceGreaterThan(double price) {
+	public List<MatchResponse> findByPriceGreaterThan(double price) {
 
-		return matchRepository.findByPriceGreaterThan(price);
+		List<Match> list = matchRepository.findByPriceGreaterThan(price);
+
+		List<MatchResponse> response = new ArrayList<>();
+
+		for (Match i : list) {
+
+			response.add(getMatchResponseFromMatch(i));
+
+		}
+
+		return response;
+
 	}
 
 	@Override
-	public Match findByMatchId(String id) {
-		
-		if(id == null) {
-			
+	public MatchResponse findByMatchId(String id) {
+
+		if (id == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
-			return matchRepository.findById(id).get();
-			
-		} catch(Exception e) {
-			
+
+			return getMatchResponseFromMatch(matchRepository.findById(id).get());
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such match find at here...");
-			
+
 		}
-		
+
+	}
+
+	private MatchResponse getMatchResponseFromMatch(Match match) {
+
+		MatchResponse response = new MatchResponse();
+
+		response.setId(match.getId());
+		response.setGameLogs(match.getGameLogs());
+		response.setVideos(match.getVideos());
+		response.setOrganaizerId(match.getOrganaizerId());
+		response.setMatchPrice(match.getPrice());
+		response.setMatchStartTime(match.getMatchStartTime());
+		response.setMatchEndTime(match.getMatchEndTime());
+		response.setTeamsId(match.getTeams());
+
+		try {
+
+			EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findById(match.getOrganaizerId()).get();
+
+			if (eventOrganaizer != null) {
+
+				User user = userRepository.findById(eventOrganaizer.getUserId()).get();
+
+				if (user != null) {
+
+					response.setOrganaizerName(user.getName());
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			response.setTeamNames(new ArrayList<>());
+
+			for (String i : match.getTeams()) {
+
+				Team team = teamRepository.findById(i).get();
+
+				response.getTeamNames().add(team.getTeamName());
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			MatchVenue matchVenue = matchVenueRepository.findByMatchId(match.getId());
+
+			if (matchVenue != null) {
+
+				response.setMatchVenueId(matchVenue.getId());
+
+				Venue venue = venueRepository.findById(matchVenue.getVenueId()).get();
+
+				if (venue != null) {
+
+					response.setMatchVenue(venue.getName());
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			MatchName matchName = matchNameRepository.findByMatchId(match.getId());
+
+			if (matchName != null) {
+
+				response.setMatchName(matchName.getName());
+				response.setMatchNameId(matchName.getId());
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		return response;
+
 	}
 
 }
