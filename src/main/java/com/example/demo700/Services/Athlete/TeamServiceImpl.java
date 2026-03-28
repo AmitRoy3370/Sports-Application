@@ -750,13 +750,19 @@ public class TeamServiceImpl implements TeamService {
 		response.setMatches(team.getMatches());
 		response.setTeamOwnerId(team.getTeamOwnerId());
 
-		TeamOwner owner = teamOwnerRepository.findById(team.getTeamOwnerId()).get();
+		try {
 
-		Athelete ownerAthlete = atheleteRepository.findById(owner.getAtheleteId()).get();
+			TeamOwner owner = teamOwnerRepository.findById(team.getTeamOwnerId()).get();
 
-		User ownerName = userRepository.findById(ownerAthlete.getUserId()).get();
+			Athelete ownerAthlete = atheleteRepository.findById(owner.getAtheleteId()).get();
 
-		response.setTeamOwnerName(ownerName.getName());
+			User ownerName = userRepository.findById(ownerAthlete.getUserId()).get();
+
+			response.setTeamOwnerName(ownerName.getName());
+
+		} catch (Exception e) {
+
+		}
 
 		try {
 
@@ -764,11 +770,17 @@ public class TeamServiceImpl implements TeamService {
 
 			for (String i : team.getAtheletes()) {
 
-				Athelete athlete = atheleteRepository.findById(i).get();
+				try {
 
-				User user = userRepository.findById(athlete.getUserId()).get();
+					Athelete athlete = atheleteRepository.findById(i).get();
 
-				athletesName.add(user.getName());
+					User user = userRepository.findById(athlete.getUserId()).get();
+
+					athletesName.add(user.getName());
+
+				} catch (Exception e) {
+
+				}
 
 			}
 
@@ -784,13 +796,19 @@ public class TeamServiceImpl implements TeamService {
 
 			for (String i : team.getScouts()) {
 
-				Scouts scout = scoutsRepository.findById(i).get();
+				try {
 
-				Athelete athlete = atheleteRepository.findById(scout.getAtheleteId()).get();
+					Scouts scout = scoutsRepository.findById(i).get();
 
-				User user = userRepository.findById(athlete.getUserId()).get();
+					Athelete athlete = atheleteRepository.findById(scout.getAtheleteId()).get();
 
-				scoutsName.add(user.getName());
+					User user = userRepository.findById(athlete.getUserId()).get();
+
+					scoutsName.add(user.getName());
+
+				} catch (Exception e) {
+
+				}
 
 			}
 
@@ -806,13 +824,19 @@ public class TeamServiceImpl implements TeamService {
 
 			for (String i : team.getCoaches()) {
 
-				Coach coach = coachRepository.findById(i).get();
+				try {
 
-				Athelete athlete = atheleteRepository.findById(coach.getAtheleteId()).get();
+					Coach coach = coachRepository.findById(i).get();
 
-				User user = userRepository.findById(athlete.getUserId()).get();
+					Athelete athlete = atheleteRepository.findById(coach.getAtheleteId()).get();
 
-				coachesName.add(user.getName());
+					User user = userRepository.findById(athlete.getUserId()).get();
+
+					coachesName.add(user.getName());
+
+				} catch (Exception e) {
+
+				}
 
 			}
 
@@ -828,11 +852,17 @@ public class TeamServiceImpl implements TeamService {
 
 			for (String i : team.getDoctors()) {
 
-				Doctor doctor = doctorRepository.findById(i).get();
+				try {
 
-				User user = userRepository.findById(doctor.getUserId()).get();
+					Doctor doctor = doctorRepository.findById(i).get();
 
-				doctorsName.add(user.getName());
+					User user = userRepository.findById(doctor.getUserId()).get();
+
+					doctorsName.add(user.getName());
+
+				} catch (Exception e) {
+
+				}
 
 			}
 
