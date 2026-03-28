@@ -1,5 +1,6 @@
 package com.example.demo700.Services.Athlete;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.TeamResponseDTO;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -16,6 +18,7 @@ import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
@@ -23,6 +26,7 @@ import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 
 @Service
@@ -51,6 +55,9 @@ public class TeamServiceImpl implements TeamService {
 
 	@Autowired
 	private MatchRepository matchRepository;
+
+	@Autowired
+	private MatchNameRepository matchNameRepository;
 
 	@Autowired
 	private CyclicCleaner cleaner;
@@ -224,17 +231,17 @@ public class TeamServiceImpl implements TeamService {
 		}
 
 		try {
-			
-			for(String doctorId : team.getDoctors()) {
-				
+
+			for (String doctorId : team.getDoctors()) {
+
 				Doctor doctor = doctorRepository.findById(doctorId).get();
-				
-				if(doctor == null) {
-					
+
+				if (doctor == null) {
+
 					throw new NoSuchElementException();
-					
+
 				}
-				
+
 				Team _team = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
 
 				if (_team != null) {
@@ -242,7 +249,7 @@ public class TeamServiceImpl implements TeamService {
 					throw new NoSuchElementException();
 
 				}
-				
+
 			}
 
 		} catch (NoSuchElementException e) {
@@ -279,9 +286,19 @@ public class TeamServiceImpl implements TeamService {
 	}
 
 	@Override
-	public List<Team> seeAllTeam() {
+	public List<TeamResponseDTO> seeAllTeam() {
 
-		return teamRepository.findAll();
+		List<Team> list = teamRepository.findAll();
+
+		List<TeamResponseDTO> response = new ArrayList<>();
+
+		for (Team i : list) {
+
+			response.add(getTeamResponseFromTeam(i));
+
+		}
+
+		return response;
 
 	}
 
@@ -579,7 +596,7 @@ public class TeamServiceImpl implements TeamService {
 	}
 
 	@Override
-	public Team findByAtheletesContainingIgnoreCase(String atheleteId) {
+	public TeamResponseDTO findByAtheletesContainingIgnoreCase(String atheleteId) {
 
 		if (atheleteId == null) {
 
@@ -589,11 +606,11 @@ public class TeamServiceImpl implements TeamService {
 
 		Team team = teamRepository.findByAtheletesContainingIgnoreCase(atheleteId);
 
-		return team;
+		return getTeamResponseFromTeam(team);
 	}
 
 	@Override
-	public Team findByCoachesContainingIgnoreCase(String coachId) {
+	public TeamResponseDTO findByCoachesContainingIgnoreCase(String coachId) {
 
 		if (coachId == null) {
 
@@ -603,11 +620,11 @@ public class TeamServiceImpl implements TeamService {
 
 		Team team = teamRepository.findByCoachesContainingIgnoreCase(coachId);
 
-		return team;
+		return getTeamResponseFromTeam(team);
 	}
 
 	@Override
-	public Team findByScoutsContainingIgnoreCase(String scoutId) {
+	public TeamResponseDTO findByScoutsContainingIgnoreCase(String scoutId) {
 
 		if (scoutId == null) {
 
@@ -617,11 +634,11 @@ public class TeamServiceImpl implements TeamService {
 
 		Team team = teamRepository.findByScoutsContainingIgnoreCase(scoutId);
 
-		return team;
+		return getTeamResponseFromTeam(team);
 	}
 
 	@Override
-	public List<Team> findByMatchesContainingIgnoreCase(String matchId) {
+	public List<TeamResponseDTO> findByMatchesContainingIgnoreCase(String matchId) {
 
 		if (matchId == null) {
 
@@ -631,11 +648,19 @@ public class TeamServiceImpl implements TeamService {
 
 		List<Team> team = teamRepository.findByMatchesContainingIgnoreCase(matchId);
 
-		return team;
+		List<TeamResponseDTO> response = new ArrayList<>();
+
+		for (Team i : team) {
+
+			response.add(getTeamResponseFromTeam(i));
+
+		}
+
+		return response;
 	}
 
 	@Override
-	public List<Team> findByTeamOwnerId(String teamOwnerId) {
+	public List<TeamResponseDTO> findByTeamOwnerId(String teamOwnerId) {
 
 		if (teamOwnerId == null) {
 
@@ -645,63 +670,208 @@ public class TeamServiceImpl implements TeamService {
 
 		List<Team> list = teamRepository.findByTeamOwnerId(teamOwnerId);
 
-		return list;
+		List<TeamResponseDTO> response = new ArrayList<>();
+
+		for (Team i : list) {
+
+			response.add(getTeamResponseFromTeam(i));
+
+		}
+
+		return response;
 	}
 
 	@Override
-	public Team findByDoctorsContainingIgnoreCase(String doctorId) {
-		
-		if(doctorId == null) {
-			
+	public TeamResponseDTO findByDoctorsContainingIgnoreCase(String doctorId) {
+
+		if (doctorId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		Team team = teamRepository.findByDoctorsContainingIgnoreCase(doctorId);
-		
-		if(team == null) {
-			
+
+		if (team == null) {
+
 			throw new NoSuchElementException("No such team find at here...");
-			
+
 		}
-		
-		return team;
+
+		return getTeamResponseFromTeam(team);
 	}
 
 	@Override
-	public Team findByTeamName(String teamName) {
-		
-		if(teamName == null) {
-			
+	public TeamResponseDTO findByTeamName(String teamName) {
+
+		if (teamName == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		Team team = teamRepository.findByTeamNameIgnoreCase(teamName);
-		
-		return team;
-		
+
+		return getTeamResponseFromTeam(team);
+
 	}
 
 	@Override
-	public Team findByTeamId(String teamId) {
-		
-		if(teamId == null) {
-			
+	public TeamResponseDTO findByTeamId(String teamId) {
+
+		if (teamId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
-			return teamRepository.findById(teamId).get();
-			
-		} catch(Exception e) {
-			
+
+			return getTeamResponseFromTeam(teamRepository.findById(teamId).get());
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such scouts find at here..");
-			
+
 		}
-		
+
 	}
-	
+
+	private TeamResponseDTO getTeamResponseFromTeam(Team team) {
+
+		TeamResponseDTO response = new TeamResponseDTO();
+
+		response.setId(team.getId());
+		response.setAthletes(team.getAtheletes());
+		response.setCoaches(team.getCoaches());
+		response.setScouts(team.getScouts());
+		response.setTeamName(team.getTeamName());
+		response.setDoctors(team.getDoctors());
+		response.setMatches(team.getMatches());
+		response.setTeamOwnerId(team.getTeamOwnerId());
+
+		TeamOwner owner = teamOwnerRepository.findById(team.getTeamOwnerId()).get();
+
+		Athelete ownerAthlete = atheleteRepository.findById(owner.getAtheleteId()).get();
+
+		User ownerName = userRepository.findById(ownerAthlete.getUserId()).get();
+
+		response.setTeamOwnerName(ownerName.getName());
+
+		try {
+
+			List<String> athletesName = new ArrayList<>();
+
+			for (String i : team.getAtheletes()) {
+
+				Athelete athlete = atheleteRepository.findById(i).get();
+
+				User user = userRepository.findById(athlete.getUserId()).get();
+
+				athletesName.add(user.getName());
+
+			}
+
+			response.setAthletesName(athletesName);
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			List<String> scoutsName = new ArrayList<>();
+
+			for (String i : team.getScouts()) {
+
+				Scouts scout = scoutsRepository.findById(i).get();
+
+				Athelete athlete = atheleteRepository.findById(scout.getAtheleteId()).get();
+
+				User user = userRepository.findById(athlete.getUserId()).get();
+
+				scoutsName.add(user.getName());
+
+			}
+
+			response.setScoutsName(scoutsName);
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			List<String> coachesName = new ArrayList<>();
+
+			for (String i : team.getCoaches()) {
+
+				Coach coach = coachRepository.findById(i).get();
+
+				Athelete athlete = atheleteRepository.findById(coach.getAtheleteId()).get();
+
+				User user = userRepository.findById(athlete.getUserId()).get();
+
+				coachesName.add(user.getName());
+
+			}
+
+			response.setCoachesName(coachesName);
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			List<String> doctorsName = new ArrayList<>();
+
+			for (String i : team.getDoctors()) {
+
+				Doctor doctor = doctorRepository.findById(i).get();
+
+				User user = userRepository.findById(doctor.getUserId()).get();
+
+				doctorsName.add(user.getName());
+
+			}
+
+			response.setDoctorsName(doctorsName);
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
+			List<String> matchesName = new ArrayList<>();
+
+			for (String i : team.getMatches()) {
+
+				try {
+
+					MatchName name = matchNameRepository.findByMatchId(i);
+
+					if (name != null) {
+
+						matchesName.add(name.getName());
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+			}
+
+			response.setMatchesName(matchesName);
+
+		} catch (Exception e) {
+
+		}
+
+		return response;
+
+	}
+
 }

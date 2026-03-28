@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.TeamResponseDTO;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Services.Athlete.TeamService;
 
@@ -52,7 +53,7 @@ public class TeamController {
     @GetMapping("/seeAll")
     public ResponseEntity<?> seeAllTeams() {
         try {
-            List<Team> list = teamService.seeAllTeam();
+            List<TeamResponseDTO> list = teamService.seeAllTeam();
             if (list == null || list.isEmpty()) {
                 return ResponseEntity.status(404).body("No teams found...");
             }
@@ -130,7 +131,7 @@ public class TeamController {
     @GetMapping("/findByAtheleteId")
     public ResponseEntity<?> findByAtheleteId(@RequestParam String atheleteId) {
         try {
-            Team team = teamService.findByAtheletesContainingIgnoreCase(atheleteId);
+        	TeamResponseDTO team = teamService.findByAtheletesContainingIgnoreCase(atheleteId);
             if (team == null) {
                 return ResponseEntity.status(404).body("No team found for this athlete...");
             }
@@ -146,7 +147,7 @@ public class TeamController {
     @GetMapping("/findByCoachId")
     public ResponseEntity<?> findByCoachId(@RequestParam String coachId) {
         try {
-            Team team = teamService.findByCoachesContainingIgnoreCase(coachId);
+        	TeamResponseDTO team = teamService.findByCoachesContainingIgnoreCase(coachId);
             if (team == null) {
                 return ResponseEntity.status(404).body("No team found for this coach...");
             }
@@ -162,7 +163,7 @@ public class TeamController {
     @GetMapping("/findByScoutId")
     public ResponseEntity<?> findByScoutId(@RequestParam String scoutId) {
         try {
-            Team team = teamService.findByScoutsContainingIgnoreCase(scoutId);
+        	TeamResponseDTO team = teamService.findByScoutsContainingIgnoreCase(scoutId);
             if (team == null) {
                 return ResponseEntity.status(404).body("No team found for this scout...");
             }
@@ -178,7 +179,7 @@ public class TeamController {
     @GetMapping("/findByMatchId")
     public ResponseEntity<?> findByMatchId(@RequestParam String matchId) {
         try {
-            List<Team> team = teamService.findByMatchesContainingIgnoreCase(matchId);
+            List<TeamResponseDTO> team = teamService.findByMatchesContainingIgnoreCase(matchId);
             if (team.isEmpty()) {
                 return ResponseEntity.status(404).body("No team found for this match...");
             }
@@ -194,7 +195,7 @@ public class TeamController {
     @GetMapping("/findByTeamOwnerId")
     public ResponseEntity<?> findByTeamOwnerId(@RequestParam String teamOwnerId) {
         try {
-            List<Team> teams = teamService.findByTeamOwnerId(teamOwnerId);
+            List<TeamResponseDTO> teams = teamService.findByTeamOwnerId(teamOwnerId);
             if (teams == null || teams.isEmpty()) {
                 return ResponseEntity.status(404).body("No team found for this team owner...");
             }
@@ -209,7 +210,7 @@ public class TeamController {
     	
     	try {
     		
-    		Team team = teamService.findByDoctorsContainingIgnoreCase(doctorId);
+    		TeamResponseDTO team = teamService.findByDoctorsContainingIgnoreCase(doctorId);
     		
     		if(team == null) {
     			
@@ -232,7 +233,7 @@ public class TeamController {
     	
     	try {
     		
-    		Team team = teamService.findByTeamName(teamName);
+    		TeamResponseDTO team = teamService.findByTeamName(teamName);
     		
     		if(team == null) {
     			
