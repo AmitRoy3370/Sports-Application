@@ -592,7 +592,7 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		response.setTeamsName(teamNames);
 
-		List<MatchName> matches = matchNameRepository.findAllByMatchIdIn(teamOwner.getMatches());
+		List<MatchName> matches = matchNameRepository.findByMatchIdIn(teamOwner.getMatches());
 
 		List<String> matchesName = new ArrayList<>();
 
