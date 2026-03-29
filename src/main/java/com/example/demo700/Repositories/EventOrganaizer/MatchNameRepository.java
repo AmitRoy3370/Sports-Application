@@ -13,5 +13,6 @@ public interface MatchNameRepository extends MongoRepository<MatchName, String> 
 	public MatchName findByNameIgnoreCase(String name);
 	public MatchName findByMatchId(String matchId);
 	public List<MatchName> findByNameContainingIgnoreCase(String name);
+	public List<MatchName> findAllByMatchIdIn(List<String> matchId);
 	
 }

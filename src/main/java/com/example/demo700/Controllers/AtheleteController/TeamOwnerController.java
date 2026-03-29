@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.TeamOwnerResponseDTO;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Services.Athlete.TeamOwnerService;
 
@@ -49,7 +50,7 @@ public class TeamOwnerController {
 	@GetMapping("/seeAll")
 	public ResponseEntity<?> seeAllTeamOwner() {
 
-		List<TeamOwner> list = temOwnerService.seeAllTeamOwner();
+		List<TeamOwnerResponseDTO> list = temOwnerService.seeAllTeamOwner();
 
 		if (list == null) {
 
@@ -66,7 +67,7 @@ public class TeamOwnerController {
 
 		try {
 
-			List<TeamOwner> list = temOwnerService.findByAchivementsContainingIgnoreCase(achivement);
+			List<TeamOwnerResponseDTO> list = temOwnerService.findByAchivementsContainingIgnoreCase(achivement);
 
 			if (list == null) {
 
@@ -89,7 +90,7 @@ public class TeamOwnerController {
 
 		try {
 
-			List<TeamOwner> list = temOwnerService.findByMatchesContainingIgnoreCase(matchId);
+			List<TeamOwnerResponseDTO> list = temOwnerService.findByMatchesContainingIgnoreCase(matchId);
 
 			if (list == null) {
 
@@ -194,7 +195,7 @@ public class TeamOwnerController {
 		
 		try {
 			
-			TeamOwner teamOwner = temOwnerService.findByTeamsContainingIgnoreCase(teamId);
+			TeamOwnerResponseDTO teamOwner = temOwnerService.findByTeamsContainingIgnoreCase(teamId);
 			
 			if(teamOwner == null) {
 				

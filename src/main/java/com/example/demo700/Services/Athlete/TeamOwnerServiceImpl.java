@@ -1,5 +1,6 @@
 package com.example.demo700.Services.Athlete;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.TeamOwnerResponseDTO;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Athlete.Athelete;
@@ -16,12 +18,14 @@ import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 
 @Service
@@ -43,11 +47,14 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 	private MatchRepository matchRepository;
 
 	@Autowired
+	private MatchNameRepository matchNameRepository;
+
+	@Autowired
 	private ScoutsRepository scoutsRepository;
 
 	@Autowired
 	private CoachRepository coachRepository;
-	
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -91,19 +98,19 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 		}
 
 		try {
-			
-			if(!teamOwner.getMatches().isEmpty() || !teamOwner.getTeams().isEmpty()) {
-				
+
+			if (!teamOwner.getMatches().isEmpty() || !teamOwner.getTeams().isEmpty()) {
+
 				throw new Exception();
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new ArithmeticException("No such team owner have match or team as the time of creation....");
-			
+
 		}
-		
+
 		teamOwner = teamOwnerRepository.save(teamOwner);
 
 		if (teamOwner == null) {
@@ -116,9 +123,19 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 	}
 
 	@Override
-	public List<TeamOwner> seeAllTeamOwner() {
+	public List<TeamOwnerResponseDTO> seeAllTeamOwner() {
 
-		return teamOwnerRepository.findAll();
+		List<TeamOwner> list = teamOwnerRepository.findAll();
+		
+		List<TeamOwnerResponseDTO> response = new ArrayList<>();
+		
+		for(TeamOwner i : list) {
+			
+			response.add(getTeamOwnerResponse(i));
+			
+		}
+		
+		return response;
 
 	}
 
@@ -176,108 +193,108 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 			throw new NoSuchElementException("Your team owner not exist at here...");
 
 		}
-		
+
 		try {
-			
-			if(!teamOwner.getTeams().isEmpty()) {
-				
-				for(String i : teamOwner.getTeams()) {
-					
+
+			if (!teamOwner.getTeams().isEmpty()) {
+
+				for (String i : teamOwner.getTeams()) {
+
 					try {
-						
+
 						Team team = teamRepository.findById(i).get();
-						
-						if(team == null) {
-							
+
+						if (team == null) {
+
 							throw new Exception();
-							
+
 						}
-						
-						if(!team.getTeamOwnerId().equals(teamOwner.getId())) {
-							
+
+						if (!team.getTeamOwnerId().equals(teamOwner.getId())) {
+
 							throw new Exception();
-							
+
 						}
-						
-					} catch(Exception e) {
-						
+
+					} catch (Exception e) {
+
 						throw new Exception();
-						
+
 					}
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("You teams are not valid...");
-			
+
 		}
-		
+
 		try {
-			
-			if(!teamOwner.getMatches().isEmpty()) {
-				
-				for(String i : teamOwner.getMatches()) {
-					
+
+			if (!teamOwner.getMatches().isEmpty()) {
+
+				for (String i : teamOwner.getMatches()) {
+
 					try {
-						
+
 						Match match = matchRepository.findById(i).get();
-						
-						if(match == null) {
-							
+
+						if (match == null) {
+
 							throw new Exception();
-							
+
 						}
-						
-						if(match.getTeams().isEmpty()) {
-							
+
+						if (match.getTeams().isEmpty()) {
+
 							throw new Exception();
-							
+
 						}
-						
+
 						boolean find = false;
-						
-						for(String j : match.getTeams()) {
-							
+
+						for (String j : match.getTeams()) {
+
 							Team team = teamRepository.findById(j).get();
-							
-							if(team == null) {
-								
+
+							if (team == null) {
+
 								throw new Exception();
-								
+
 							}
-							
-							if(team.getTeamOwnerId().equals(teamOwner.getId())) {
-								
+
+							if (team.getTeamOwnerId().equals(teamOwner.getId())) {
+
 								find = true;
 								break;
-								
+
 							}
-							
+
 						}
-						
-						if(!find) {
-							
+
+						if (!find) {
+
 							throw new Exception();
-							
+
 						}
-						
-					} catch(Exception e) {
-						
+
+					} catch (Exception e) {
+
 						throw new Exception();
-						
+
 					}
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("Your matches are not valid...");
-			
+
 		}
 
 		teamOwner = teamOwnerRepository.save(teamOwner);
@@ -432,7 +449,7 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 	}
 
 	@Override
-	public List<TeamOwner> findByAchivementsContainingIgnoreCase(String achivement) {
+	public List<TeamOwnerResponseDTO> findByAchivementsContainingIgnoreCase(String achivement) {
 
 		if (achivement == null) {
 
@@ -442,12 +459,20 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		List<TeamOwner> list = teamOwnerRepository.findByAchivementsContainingIgnoreCase(achivement);
 
-		return list;
+		List<TeamOwnerResponseDTO> response = new ArrayList<>();
+		
+		for(TeamOwner i : list) {
+			
+			response.add(getTeamOwnerResponse(i));
+			
+		}
+		
+		return response;
 
 	}
 
 	@Override
-	public List<TeamOwner> findByMatchesContainingIgnoreCase(String matchId) {
+	public List<TeamOwnerResponseDTO> findByMatchesContainingIgnoreCase(String matchId) {
 		if (matchId == null) {
 
 			throw new NullPointerException("False request...");
@@ -456,11 +481,19 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		List<TeamOwner> list = teamOwnerRepository.findByMatchesContainingIgnoreCase(matchId);
 
-		return list;
+		List<TeamOwnerResponseDTO> response = new ArrayList<>();
+		
+		for(TeamOwner i : list) {
+			
+			response.add(getTeamOwnerResponse(i));
+			
+		}
+		
+		return response;
 	}
-	
+
 	@Override
-	public TeamOwner findByTeamsContainingIgnoreCase(String teamId) {
+	public TeamOwnerResponseDTO findByTeamsContainingIgnoreCase(String teamId) {
 		if (teamId == null) {
 
 			throw new NullPointerException("False request...");
@@ -469,57 +502,122 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		TeamOwner list = teamOwnerRepository.findByTeamsContainingIgnoreCase(teamId);
 
-		return list;
+		return getTeamOwnerResponse(list);
 	}
 
 	@Override
-	public TeamOwner findByAthleteId(String athleteId) {
-		
-		if(athleteId == null) {
-			
+	public TeamOwnerResponseDTO findByAthleteId(String athleteId) {
+
+		if (athleteId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
+
 			TeamOwner teamOwner = teamOwnerRepository.findByAtheleteId(athleteId);
-			
-			if(teamOwner == null) {
-				
+
+			if (teamOwner == null) {
+
 				throw new Exception();
-				
+
 			}
-			
-			return teamOwner;
-			
-		} catch(Exception e) {
-			
+
+			return getTeamOwnerResponse(teamOwner);
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such team owner exist at here...");
-			
+
 		}
-		
+
 	}
 
 	@Override
-	public TeamOwner findByTeamOwnerId(String teamOwnerId) {
-		
-		if(teamOwnerId == null) {
-			
+	public TeamOwnerResponseDTO findByTeamOwnerId(String teamOwnerId) {
+
+		if (teamOwnerId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
-			return teamOwnerRepository.findById(teamOwnerId).get();
-			
-		} catch(Exception e) {
-			
+
+			return getTeamOwnerResponse(teamOwnerRepository.findById(teamOwnerId).get());
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such team owner find at here..");
-			
+
 		}
-	
+
+	}
+
+	private TeamOwnerResponseDTO getTeamOwnerResponse(TeamOwner teamOwner) {
+
+		TeamOwnerResponseDTO response = new TeamOwnerResponseDTO();
+
+		response.setId(teamOwner.getId());
+		response.setAthleteId(teamOwner.getAtheleteId());
+
+		if (!teamOwner.getTeams().isEmpty()) {
+
+			response.setTeamsId(teamOwner.getTeams());
+
+		}
+
+		if (!teamOwner.getMatches().isEmpty()) {
+
+			response.setMatchesId(teamOwner.getMatches());
+
+		}
+
+		if (!teamOwner.getAchivements().isEmpty()) {
+
+			response.setAchivements(teamOwner.getAchivements());
+
+		}
+
+		List<Team> teams = teamRepository.findAllById(teamOwner.getTeams());
+
+		List<String> teamNames = new ArrayList<>();
+
+		for (Team i : teams) {
+
+			teamNames.add(i.getTeamName());
+
+		}
+
+		response.setTeamsName(teamNames);
+
+		List<MatchName> matches = matchNameRepository.findAllByMatchIdIn(teamOwner.getMatches());
+
+		List<String> matchesName = new ArrayList<>();
+
+		for (MatchName i : matches) {
+
+			matchesName.add(i.getName());
+
+		}
+
+		response.setMatchesName(matchesName);
+
+		try {
+
+			Athelete athlete = atheleteRepository.findById(teamOwner.getAtheleteId()).get();
+			
+			User user = userRepository.findById(athlete.getUserId()).get();
+			
+			response.setTeamOwnerName(user.getName());
+			
+		} catch (Exception e) {
+
+		}
+
+		return response;
+
 	}
 
 }
