@@ -3,9 +3,11 @@ package com.example.demo700.Services.EventOrganaizer;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -251,23 +253,25 @@ public class MatchServiceImpl implements MatchService {
 
 			}
 
+			Set<String> set = new HashSet<>();
+
 			for (String i : match.getTeams()) {
 
-				if (i == null) {
+				set.add(i);
 
-					throw new Exception();
+			}
 
-				}
+			if (set.size() != match.getTeams().size()) {
 
-				Team team = teamRepository.findById(i).get();
+				throw new Exception();
 
-				if (team == null) {
+			}
 
-					throw new Exception();
+			List<Team> list = teamRepository.findAllById(match.getTeams());
 
-				}
+			if (list.size() != match.getTeams().size()) {
 
-				System.out.println("team :- " + team.toString());
+				throw new Exception();
 
 			}
 
@@ -337,6 +341,8 @@ public class MatchServiceImpl implements MatchService {
 
 		if (match != null) {
 
+			EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(userId);
+
 			try {
 
 				MatchVenue matchVenue = new MatchVenue(matchVenueId, match.getId());
@@ -359,15 +365,23 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
+				Set<String> set = new HashSet<>();
+
 				for (String i : match.getTeams()) {
 
-					if (i == null) {
+					set.add(i);
 
-						throw new Exception();
+				}
 
-					}
+				if (set.size() != match.getTeams().size()) {
 
-					Team team = teamRepository.findById(i).get();
+					throw new Exception();
+
+				}
+
+				List<Team> teams = teamRepository.findAllById(match.getTeams());
+
+				for (Team team : teams) {
 
 					if (team == null) {
 
@@ -383,9 +397,9 @@ public class MatchServiceImpl implements MatchService {
 
 					}
 
-					for (String j : team.getAtheletes()) {
+					List<Athelete> athletes = atheleteRepository.findAllById(team.getAtheletes());
 
-						Athelete athelete = atheleteRepository.findById(j).get();
+					for (Athelete athelete : athletes) {
 
 						if (athelete == null) {
 
@@ -399,9 +413,9 @@ public class MatchServiceImpl implements MatchService {
 
 					}
 
-					for (String j : team.getScouts()) {
+					List<Scouts> allScouts = scoutsRepository.findAllById(team.getScouts());
 
-						Scouts scouts = scoutsRepository.findById(j).get();
+					for (Scouts scouts : allScouts) {
 
 						if (scouts == null) {
 
@@ -416,8 +430,6 @@ public class MatchServiceImpl implements MatchService {
 						scoutsRepository.save(scouts);
 
 					}
-
-					EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(userId);
 
 					if (eventOrganaizer != null) {
 
@@ -780,23 +792,25 @@ public class MatchServiceImpl implements MatchService {
 
 			}
 
+			Set<String> set = new HashSet<>();
+
 			for (String i : match.getTeams()) {
 
-				if (i == null) {
+				set.add(i);
 
-					throw new Exception();
+			}
 
-				} else {
+			if (set.size() != match.getTeams().size()) {
 
-					Team team = teamRepository.findById(i).get();
+				throw new Exception();
 
-					if (team == null) {
+			}
 
-						throw new Exception();
+			List<Team> teams = teamRepository.findAllById(match.getTeams());
 
-					}
+			if (teams.size() != match.getTeams().size()) {
 
-				}
+				throw new Exception();
 
 			}
 
@@ -824,13 +838,11 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
-				List<String> teams = _match.getTeams();
+				List<Team> teams = teamRepository.findAllById(_match.getTeams());
 
-				for (String i : teams) {
+				for (Team team : teams) {
 
 					try {
-
-						Team team = teamRepository.findById(i).get();
 
 						TeamOwner teamOwner = teamOwnerRepository.findByTeamsContainingIgnoreCase(team.getId());
 
@@ -852,11 +864,9 @@ public class MatchServiceImpl implements MatchService {
 
 							}
 
-							List<String> athletes = team.getAtheletes();
+							List<Athelete> athletes = atheleteRepository.findAllById(team.getAtheletes());
 
-							for (String athleteId : athletes) {
-
-								Athelete athlete = atheleteRepository.findById(athleteId).get();
+							for (Athelete athlete : athletes) {
 
 								athlete.getEventAttendence().remove(matchId);
 
@@ -864,11 +874,9 @@ public class MatchServiceImpl implements MatchService {
 
 							}
 
-							List<String> scouts = team.getScouts();
+							List<Scouts> scouts = scoutsRepository.findAllById(team.getScouts());
 
-							for (String scoutId : scouts) {
-
-								Scouts scout = scoutsRepository.findById(scoutId).get();
+							for (Scouts scout : scouts) {
 
 								try {
 
@@ -904,15 +912,9 @@ public class MatchServiceImpl implements MatchService {
 
 			}
 
-			for (String i : match.getTeams()) {
+			List<Team> teams = teamRepository.findAllById(match.getTeams());
 
-				if (i == null) {
-
-					throw new Exception();
-
-				}
-
-				Team team = teamRepository.findById(i).get();
+			for (Team team : teams) {
 
 				if (team == null) {
 
@@ -946,10 +948,11 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
-				if (!team.getAtheletes().isEmpty()) {
-					for (String j : team.getAtheletes()) {
+				if (team.getAtheletes() != null && !team.getAtheletes().isEmpty()) {
 
-						Athelete athelete = atheleteRepository.findById(j).get();
+					List<Athelete> athletes = atheleteRepository.findAllById(team.getAtheletes());
+
+					for (Athelete athelete : athletes) {
 
 						if (athelete == null) {
 
@@ -969,11 +972,11 @@ public class MatchServiceImpl implements MatchService {
 
 				}
 
-				if (!team.getScouts().isEmpty()) {
+				if (team.getScouts() != null && !team.getScouts().isEmpty()) {
 
-					for (String j : team.getScouts()) {
+					List<Scouts> allScouts = scoutsRepository.findAllById(team.getScouts());
 
-						Scouts scouts = scoutsRepository.findById(j).get();
+					for (Scouts scouts : allScouts) {
 
 						if (scouts == null) {
 
@@ -1315,11 +1318,11 @@ public class MatchServiceImpl implements MatchService {
 
 			response.setTeamNames(new ArrayList<>());
 
-			for (String i : match.getTeams()) {
+			List<Team> teams = teamRepository.findAllById(match.getTeams());
 
-				Team team = teamRepository.findById(i).get();
+			for (Team i : teams) {
 
-				response.getTeamNames().add(team.getTeamName());
+				response.getTeamNames().add(i.getTeamName());
 
 			}
 
