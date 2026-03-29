@@ -18,15 +18,22 @@ public class Team {
 	String id;
 
 	@NonNull
+	@Indexed
 	String teamOwnerId;
 
 	@NonNull
+	@Indexed
 	String teamName;
 
+	@Indexed
 	List<String> atheletes;
+	@Indexed
 	List<String> coaches;
+	@Indexed
 	List<String> scouts;
+	@Indexed
 	List<String> doctors;
+	@Indexed
 	List<String> matches;
 
 	public Team(String teamOwnerId, String teamName, List<String> atheletes, List<String> coaches, List<String> scouts,
