@@ -574,7 +574,7 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		}
 
-		if (!teamOwner.getAchivements().isEmpty()) {
+		if (teamOwner.getAchivements() != null && !teamOwner.getAchivements().isEmpty()) {
 
 			response.setAchivements(teamOwner.getAchivements());
 
