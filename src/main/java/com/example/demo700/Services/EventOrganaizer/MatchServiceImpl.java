@@ -1393,12 +1393,27 @@ public class MatchServiceImpl implements MatchService {
 
 			if (matchName != null) {
 
-				response.setMatchName(matchName.getName());
+				if (matchName.getName().isBlank() || matchName.getName().isEmpty()) {
+
+					response.setMatchName("Un named match");
+
+				} else {
+
+					response.setMatchName(matchName.getName());
+
+				}
+
 				response.setMatchNameId(matchName.getId());
+
+			} else {
+
+				response.setMatchName("Un named match");
 
 			}
 
 		} catch (Exception e) {
+
+			response.setMatchName("Un named search");
 
 		}
 

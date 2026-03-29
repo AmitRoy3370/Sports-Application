@@ -1,7 +1,9 @@
 package com.example.demo700.Services.Athlete;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -766,19 +768,35 @@ public class TeamServiceImpl implements TeamService {
 
 		try {
 
+			List<Athelete> athletes = atheleteRepository.findAllById(team.getAtheletes());
+
+			List<String> usersId = new ArrayList<>();
+
 			List<String> athletesName = new ArrayList<>();
 
-			for (String i : team.getAtheletes()) {
+			for (Athelete athlete : athletes) {
 
 				try {
 
-					Athelete athlete = atheleteRepository.findById(i).get();
-
-					User user = userRepository.findById(athlete.getUserId()).get();
-
-					athletesName.add(user.getName());
+					usersId.add(athlete.getUserId());
 
 				} catch (Exception e) {
+
+				}
+
+			}
+
+			List<User> users = userRepository.findAllById(usersId);
+
+			for (User user : users) {
+
+				if (user.getName().isBlank() || user.getName().isEmpty()) {
+
+					athletesName.add("Un named athletes");
+
+				} else {
+
+					athletesName.add(user.getName());
 
 				}
 
@@ -792,17 +810,33 @@ public class TeamServiceImpl implements TeamService {
 
 		try {
 
+			List<Scouts> allScouts = scoutsRepository.findAllById(team.getScouts());
+
+			List<String> athletesId = new ArrayList<>();
+
+			for (Scouts i : allScouts) {
+
+				athletesId.add(i.getAtheleteId());
+
+			}
+
+			List<Athelete> athletes = atheleteRepository.findAllById(athletesId);
+
+			List<String> allUserId = new ArrayList<>();
+
+			for (Athelete i : athletes) {
+
+				allUserId.add(i.getUserId());
+
+			}
+
+			List<User> users = userRepository.findAllById(allUserId);
+
 			List<String> scoutsName = new ArrayList<>();
 
-			for (String i : team.getScouts()) {
+			for (User user : users) {
 
 				try {
-
-					Scouts scout = scoutsRepository.findById(i).get();
-
-					Athelete athlete = atheleteRepository.findById(scout.getAtheleteId()).get();
-
-					User user = userRepository.findById(athlete.getUserId()).get();
 
 					scoutsName.add(user.getName());
 
@@ -820,17 +854,33 @@ public class TeamServiceImpl implements TeamService {
 
 		try {
 
+			List<Coach> coaches = coachRepository.findAllById(team.getCoaches());
+
+			List<String> athletesId = new ArrayList<>();
+
+			for (Coach i : coaches) {
+
+				athletesId.add(i.getAtheleteId());
+
+			}
+
+			List<Athelete> athletes = atheleteRepository.findAllById(athletesId);
+
+			List<String> usersId = new ArrayList<>();
+
+			for (Athelete i : athletes) {
+
+				usersId.add(i.getUserId());
+
+			}
+
+			List<User> users = userRepository.findAllById(usersId);
+
 			List<String> coachesName = new ArrayList<>();
 
-			for (String i : team.getCoaches()) {
+			for (User user : users) {
 
 				try {
-
-					Coach coach = coachRepository.findById(i).get();
-
-					Athelete athlete = atheleteRepository.findById(coach.getAtheleteId()).get();
-
-					User user = userRepository.findById(athlete.getUserId()).get();
 
 					coachesName.add(user.getName());
 
@@ -848,15 +898,23 @@ public class TeamServiceImpl implements TeamService {
 
 		try {
 
+			List<Doctor> doctors = doctorRepository.findAllById(team.getDoctors());
+
+			List<String> usersId = new ArrayList<>();
+
+			for (Doctor i : doctors) {
+
+				usersId.add(i.getUserId());
+
+			}
+
+			List<User> users = userRepository.findAllById(usersId);
+
 			List<String> doctorsName = new ArrayList<>();
 
-			for (String i : team.getDoctors()) {
+			for (User user : users) {
 
 				try {
-
-					Doctor doctor = doctorRepository.findById(i).get();
-
-					User user = userRepository.findById(doctor.getUserId()).get();
 
 					doctorsName.add(user.getName());
 
@@ -874,23 +932,50 @@ public class TeamServiceImpl implements TeamService {
 
 		try {
 
+			List<MatchName> matchNames = matchNameRepository.findByMatchIdIn(team.getMatches());
+
 			List<String> matchesName = new ArrayList<>();
 
-			for (String i : team.getMatches()) {
+			int index = 0;
+
+			Map<String, String> map = new HashMap<>();
+
+			for (MatchName name : matchNames) {
 
 				try {
 
-					MatchName name = matchNameRepository.findByMatchId(i);
+					if (name.getName() != null) {
 
-					if (name != null) {
+						map.put(name.getMatchId(), name.getName());
 
-						matchesName.add(name.getName());
+					} else {
+
+						map.put(name.getMatchId(), "Un known match");
 
 					}
 
 				} catch (Exception e) {
 
 				}
+
+			}
+
+			for (String i : team.getMatches()) {
+
+				if (!map.containsKey(i)) {
+
+					String myMatchName = "match-" + (team.getMatches().size() + index);
+					map.put(i, myMatchName);
+
+				}
+
+				index++;
+
+			}
+
+			for (String i : team.getMatches()) {
+
+				matchesName.add(map.get(i));
 
 			}
 
