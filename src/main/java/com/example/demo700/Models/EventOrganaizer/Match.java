@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -18,9 +19,11 @@ public class Match {
 	String id;
 
 	@NonNull
+	@Indexed
 	String organaizerId;
 
 	@NonNull
+	@Indexed
 	List<String> teams;
 
 	List<String> gameLogs;
@@ -30,7 +33,11 @@ public class Match {
 	double price;
 
 	@NonNull
-	Instant matchStartTime, matchEndTime;
+	@Indexed
+	Instant matchStartTime;
+	@NonNull
+	@Indexed
+	Instant matchEndTime;
 
 	public Match(String organaizerId, List<String> teams, List<String> gameLogs, List<String> videos,
 			Instant matchEndTime, double price) {

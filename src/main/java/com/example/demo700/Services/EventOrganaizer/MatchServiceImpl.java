@@ -125,14 +125,6 @@ public class MatchServiceImpl implements MatchService {
 
 			}
 
-			List<Booking> bookings = bookingRepository.findByUserId(userId);
-
-			if (bookings.isEmpty()) {
-
-				throw new Exception();
-
-			}
-
 		} catch (Exception e) {
 
 			throw new NoSuchElementException("No such user find at here...");
@@ -147,57 +139,66 @@ public class MatchServiceImpl implements MatchService {
 
 			}
 
-			List<Booking> bookings = bookingRepository.findByUserId(userId);
-
-			Map<String, List<Booking>> map = new HashMap<>();
-
-			for (Booking booking : bookings) {
-
-				if (!map.containsKey(booking.getVenueId())) {
-
-					map.put(booking.getVenueId(), new ArrayList<>());
-					map.get(booking.getVenueId()).add(booking);
-
-				} else {
-
-					map.get(booking.getVenueId()).add(booking);
-
-				}
-
-			}
-
 			boolean find = false;
 
-			for (String i : map.keySet()) {
+			List<Booking> bookings = bookingRepository.findValidBookings(userId, match.getMatchStartTime(),
+					match.getMatchEndTime());
 
-				List<Booking> _bookings = map.get(i);
-
-				find = false;
-
-				for (Booking booking : _bookings) {
-
-					if (booking.getStartTime().isBefore(match.getMatchStartTime())
-							&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
-
-						if (booking.getStatus() == BookingStatus.CONFIRMED) {
-
-							find = true;
-							matchVenueId = booking.getVenueId();
-							break;
-
-						}
-
-					}
-
-				}
-
-				if (find) {
-
-					break;
-
-				}
-
+			if (bookings.isEmpty()) {
+				throw new RuntimeException("No valid booking");
 			}
+
+			find = !bookings.isEmpty();
+
+			/*
+			 * Map<String, List<Booking>> map = new HashMap<>();
+			 * 
+			 * for (Booking booking : bookings) {
+			 * 
+			 * if (!map.containsKey(booking.getVenueId())) {
+			 * 
+			 * map.put(booking.getVenueId(), new ArrayList<>());
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * } else {
+			 * 
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * boolean find = false;
+			 * 
+			 * for (String i : map.keySet()) {
+			 * 
+			 * List<Booking> _bookings = map.get(i);
+			 * 
+			 * find = false;
+			 * 
+			 * for (Booking booking : _bookings) {
+			 * 
+			 * if (booking.getStartTime().isBefore(match.getMatchStartTime()) &&
+			 * booking.getEndTime().isAfter(match.getMatchEndTime())) {
+			 * 
+			 * if (booking.getStatus() == BookingStatus.CONFIRMED) {
+			 * 
+			 * find = true; matchVenueId = booking.getVenueId(); break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * if (find) {
+			 * 
+			 * break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 */
 
 			if (!find) {
 
@@ -206,6 +207,8 @@ public class MatchServiceImpl implements MatchService {
 				throw new Exception();
 
 			}
+
+			matchVenueId = bookings.get(0).getVenueId();
 
 		} catch (Exception e) {
 
@@ -283,43 +286,42 @@ public class MatchServiceImpl implements MatchService {
 
 		try {
 
-			List<Match> list = matchRepository.findAll();
+			List<Match> list = matchRepository.findConflicts(match.getMatchStartTime(), match.getMatchEndTime());
 
-			boolean conflicted = false;
+			boolean conflicted = !list.isEmpty();
 
-			if (!list.isEmpty()) {
-
-				for (Match i : list) {
-
-					if ((i.getMatchStartTime().isBefore(match.getMatchStartTime())
-							&& match.getMatchStartTime().isBefore(i.getMatchEndTime()))) {
-
-						System.out.println("Stacked at first...");
-
-						conflicted = true;
-						break;
-
-					} else if ((i.getMatchStartTime().isBefore(match.getMatchEndTime())
-							&& match.getMatchEndTime().isBefore(i.getMatchEndTime()))) {
-
-						System.out.println("Stacked at second...");
-
-						conflicted = true;
-						break;
-
-					} else if (i.getMatchEndTime().equals(match.getMatchEndTime())
-							&& i.getMatchStartTime().equals(match.getMatchStartTime())) {
-
-						System.out.println("Stacked at third...");
-
-						conflicted = true;
-						break;
-
-					}
-
-				}
-
-			}
+			/*
+			 * if (!list.isEmpty()) {
+			 * 
+			 * for (Match i : list) {
+			 * 
+			 * if ((i.getMatchStartTime().isBefore(match.getMatchStartTime()) &&
+			 * match.getMatchStartTime().isBefore(i.getMatchEndTime()))) {
+			 * 
+			 * System.out.println("Stacked at first...");
+			 * 
+			 * conflicted = true; break;
+			 * 
+			 * } else if ((i.getMatchStartTime().isBefore(match.getMatchEndTime()) &&
+			 * match.getMatchEndTime().isBefore(i.getMatchEndTime()))) {
+			 * 
+			 * System.out.println("Stacked at second...");
+			 * 
+			 * conflicted = true; break;
+			 * 
+			 * } else if (i.getMatchEndTime().equals(match.getMatchEndTime()) &&
+			 * i.getMatchStartTime().equals(match.getMatchStartTime())) {
+			 * 
+			 * System.out.println("Stacked at third...");
+			 * 
+			 * conflicted = true; break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * }
+			 */
 
 			if (conflicted) {
 
@@ -688,63 +690,68 @@ public class MatchServiceImpl implements MatchService {
 
 			}
 
-			List<Booking> bookings = bookingRepository.findByUserId(userId);
+			List<Booking> bookings = bookingRepository.findValidBookings(userId, match.getMatchStartTime(),
+					match.getMatchEndTime());
 
-			Map<String, List<Booking>> map = new HashMap<>();
+			boolean find = !bookings.isEmpty();
 
-			for (Booking booking : bookings) {
-
-				if (!map.containsKey(booking.getVenueId())) {
-
-					map.put(booking.getVenueId(), new ArrayList<>());
-					map.get(booking.getVenueId()).add(booking);
-
-				} else {
-
-					map.get(booking.getVenueId()).add(booking);
-
-				}
-
-			}
-
-			boolean find = false;
-
-			for (String i : map.keySet()) {
-
-				List<Booking> _bookings = map.get(i);
-
-				find = false;
-
-				for (Booking booking : _bookings) {
-
-					if (booking.getStartTime().isBefore(match.getMatchStartTime())
-							&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
-
-						if (booking.getStatus() == BookingStatus.CONFIRMED) {
-
-							find = true;
-							matchVenueId = booking.getVenueId();
-							break;
-
-						}
-
-					}
-
-				}
-
-				if (find) {
-
-					break;
-
-				}
-
-			}
+			/*
+			 * Map<String, List<Booking>> map = new HashMap<>();
+			 * 
+			 * for (Booking booking : bookings) {
+			 * 
+			 * if (!map.containsKey(booking.getVenueId())) {
+			 * 
+			 * map.put(booking.getVenueId(), new ArrayList<>());
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * } else {
+			 * 
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * boolean find = false;
+			 * 
+			 * for (String i : map.keySet()) {
+			 * 
+			 * List<Booking> _bookings = map.get(i);
+			 * 
+			 * find = false;
+			 * 
+			 * for (Booking booking : _bookings) {
+			 * 
+			 * if (booking.getStartTime().isBefore(match.getMatchStartTime()) &&
+			 * booking.getEndTime().isAfter(match.getMatchEndTime())) {
+			 * 
+			 * if (booking.getStatus() == BookingStatus.CONFIRMED) {
+			 * 
+			 * find = true; matchVenueId = booking.getVenueId(); break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * if (find) {
+			 * 
+			 * break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 */
 
 			if (!find) {
 
 				throw new Exception();
 
 			}
+
+			matchVenueId = bookings.get(0).getVenueId();
 
 		} catch (Exception e) {
 
@@ -817,6 +824,34 @@ public class MatchServiceImpl implements MatchService {
 		} catch (Exception e) {
 
 			throw new ArithmeticException("Match team information is not valid...");
+
+		}
+
+		try {
+
+			List<Match> list = matchRepository.findConflicts(match.getMatchStartTime(), match.getMatchEndTime());
+
+			if (list.isEmpty()) {
+
+			} else {
+
+				if (list.size() > 1) {
+
+					throw new Exception();
+
+				}
+
+				if (!list.isEmpty() && !list.get(0).getId().equals(matchId)) {
+
+					throw new Exception();
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("Match time conflicted with other match");
 
 		}
 
