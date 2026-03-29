@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo700.Models.Turf.Booking;
@@ -19,5 +20,8 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
 	List<Booking> findByUserId(String userId);
 	
 	List<Booking> findByVenueId(String venueId);
+	
+	@Query("{ userId: ?0, status: 'CONFIRMED', startTime: { $lte: ?1 }, endTime: { $gte: ?2 } }")
+	List<Booking> findValidBookings(String userId, Instant start, Instant end);
 	
 }
