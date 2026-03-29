@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -15,15 +16,22 @@ public class Gyms {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String gymTrainer;// this is basically an userId
 
 	@NonNull
+	@Indexed
 	private String gymOwner; // this is also an user id
 
+	@Indexed
 	private String tradeLicenseId;
+	@Indexed
 	private String tinNumber;
 	
-	private Instant openingTime, closingTime;
+	@Indexed
+	private Instant openingTime;
+	@Indexed
+	private Instant closingTime;
 
 	private String coverImageId;     // GridFS / Cloud image id
     private List<String> gymImages;  // image ids
@@ -32,6 +40,7 @@ public class Gyms {
 	private String gymName;
 
 	@NonNull
+	@Indexed
 	private String locationName;
 
 	@NonNull

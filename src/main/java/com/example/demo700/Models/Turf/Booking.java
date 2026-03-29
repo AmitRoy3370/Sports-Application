@@ -3,6 +3,7 @@ package com.example.demo700.Models.Turf;
 import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.demo700.ENUMS.BookingStatus;
@@ -16,12 +17,17 @@ public class Booking {
 	@Id
 	private String id;
 
+	@Indexed
 	private String venueId;
+	@Indexed
 	private String userId;
 
+	@Indexed
 	private Instant startTime;
+	@Indexed
 	private Instant endTime;
 
+	@Indexed
 	private BookingStatus status;
 	private double amount;
 

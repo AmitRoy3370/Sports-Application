@@ -18,11 +18,15 @@ public class Coach {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String atheleteId;
 
+	@Indexed
 	private String teamName;
 
+	@Indexed
 	private List<String> atheletesVideo;
+	@Indexed
 	private List<String> performanceTracking;
 
 	public Coach(String atheleteId, String teamName, List<String> atheletesVideo, List<String> performanceTracking) {

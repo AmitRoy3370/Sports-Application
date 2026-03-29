@@ -1,6 +1,7 @@
 package com.example.demo700.Models.Athlete;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.demo700.ENUMS.AthleteClassificationTypes;
@@ -14,9 +15,11 @@ public class AthleteClassification {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String athleteId;
 
 	@NonNull
+	@Indexed
 	private AthleteClassificationTypes athleteClassificationTypes;
 
 	public AthleteClassification(String athleteId, AthleteClassificationTypes athleteClassificationTypes) {

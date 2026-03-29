@@ -18,9 +18,12 @@ public class Scouts {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String atheleteId;
 
+	@Indexed
 	private List<String> events;
+	@Indexed
 	private List<String> matches;
 
 	public Scouts(String atheleteId, List<String> events, List<String> matches) {

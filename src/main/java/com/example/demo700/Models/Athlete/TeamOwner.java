@@ -18,10 +18,14 @@ public class TeamOwner {
 	String id;
 
 	@NonNull
+	@Indexed
 	String atheleteId;
 
+	@Indexed
 	List<String> teams;
+	@Indexed
 	List<String> matches;
+	@Indexed
 	List<String> achivements;
 
 	public TeamOwner(String atheleteId, List<String> teams, List<String> matches, List<String> achivements) {

@@ -16,17 +16,27 @@ public class Athelete {
 
 	@Id
 	private String id;
+	@Indexed
 	@NonNull
 	private String userId;
 	
+	@Indexed
 	private int age;
 	
+	@Indexed
 	private String position;
 	
-	private double height, weight;
+	@Indexed
+	private double height;
+	@Indexed
+	private double weight;
+	@Indexed
 	private List<String> gameLogs;
+	@Indexed
 	private List<String> eventAttendence;
+	@Indexed
 	private List<String> highlightReels;
+	@Indexed
 	private String presentTeam;
 
 	public Athelete(String userId, int age, String position, double height, double weight, List<String> gameLogs,

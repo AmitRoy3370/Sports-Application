@@ -1,6 +1,7 @@
 package com.example.demo700.Models.EventOrganaizer;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -12,9 +13,11 @@ public class MatchName {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String name;
 
 	@NonNull
+	@Indexed
 	private String matchId;
 
 	public MatchName(String name, String matchId) {

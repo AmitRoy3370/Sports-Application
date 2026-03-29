@@ -1,6 +1,7 @@
 package com.example.demo700.Models.TeamLocationModels;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -12,9 +13,11 @@ public class TeamLocationModel {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String teamId;
 
 	@NonNull
+	@Indexed
 	private String locationName;
 
 	@NonNull

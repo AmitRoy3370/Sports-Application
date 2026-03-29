@@ -1,9 +1,11 @@
 package com.example.demo700.Models;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.demo700.ENUMS.Role;
+import com.mongodb.lang.NonNull;
 
 import lombok.Data;
 import java.util.Set;
@@ -15,10 +17,16 @@ public class User {
 	@Id
 	private String id;
 
+	@NonNull
+	@Indexed
 	private String name;
+	@NonNull
+	@Indexed
 	private String email;
+	@NonNull
 	private String password;
 
+	@Indexed
 	private Set<Role> roles;
 
 	public User() {

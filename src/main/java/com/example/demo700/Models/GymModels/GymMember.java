@@ -3,6 +3,7 @@ package com.example.demo700.Models.GymModels;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -14,8 +15,10 @@ public class GymMember {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String gymId;
 
+	@Indexed
 	private Set<String> gymMembers;
 
 	public GymMember(String gymId, Set<String> gymMembers) {

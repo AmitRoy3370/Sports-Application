@@ -15,10 +15,13 @@ public class Owner {
 	@Id
 	private String id;
 	@NonNull
+	@Indexed
 	private String userId;
 	@NonNull
+	@Indexed
 	private String name;
 	@NonNull
+	@Indexed
 	private String phone;
 
 	public Owner() {

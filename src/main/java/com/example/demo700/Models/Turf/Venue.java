@@ -19,13 +19,18 @@ public class Venue {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String name;
 	@NonNull
+	@Indexed
 	private String address;
 	private double basePricePerHour;
 
+	@Indexed
 	private List<String> sportsSupported;
+	@Indexed
 	private List<String> amenities;
+	@Indexed
 	private List<String> photos;
 
 	private Map<String, Double> pricingPolicy;

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -292,15 +293,7 @@ public class TeamServiceImpl implements TeamService {
 
 		List<Team> list = teamRepository.findAll();
 
-		List<TeamResponseDTO> response = new ArrayList<>();
-
-		for (Team i : list) {
-
-			response.add(getTeamResponseFromTeam(i));
-
-		}
-
-		return response;
+		return batchBuildTeamResponses(list);
 
 	}
 
@@ -650,15 +643,7 @@ public class TeamServiceImpl implements TeamService {
 
 		List<Team> team = teamRepository.findByMatchesContainingIgnoreCase(matchId);
 
-		List<TeamResponseDTO> response = new ArrayList<>();
-
-		for (Team i : team) {
-
-			response.add(getTeamResponseFromTeam(i));
-
-		}
-
-		return response;
+		return batchBuildTeamResponses(team);
 	}
 
 	@Override
@@ -672,15 +657,7 @@ public class TeamServiceImpl implements TeamService {
 
 		List<Team> list = teamRepository.findByTeamOwnerId(teamOwnerId);
 
-		List<TeamResponseDTO> response = new ArrayList<>();
-
-		for (Team i : list) {
-
-			response.add(getTeamResponseFromTeam(i));
-
-		}
-
-		return response;
+		return batchBuildTeamResponses(list);
 	}
 
 	@Override
@@ -739,254 +716,272 @@ public class TeamServiceImpl implements TeamService {
 
 	}
 
+	/**
+	 * 🔥 Build single team response
+	 */
 	private TeamResponseDTO getTeamResponseFromTeam(Team team) {
+		if (team == null)
+			return null;
+		List<TeamResponseDTO> responses = batchBuildTeamResponses(List.of(team));
+		return responses.isEmpty() ? null : responses.get(0);
+	}
 
-		TeamResponseDTO response = new TeamResponseDTO();
-
-		response.setId(team.getId());
-		response.setAthletes(team.getAtheletes());
-		response.setCoaches(team.getCoaches());
-		response.setScouts(team.getScouts());
-		response.setTeamName(team.getTeamName());
-		response.setDoctors(team.getDoctors());
-		response.setMatches(team.getMatches());
-		response.setTeamOwnerId(team.getTeamOwnerId());
-
-		try {
-
-			TeamOwner owner = teamOwnerRepository.findById(team.getTeamOwnerId()).get();
-
-			Athelete ownerAthlete = atheleteRepository.findById(owner.getAtheleteId()).get();
-
-			User ownerName = userRepository.findById(ownerAthlete.getUserId()).get();
-
-			response.setTeamOwnerName(ownerName.getName());
-
-		} catch (Exception e) {
-
+	/**
+	 * 🔥 OPTIMIZED: Batch build multiple team responses This method collects ALL
+	 * data in BATCH queries
+	 */
+	private List<TeamResponseDTO> batchBuildTeamResponses(List<Team> teams) {
+		if (teams == null || teams.isEmpty()) {
+			return new ArrayList<>();
 		}
 
-		try {
+		// 🔥 STEP 1: Collect all IDs from all teams
+		List<String> allAthleteIds = new ArrayList<>();
+		List<String> allScoutIds = new ArrayList<>();
+		List<String> allCoachIds = new ArrayList<>();
+		List<String> allDoctorIds = new ArrayList<>();
+		List<String> allMatchIds = new ArrayList<>();
+		List<String> allTeamOwnerIds = new ArrayList<>();
 
-			List<Athelete> athletes = atheleteRepository.findAllById(team.getAtheletes());
+		for (Team team : teams) {
+			if (team.getAtheletes() != null)
+				allAthleteIds.addAll(team.getAtheletes());
+			if (team.getScouts() != null)
+				allScoutIds.addAll(team.getScouts());
+			if (team.getCoaches() != null)
+				allCoachIds.addAll(team.getCoaches());
+			if (team.getDoctors() != null)
+				allDoctorIds.addAll(team.getDoctors());
+			if (team.getMatches() != null)
+				allMatchIds.addAll(team.getMatches());
+			if (team.getTeamOwnerId() != null)
+				allTeamOwnerIds.add(team.getTeamOwnerId());
+		}
 
-			List<String> usersId = new ArrayList<>();
+		// Remove duplicates
+		allAthleteIds = allAthleteIds.stream().distinct().collect(Collectors.toList());
+		allScoutIds = allScoutIds.stream().distinct().collect(Collectors.toList());
+		allCoachIds = allCoachIds.stream().distinct().collect(Collectors.toList());
+		allDoctorIds = allDoctorIds.stream().distinct().collect(Collectors.toList());
+		allMatchIds = allMatchIds.stream().distinct().collect(Collectors.toList());
+		allTeamOwnerIds = allTeamOwnerIds.stream().distinct().collect(Collectors.toList());
 
+		// 🔥 STEP 2: Batch fetch ALL data
+		Map<String, TeamOwner> teamOwnerMap = !allTeamOwnerIds.isEmpty() ? teamOwnerRepository
+				.findAllById(allTeamOwnerIds).stream().collect(Collectors.toMap(TeamOwner::getId, owner -> owner))
+				: new HashMap<>();
+
+		Map<String, Athelete> athleteMap = !allAthleteIds.isEmpty() ? atheleteRepository.findAllById(allAthleteIds)
+				.stream().collect(Collectors.toMap(Athelete::getId, athlete -> athlete)) : new HashMap<>();
+
+		Map<String, Scouts> scoutMap = !allScoutIds.isEmpty() ? scoutsRepository.findAllById(allScoutIds).stream()
+				.collect(Collectors.toMap(Scouts::getId, scout -> scout)) : new HashMap<>();
+
+		Map<String, Coach> coachMap = !allCoachIds.isEmpty() ? coachRepository.findAllById(allCoachIds).stream()
+				.collect(Collectors.toMap(Coach::getId, coach -> coach)) : new HashMap<>();
+
+		Map<String, Doctor> doctorMap = !allDoctorIds.isEmpty() ? doctorRepository.findAllById(allDoctorIds).stream()
+				.collect(Collectors.toMap(Doctor::getId, doctor -> doctor)) : new HashMap<>();
+
+		// 🔥 STEP 3: Fetch match names (preserving order)
+		Map<String, String> matchNameMap = new HashMap<>();
+		if (!allMatchIds.isEmpty()) {
+			List<MatchName> matchNames = matchNameRepository.findByMatchIdIn(allMatchIds);
+			for (MatchName mn : matchNames) {
+				if (mn.getMatchId() != null && mn.getName() != null) {
+					matchNameMap.put(mn.getMatchId(), mn.getName());
+				}
+			}
+		}
+
+		// 🔥 STEP 4: Collect all User IDs
+		List<String> allUserIds = new ArrayList<>();
+
+		for (Athelete athlete : athleteMap.values()) {
+			if (athlete.getUserId() != null)
+				allUserIds.add(athlete.getUserId());
+		}
+
+		for (TeamOwner owner : teamOwnerMap.values()) {
+			if (owner.getAtheleteId() != null) {
+				Athelete athlete = athleteMap.get(owner.getAtheleteId());
+				if (athlete != null && athlete.getUserId() != null) {
+					allUserIds.add(athlete.getUserId());
+				}
+			}
+		}
+
+		for (Scouts scout : scoutMap.values()) {
+			if (scout.getAtheleteId() != null) {
+				Athelete athlete = athleteMap.get(scout.getAtheleteId());
+				if (athlete != null && athlete.getUserId() != null) {
+					allUserIds.add(athlete.getUserId());
+				}
+			}
+		}
+
+		for (Coach coach : coachMap.values()) {
+			if (coach.getAtheleteId() != null) {
+				Athelete athlete = athleteMap.get(coach.getAtheleteId());
+				if (athlete != null && athlete.getUserId() != null) {
+					allUserIds.add(athlete.getUserId());
+				}
+			}
+		}
+
+		for (Doctor doctor : doctorMap.values()) {
+			if (doctor.getUserId() != null)
+				allUserIds.add(doctor.getUserId());
+		}
+
+		allUserIds = allUserIds.stream().distinct().collect(Collectors.toList());
+
+		// 🔥 STEP 5: Batch fetch all Users
+		Map<String, User> userMap = !allUserIds.isEmpty()
+				? userRepository.findAllById(allUserIds).stream().collect(Collectors.toMap(User::getId, user -> user))
+				: new HashMap<>();
+
+		// 🔥 STEP 6: Build responses
+		List<TeamResponseDTO> responses = new ArrayList<>();
+
+		for (Team team : teams) {
+			TeamResponseDTO response = new TeamResponseDTO();
+
+			// Basic info
+			response.setId(team.getId());
+			response.setAthletes(team.getAtheletes());
+			response.setCoaches(team.getCoaches());
+			response.setScouts(team.getScouts());
+			response.setTeamName(team.getTeamName());
+			response.setDoctors(team.getDoctors());
+			response.setMatches(team.getMatches());
+			response.setTeamOwnerId(team.getTeamOwnerId());
+
+			// 🔥 Set Team Owner Name
+			if (team.getTeamOwnerId() != null) {
+				TeamOwner owner = teamOwnerMap.get(team.getTeamOwnerId());
+				if (owner != null && owner.getAtheleteId() != null) {
+					Athelete ownerAthlete = athleteMap.get(owner.getAtheleteId());
+					if (ownerAthlete != null && ownerAthlete.getUserId() != null) {
+						User ownerUser = userMap.get(ownerAthlete.getUserId());
+						if (ownerUser != null) {
+							response.setTeamOwnerName(ownerUser.getName());
+						}
+					}
+				}
+			}
+
+			// 🔥 Set Athletes Names (preserving order)
 			List<String> athletesName = new ArrayList<>();
-
-			for (Athelete athlete : athletes) {
-
-				try {
-
-					usersId.add(athlete.getUserId());
-
-				} catch (Exception e) {
-
+			if (team.getAtheletes() != null) {
+				for (String athleteId : team.getAtheletes()) {
+					Athelete athlete = athleteMap.get(athleteId);
+					if (athlete != null && athlete.getUserId() != null) {
+						User user = userMap.get(athlete.getUserId());
+						String name = (user != null && user.getName() != null && !user.getName().isBlank())
+								? user.getName()
+								: "Unnamed athlete";
+						athletesName.add(name);
+					} else {
+						athletesName.add("Unknown athlete");
+					}
 				}
-
 			}
-
-			List<User> users = userRepository.findAllById(usersId);
-
-			for (User user : users) {
-
-				if (user.getName().isBlank() || user.getName().isEmpty()) {
-
-					athletesName.add("Un named athletes");
-
-				} else {
-
-					athletesName.add(user.getName());
-
-				}
-
-			}
-
 			response.setAthletesName(athletesName);
 
-		} catch (Exception e) {
-
-		}
-
-		try {
-
-			List<Scouts> allScouts = scoutsRepository.findAllById(team.getScouts());
-
-			List<String> athletesId = new ArrayList<>();
-
-			for (Scouts i : allScouts) {
-
-				athletesId.add(i.getAtheleteId());
-
-			}
-
-			List<Athelete> athletes = atheleteRepository.findAllById(athletesId);
-
-			List<String> allUserId = new ArrayList<>();
-
-			for (Athelete i : athletes) {
-
-				allUserId.add(i.getUserId());
-
-			}
-
-			List<User> users = userRepository.findAllById(allUserId);
-
+			// 🔥 Set Scouts Names (preserving order)
 			List<String> scoutsName = new ArrayList<>();
-
-			for (User user : users) {
-
-				try {
-
-					scoutsName.add(user.getName());
-
-				} catch (Exception e) {
-
+			if (team.getScouts() != null) {
+				for (String scoutId : team.getScouts()) {
+					Scouts scout = scoutMap.get(scoutId);
+					if (scout != null && scout.getAtheleteId() != null) {
+						Athelete scoutAthlete = athleteMap.get(scout.getAtheleteId());
+						if (scoutAthlete != null && scoutAthlete.getUserId() != null) {
+							User user = userMap.get(scoutAthlete.getUserId());
+							String name = (user != null && user.getName() != null && !user.getName().isBlank())
+									? user.getName()
+									: "Unnamed scout";
+							scoutsName.add(name);
+						} else {
+							scoutsName.add("Unknown scout athlete");
+						}
+					} else {
+						scoutsName.add("Unknown scout");
+					}
 				}
-
 			}
-
 			response.setScoutsName(scoutsName);
 
-		} catch (Exception e) {
-
-		}
-
-		try {
-
-			List<Coach> coaches = coachRepository.findAllById(team.getCoaches());
-
-			List<String> athletesId = new ArrayList<>();
-
-			for (Coach i : coaches) {
-
-				athletesId.add(i.getAtheleteId());
-
-			}
-
-			List<Athelete> athletes = atheleteRepository.findAllById(athletesId);
-
-			List<String> usersId = new ArrayList<>();
-
-			for (Athelete i : athletes) {
-
-				usersId.add(i.getUserId());
-
-			}
-
-			List<User> users = userRepository.findAllById(usersId);
-
+			// 🔥 Set Coaches Names (preserving order)
 			List<String> coachesName = new ArrayList<>();
-
-			for (User user : users) {
-
-				try {
-
-					coachesName.add(user.getName());
-
-				} catch (Exception e) {
-
+			if (team.getCoaches() != null) {
+				for (String coachId : team.getCoaches()) {
+					Coach coach = coachMap.get(coachId);
+					if (coach != null && coach.getAtheleteId() != null) {
+						Athelete coachAthlete = athleteMap.get(coach.getAtheleteId());
+						if (coachAthlete != null && coachAthlete.getUserId() != null) {
+							User user = userMap.get(coachAthlete.getUserId());
+							String name = (user != null && user.getName() != null && !user.getName().isBlank())
+									? user.getName()
+									: "Unnamed coach";
+							coachesName.add(name);
+						} else {
+							coachesName.add("Unknown coach athlete");
+						}
+					} else {
+						coachesName.add("Unknown coach");
+					}
 				}
-
 			}
-
 			response.setCoachesName(coachesName);
 
-		} catch (Exception e) {
-
-		}
-
-		try {
-
-			List<Doctor> doctors = doctorRepository.findAllById(team.getDoctors());
-
-			List<String> usersId = new ArrayList<>();
-
-			for (Doctor i : doctors) {
-
-				usersId.add(i.getUserId());
-
-			}
-
-			List<User> users = userRepository.findAllById(usersId);
-
+			// 🔥 Set Doctors Names (preserving order)
 			List<String> doctorsName = new ArrayList<>();
-
-			for (User user : users) {
-
-				try {
-
-					doctorsName.add(user.getName());
-
-				} catch (Exception e) {
-
+			if (team.getDoctors() != null) {
+				for (String doctorId : team.getDoctors()) {
+					Doctor doctor = doctorMap.get(doctorId);
+					if (doctor != null && doctor.getUserId() != null) {
+						User user = userMap.get(doctor.getUserId());
+						String name = (user != null && user.getName() != null && !user.getName().isBlank())
+								? user.getName()
+								: "Unnamed doctor";
+						doctorsName.add(name);
+					} else {
+						doctorsName.add("Unknown doctor");
+					}
 				}
-
 			}
-
 			response.setDoctorsName(doctorsName);
 
-		} catch (Exception e) {
-
-		}
-
-		try {
-
-			List<MatchName> matchNames = matchNameRepository.findByMatchIdIn(team.getMatches());
-
+			// 🔥 Set Matches Names (PRESERVING ORDER - CRITICAL FIX)
 			List<String> matchesName = new ArrayList<>();
-
+			
 			int index = 0;
-
-			Map<String, String> map = new HashMap<>();
-
-			for (MatchName name : matchNames) {
-
-				try {
-
-					if (name.getName() != null) {
-
-						map.put(name.getMatchId(), name.getName());
-
+			
+			if (team.getMatches() != null) {
+				for (String matchId : team.getMatches()) {
+					String matchName = matchNameMap.get(matchId);
+					if (matchName != null && !matchName.isBlank()) {
+						matchesName.add(matchName);
 					} else {
-
-						map.put(name.getMatchId(), "Un known match");
-
+						
+						String myMatchName = "match-" + (team.getMatches().size() + index);
+						
+						matchesName.add(myMatchName);
 					}
-
-				} catch (Exception e) {
-
+					
+					++index;
+					
 				}
-
 			}
-
-			for (String i : team.getMatches()) {
-
-				if (!map.containsKey(i)) {
-
-					String myMatchName = "match-" + (team.getMatches().size() + index);
-					map.put(i, myMatchName);
-
-				}
-
-				index++;
-
-			}
-
-			for (String i : team.getMatches()) {
-
-				matchesName.add(map.get(i));
-
-			}
-
 			response.setMatchesName(matchesName);
+			// ✅ Now matchesName is in EXACT same order as team.getMatches()
+			// Index 0 in team.getMatches() corresponds to Index 0 in matchesName
 
-		} catch (Exception e) {
-
+			responses.add(response);
 		}
 
-		return response;
-
+		return responses;
 	}
 
 }

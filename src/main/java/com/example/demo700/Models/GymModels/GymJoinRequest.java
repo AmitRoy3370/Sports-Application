@@ -3,6 +3,7 @@ package com.example.demo700.Models.GymModels;
 import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -14,11 +15,14 @@ public class GymJoinRequest {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String userId;
 
 	@NonNull
+	@Indexed
 	private String gymId;
 
+	@Indexed
 	private Instant requestSendingTime = Instant.now();
 
 	public GymJoinRequest(String userId, String gymId) {

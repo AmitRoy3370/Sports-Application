@@ -3,6 +3,7 @@ package com.example.demo700.Models.ChatModels;
 import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
@@ -14,10 +15,14 @@ public class ChatMessage {
 	@Id
 	private String id;
 
+	@Indexed
 	private String sender;
+	@Indexed
 	private String receiver;
+	@Indexed
 	private String content;
 
+	@Indexed
 	private Instant timeStamp;
 
 	public ChatMessage(String sender, String receiver, String content) {

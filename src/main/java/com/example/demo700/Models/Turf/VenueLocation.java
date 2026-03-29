@@ -1,6 +1,7 @@
 package com.example.demo700.Models.Turf;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -14,10 +15,12 @@ public class VenueLocation {
 	@Id
 	private String id;
 	@NonNull
+	@Indexed
 	private String venueId;
 	@NonNull
 	private double latitude, longitude;
 	@NonNull
+	@Indexed
 	private String locationName;
 
 	public VenueLocation(String venueId, double latitude, double longitude, String locationName) {

@@ -1,6 +1,7 @@
 package com.example.demo700.Models;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.demo700.ENUMS.Gender;
@@ -13,9 +14,11 @@ public class UserGender {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String userId;
 
 	@NonNull
+	@Indexed
 	private Gender gender;
 
 	public UserGender(String userId, Gender gender) {

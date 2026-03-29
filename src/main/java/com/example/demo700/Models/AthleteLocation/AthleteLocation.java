@@ -1,6 +1,7 @@
 package com.example.demo700.Models.AthleteLocation;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -12,15 +13,19 @@ public class AthleteLocation {
 	private String id;
 
 	@NonNull
+	@Indexed
 	private String athleteId;
 
 	@NonNull
+	@Indexed
 	private String locationName;
 
 	@NonNull
+	@Indexed
 	private double lattitude;
 
 	@NonNull
+	@Indexed
 	private double longitude;
 
 	public AthleteLocation(String userId, String locationName, double lattitude, double longitude) {

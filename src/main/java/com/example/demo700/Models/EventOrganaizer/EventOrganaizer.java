@@ -18,11 +18,14 @@ public class EventOrganaizer {
 	String id;
 
 	@NonNull
+	@Indexed
 	String userId;
 
 	@NonNull
+	@Indexed
 	String organaizationName;
 
+	@Indexed
 	List<String> matches;
 
 	public EventOrganaizer(String userId, String organaizationName, List<String> matches) {

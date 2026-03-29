@@ -3,6 +3,7 @@ package com.example.demo700.Models.Turf;
 import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
@@ -13,11 +14,17 @@ public class Discount {
 
 	@Id
 	private String id;
+	@Indexed
 	private String code;
+	@Indexed
 	private String ownerId;
+	@Indexed
 	private double percentage;
+	@Indexed
 	private Instant expiry;
+	@Indexed
 	private int usageLimit;
+	@Indexed
 	private String venueId;
 
 	public Discount(String code, String ownerId, double percentage, Instant expiry, int usageLimit, String venueId) {

@@ -3,6 +3,7 @@ package com.example.demo700.Models.DoctorModels;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.mongodb.lang.NonNull;
@@ -14,14 +15,19 @@ public class Doctor {
 	String id;
 
 	@NonNull
+	@Indexed
 	String userId;
 
+	@Indexed
 	Set<String> degress;
 
+	@Indexed
 	Set<String> workingExperiences;
 
+	@Indexed
 	int yearOfExperiences;
 
+	@Indexed
 	String designation;
 
 	public Doctor(String userId, Set<String> degress, Set<String> workingExperiences, int yearOfExperiences,
