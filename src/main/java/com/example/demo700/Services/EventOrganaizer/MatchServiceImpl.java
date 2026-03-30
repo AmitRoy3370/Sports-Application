@@ -7,7 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -494,15 +498,7 @@ public class MatchServiceImpl implements MatchService {
 
 		List<Match> list = matchRepository.findAll();
 
-		List<MatchResponse> response = new ArrayList<>();
-
-		for (Match i : list) {
-
-			response.add(getMatchResponseFromMatch(i));
-
-		}
-
-		return response;
+		return getMatchResponseFromMatchList(list);
 
 	}
 
@@ -517,15 +513,7 @@ public class MatchServiceImpl implements MatchService {
 
 		List<Match> list = matchRepository.findByOrganaizerId(organaizerId);
 
-		List<MatchResponse> response = new ArrayList<>();
-
-		for (Match i : list) {
-
-			response.add(getMatchResponseFromMatch(i));
-
-		}
-
-		return response;
+		return getMatchResponseFromMatchList(list);
 
 	}
 
@@ -540,15 +528,7 @@ public class MatchServiceImpl implements MatchService {
 
 		List<Match> list = matchRepository.findByTeamsContainingIgnoreCase(teamId);
 
-		List<MatchResponse> response = new ArrayList<>();
-
-		for (Match i : list) {
-
-			response.add(getMatchResponseFromMatch(i));
-
-		}
-
-		return response;
+		return getMatchResponseFromMatchList(list);
 
 	}
 
@@ -563,15 +543,7 @@ public class MatchServiceImpl implements MatchService {
 
 		List<Match> list = matchRepository.findByGameLogsContainingIgnoreCase(gameLogs);
 
-		List<MatchResponse> response = new ArrayList<>();
-
-		for (Match i : list) {
-
-			response.add(getMatchResponseFromMatch(i));
-
-		}
-
-		return response;
+		return getMatchResponseFromMatchList(list);
 
 	}
 
@@ -586,15 +558,7 @@ public class MatchServiceImpl implements MatchService {
 
 		List<Match> list = matchRepository.findByVideosContainingIgnoreCase(video);
 
-		List<MatchResponse> response = new ArrayList<>();
-
-		for (Match i : list) {
-
-			response.add(getMatchResponseFromMatch(i));
-
-		}
-
-		return response;
+		return getMatchResponseFromMatchList(list);
 
 	}
 
@@ -1318,106 +1282,115 @@ public class MatchServiceImpl implements MatchService {
 
 	private MatchResponse getMatchResponseFromMatch(Match match) {
 
-		MatchResponse response = new MatchResponse();
+		List<Match> list = new ArrayList<>();
 
-		response.setId(match.getId());
-		response.setGameLogs(match.getGameLogs());
-		response.setVideos(match.getVideos());
-		response.setOrganaizerId(match.getOrganaizerId());
-		response.setMatchPrice(match.getPrice());
-		response.setMatchStartTime(match.getMatchStartTime());
-		response.setMatchEndTime(match.getMatchEndTime());
-		response.setTeamsId(match.getTeams());
+		list.add(match);
 
-		try {
+		return getMatchResponseFromMatchList(list).get(0);
 
-			EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findById(match.getOrganaizerId()).get();
+	}
 
-			if (eventOrganaizer != null) {
+	private List<MatchResponse> getMatchResponseFromMatchList(List<Match> matches) {
 
-				User user = userRepository.findById(eventOrganaizer.getUserId()).get();
+		if (matches == null || matches.isEmpty()) {
 
+			return new ArrayList<>();
+
+		}
+
+		List<MatchResponse> responses = new ArrayList<>();
+
+		List<String> eventOrganaizersId = matches.stream().map(Match::getOrganaizerId).distinct()
+				.collect(Collectors.toList());
+		List<String> teamsId = matches.stream()
+				.flatMap(match -> match.getTeams() != null ? match.getTeams().stream() : Stream.empty()).distinct()
+				.collect(Collectors.toList());
+		List<String> matchesId = matches.stream().map(Match::getId).distinct().collect(Collectors.toList());
+
+		Map<String, EventOrganaizer> organaizerMap = eventOrganaizersId.isEmpty() ? new HashMap()
+				: eventOrganaizerRepository.findAllById(eventOrganaizersId).stream()
+						.collect(Collectors.toMap(EventOrganaizer::getId, Function.identity()));
+
+		Map<String, Team> teamMap = teamsId.isEmpty() ? new HashMap<>()
+				: teamRepository.findAllById(teamsId).stream()
+						.collect(Collectors.toMap(Team::getId, Function.identity()));
+
+		Map<String, MatchVenue> matchVenueMap = matchesId.isEmpty() ? new HashMap<>()
+				: matchVenueRepository.findByMatchIdIn(matchesId).stream()
+						.collect(Collectors.toMap(MatchVenue::getMatchId, Function.identity()));
+
+		Map<String, MatchName> nameMap = matchesId.isEmpty() ? new HashMap<>()
+				: matchNameRepository.findByMatchIdIn(matchesId).stream()
+						.collect(Collectors.toMap(MatchName::getMatchId, Function.identity()));
+
+		List<String> allUsersId = organaizerMap.values().stream().map(EventOrganaizer::getUserId)
+				.filter(Objects::nonNull).distinct().collect(Collectors.toList());
+
+		Map<String, User> allUserMap = allUsersId.isEmpty() ? new HashMap<>()
+				: userRepository.findAllById(allUsersId).stream()
+						.collect(Collectors.toMap(User::getId, Function.identity()));
+
+		int index = 0;
+
+		for (Match match : matches) {
+
+			MatchResponse response = new MatchResponse();
+
+			// Basic fields
+			response.setId(match.getId());
+			response.setGameLogs(match.getGameLogs());
+			response.setVideos(match.getVideos());
+			response.setOrganaizerId(match.getOrganaizerId());
+			response.setMatchPrice(match.getPrice());
+			response.setMatchStartTime(match.getMatchStartTime());
+			response.setMatchEndTime(match.getMatchEndTime());
+			response.setTeamsId(match.getTeams());
+
+			// 🔥 Set organizer name
+			EventOrganaizer organizer = organaizerMap.get(match.getOrganaizerId());
+			if (organizer != null) {
+				User user = allUserMap.get(organizer.getUserId());
 				if (user != null) {
-
 					response.setOrganaizerName(user.getName());
-
 				}
-
 			}
 
-		} catch (Exception e) {
+			// 🔥 Set team names (preserving order)
+			List<String> teamNames = new ArrayList<>();
+			if (match.getTeams() != null) {
+				for (String teamId : match.getTeams()) {
+					Team team = teamMap.get(teamId);
+					teamNames.add(team != null ? team.getTeamName() : "Unknown Team");
+				}
+			}
+			response.setTeamNames(teamNames);
 
-		}
-
-		try {
-
-			response.setTeamNames(new ArrayList<>());
-
-			List<Team> teams = teamRepository.findAllById(match.getTeams());
-
-			for (Team i : teams) {
-
-				response.getTeamNames().add(i.getTeamName());
-
+			// 🔥 Set venue
+			MatchVenue venue = matchVenueMap.get(match.getId());
+			if (venue != null) {
+				response.setMatchVenueId(venue.getId());
+				venueRepository.findById(venue.getVenueId()).ifPresent(v -> response.setMatchVenue(v.getName()));
 			}
 
-		} catch (Exception e) {
-
-		}
-
-		try {
-
-			MatchVenue matchVenue = matchVenueRepository.findByMatchId(match.getId());
-
-			if (matchVenue != null) {
-
-				response.setMatchVenueId(matchVenue.getId());
-
-				Venue venue = venueRepository.findById(matchVenue.getVenueId()).get();
-
-				if (venue != null) {
-
-					response.setMatchVenue(venue.getName());
-
-				}
-
-			}
-
-		} catch (Exception e) {
-
-		}
-
-		try {
-
-			MatchName matchName = matchNameRepository.findByMatchId(match.getId());
-
-			if (matchName != null) {
-
-				if (matchName.getName().isBlank() || matchName.getName().isEmpty()) {
-
-					response.setMatchName("Un named match");
-
-				} else {
-
-					response.setMatchName(matchName.getName());
-
-				}
-
+			// 🔥 Set match name
+			MatchName matchName = nameMap.get(match.getId());
+			if (matchName != null && matchName.getName() != null && !matchName.getName().isBlank()) {
+				response.setMatchName(matchName.getName());
 				response.setMatchNameId(matchName.getId());
-
 			} else {
 
-				response.setMatchName("Un named match");
+				String myMatchName = "match-" + (nameMap.size() + index);
 
+				response.setMatchName(myMatchName);
 			}
 
-		} catch (Exception e) {
+			responses.add(response);
 
-			response.setMatchName("Un named search");
+			++index;
 
 		}
 
-		return response;
+		return responses;
 
 	}
 

@@ -12,5 +12,6 @@ public interface MatchVenueRepository extends MongoRepository<MatchVenue, String
 	
 	List<MatchVenue> findByVenueId(String venueId);
 	MatchVenue findByMatchId(String matchId);
+	List<MatchVenue> findByMatchIdIn(List<String> matchesId);
 
 }
