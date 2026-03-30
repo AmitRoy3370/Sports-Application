@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.DTOFiles.AthleteRequestDTO;
 import com.example.demo700.DTOFiles.AthleteListResponseDTO;
+import com.example.demo700.ENUMS.Gender;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.UserGender;
@@ -1066,5 +1067,95 @@ public class AtheleteServiceImpl implements AtheleteService {
 	// 🔥 Helper method to get total count
 	public long getTotalAthleteCount() {
 		return athleteRepository.count();
+	}
+
+	@Override
+	public AthleteListResponseDTO findByGender(String gender, int page, int size) {
+
+		try {
+
+			Gender _gender = Gender.valueOf(gender);
+
+			if (_gender == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("No such gender present at here...");
+
+		}
+
+		try {
+
+			List<UserGender> users = athleteGenderRepository.findByGender(Gender.valueOf(gender));
+
+			if (users.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			List<String> userIds = users.stream().map(UserGender::getUserId).distinct().collect(Collectors.toList());
+
+			Pageable pageable = PageRequest.of(page, size);
+
+			Page<Athelete> athletes = athleteRepository.findByUserIdIn(userIds, pageable);
+
+			if (!athletes.hasContent()) {
+
+				throw new Exception();
+
+			}
+
+			List<AthleteRequestDTO> list = getListDetailsFromAthleteList(athletes.toList());
+
+			if (list.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			return new AthleteListResponseDTO(list, page, size, athletes.getTotalElements(), athletes.getTotalPages());
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such athlete find at here...");
+
+		}
+
+	}
+
+	@Override
+	public List<Athelete> findByNamePartial(String partialName) {
+
+		if (partialName == null) {
+
+			throw new NullPointerException("False request...");
+
+		}
+
+		List<User> users = userRepository.findByNameContainingIgnoreCase(partialName);
+
+		if (users.isEmpty()) {
+
+			throw new NoSuchElementException("No such user find at here...");
+
+		}
+
+		List<String> usersId = users.stream().map(User::getId).distinct().collect(Collectors.toList());
+
+		List<Athelete> athletes = athleteRepository.findByUserIdIn(usersId);
+
+		if (athletes.isEmpty()) {
+
+			throw new NoSuchElementException("No such athlete present with this name");
+
+		}
+
+		return athletes;
+
 	}
 }

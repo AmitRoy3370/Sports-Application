@@ -29,6 +29,9 @@ public interface AtheleteService {
     AthleteListResponseDTO searchByTeamNamePartial(String partialName, int page, int size);
     AthleteListResponseDTO findByMultipleEvents(List<String> eventNames, int page, int size);
     AthleteListResponseDTO findByWeightRange(double min, double max, int page, int size);
+    AthleteListResponseDTO findByGender(String gender, int page, int size);
+    
+    List<Athelete> findByNamePartial(String partialName);
     
     // 🔥 SINGLE RESULT METHODS
     AthleteRequestDTO searchByAthleteId(String athleteId);

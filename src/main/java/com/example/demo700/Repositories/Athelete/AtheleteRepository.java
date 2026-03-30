@@ -53,6 +53,10 @@ public interface AtheleteRepository extends MongoRepository<Athelete, String> {
     
     List<Athelete> findBypresentTeam(String teamName);
     
+    Page<Athelete> findByUserIdIn(List<String> userIds, Pageable pageable);
+    
+    List<Athelete> findByUserIdIn(List<String> userIds);
+    
     // 🔥 CUSTOM QUERIES WITH PAGINATION
     @Query("{ 'presentTeam': { $regex: ?0, $options: 'i' } }")
     List<Athelete> searchByTeamNamePartial(String partialName);
