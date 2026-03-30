@@ -1368,7 +1368,7 @@ public class MatchServiceImpl implements MatchService {
 			// 🔥 Set venue
 			MatchVenue venue = matchVenueMap.get(match.getId());
 			if (venue != null) {
-				response.setMatchVenueId(venue.getId());
+				response.setMatchVenueId(venue.getVenueId());
 				venueRepository.findById(venue.getVenueId()).ifPresent(v -> response.setMatchVenue(v.getName()));
 			}
 
