@@ -31,7 +31,7 @@ public interface AtheleteService {
     AthleteListResponseDTO findByWeightRange(double min, double max, int page, int size);
     AthleteListResponseDTO findByGender(String gender, int page, int size);
     
-    List<Athelete> findByNamePartial(String partialName);
+    List<AthleteRequestDTO> findByNamePartial(String partialName);
     
     // 🔥 SINGLE RESULT METHODS
     AthleteRequestDTO searchByAthleteId(String athleteId);

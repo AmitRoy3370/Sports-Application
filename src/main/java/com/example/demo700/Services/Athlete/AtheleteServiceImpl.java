@@ -1129,7 +1129,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 	}
 
 	@Override
-	public List<Athelete> findByNamePartial(String partialName) {
+	public List<AthleteRequestDTO> findByNamePartial(String partialName) {
 
 		if (partialName == null) {
 
@@ -1155,7 +1155,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		}
 
-		return athletes;
+		return getListDetailsFromAthleteList(athletes);
 
 	}
 }
