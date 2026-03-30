@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.ChatMessageResponse;
 import com.example.demo700.Models.ChatModels.ChatMessage;
 import com.example.demo700.Services.ChatServices.ChatService;
 
@@ -69,12 +70,56 @@ public class ChatController {
 	}
 
 	/**
+	 * ✅REST API: Get chat message by id
+	 */
+	@GetMapping("/id/{id}")
+	public ResponseEntity<?> getChatMessageById(@PathVariable String id) {
+
+		try {
+
+			ChatMessageResponse chat = chatService.getChatMessageById(id);
+
+			if (chat == null) {
+
+				throw new Exception("No chat find...");
+
+			}
+
+			return ResponseEntity.status(200).body(chat);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
+
+		}
+
+	}
+
+	/**
+	 * ✅ REST API: Get all chat message
+	 */
+	@GetMapping("/seeAll")
+	public ResponseEntity<?> seeAllChatMessage() {
+
+		try {
+
+			return ResponseEntity.status(200).body(chatService.seeAllChatMessage());
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
+
+		}
+
+	}
+
+	/**
 	 * ✅ REST API: Get chat history between two users
 	 */
 	@GetMapping("/history/{user1}/{user2}")
 	public ResponseEntity<?> getChatHistory(@PathVariable String user1, @PathVariable String user2) {
 		try {
-			List<ChatMessage> history = chatService.getChatHistory(user1, user2);
+			List<ChatMessageResponse> history = chatService.getChatHistory(user1, user2);
 			if (history.isEmpty()) {
 				return new ResponseEntity<>("No chat history found between users", HttpStatus.NOT_FOUND);
 			}
