@@ -210,67 +210,95 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 
 			}
 
-			List<Booking> bookings = bookingRepository.findByUserId(userId);
+			boolean find = false;
 
-			Map<String, List<Booking>> map = new HashMap<>();
+			List<Booking> bookings = bookingRepository.findValidBookings(userId, match.getMatchStartTime(),
+					match.getMatchEndTime());
 
-			for (Booking booking : bookings) {
+			if (bookings.isEmpty()) {
+				throw new RuntimeException("No valid booking");
+			}
 
-				if (!map.containsKey(booking.getVenueId())) {
+			find = !bookings.isEmpty();
 
-					map.put(booking.getVenueId(), new ArrayList<>());
-					map.get(booking.getVenueId()).add(booking);
+			/*
+			 * List<Booking> bookings = bookingRepository.findByUserId(userId);
+			 * 
+			 * Map<String, List<Booking>> map = new HashMap<>();
+			 * 
+			 * for (Booking booking : bookings) {
+			 * 
+			 * if (!map.containsKey(booking.getVenueId())) {
+			 * 
+			 * map.put(booking.getVenueId(), new ArrayList<>());
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * } else {
+			 * 
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * boolean find = false;
+			 * 
+			 * for (String i : map.keySet()) {
+			 * 
+			 * List<Booking> _bookings = map.get(i);
+			 * 
+			 * find = false;
+			 * 
+			 * for (Booking booking : _bookings) {
+			 * 
+			 * if (booking.getStartTime().isBefore(match.getMatchStartTime()) &&
+			 * booking.getEndTime().isAfter(match.getMatchEndTime())) {
+			 * 
+			 * if (booking.getStatus() == BookingStatus.CONFIRMED) {
+			 * 
+			 * // find = true; matchVenueId = booking.getVenueId();
+			 * 
+			 * if (matchVenueId.equals(matchVenue.getVenueId())) {
+			 * 
+			 * find = true; break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * if (find) {
+			 * 
+			 * break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 */
 
-				} else {
+			if (!find) {
 
-					map.get(booking.getVenueId()).add(booking);
+				System.out.println("Not find any valid schedule...");
 
-				}
+				throw new Exception();
 
 			}
 
-			boolean find = false;
+			for (Booking booking : bookings) {
 
-			for (String i : map.keySet()) {
+				if (booking.getVenueId().equals(matchVenue.getVenueId())) {
 
-				List<Booking> _bookings = map.get(i);
-
-				find = false;
-
-				for (Booking booking : _bookings) {
-
-					if (booking.getStartTime().isBefore(match.getMatchStartTime())
-							&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
-
-						if (booking.getStatus() == BookingStatus.CONFIRMED) {
-
-							// find = true;
-							matchVenueId = booking.getVenueId();
-
-							if (matchVenueId.equals(matchVenue.getVenueId())) {
-
-								find = true;
-								break;
-
-							}
-
-						}
-
-					}
-
-				}
-
-				if (find) {
-
+					matchVenueId = booking.getVenueId();
 					break;
 
 				}
 
 			}
 
-			if (!find) {
-
-				System.out.println("Not find any valid schedule...");
+			if (matchVenueId == null || matchVenueId.isEmpty()) {
 
 				throw new Exception();
 
@@ -328,13 +356,13 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 				throw new Exception();
 
 			}
-			
+
 			List<String> matchIds = new ArrayList<>();
-			
-			for(Match i : matches) {
-				
+
+			for (Match i : matches) {
+
 				matchIds.add(i.getId());
-				
+
 			}
 
 			if (!matchIds.contains(matchVenue.getMatchId())) {
@@ -477,67 +505,95 @@ public class MatchVenueServiceImpl implements MatchVenueService {
 
 			}
 
-			List<Booking> bookings = bookingRepository.findByUserId(userId);
+			boolean find = false;
 
-			Map<String, List<Booking>> map = new HashMap<>();
+			List<Booking> bookings = bookingRepository.findValidBookings(userId, match.getMatchStartTime(),
+					match.getMatchEndTime());
 
-			for (Booking booking : bookings) {
+			if (bookings.isEmpty()) {
+				throw new RuntimeException("No valid booking");
+			}
 
-				if (!map.containsKey(booking.getVenueId())) {
+			find = !bookings.isEmpty();
 
-					map.put(booking.getVenueId(), new ArrayList<>());
-					map.get(booking.getVenueId()).add(booking);
+			/*
+			 * List<Booking> bookings = bookingRepository.findByUserId(userId);
+			 * 
+			 * Map<String, List<Booking>> map = new HashMap<>();
+			 * 
+			 * for (Booking booking : bookings) {
+			 * 
+			 * if (!map.containsKey(booking.getVenueId())) {
+			 * 
+			 * map.put(booking.getVenueId(), new ArrayList<>());
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * } else {
+			 * 
+			 * map.get(booking.getVenueId()).add(booking);
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * boolean find = false;
+			 * 
+			 * for (String i : map.keySet()) {
+			 * 
+			 * List<Booking> _bookings = map.get(i);
+			 * 
+			 * find = false;
+			 * 
+			 * for (Booking booking : _bookings) {
+			 * 
+			 * if (booking.getStartTime().isBefore(match.getMatchStartTime()) &&
+			 * booking.getEndTime().isAfter(match.getMatchEndTime())) {
+			 * 
+			 * if (booking.getStatus() == BookingStatus.CONFIRMED) {
+			 * 
+			 * // find = true; _matchVenueId = booking.getVenueId();
+			 * 
+			 * if (_matchVenueId.equals(matchVenue.getVenueId())) {
+			 * 
+			 * find = true; break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * }
+			 * 
+			 * if (find) {
+			 * 
+			 * break;
+			 * 
+			 * }
+			 * 
+			 * }
+			 */
 
-				} else {
+			if (!find) {
 
-					map.get(booking.getVenueId()).add(booking);
+				System.out.println("Not find any valid schedule...");
 
-				}
+				throw new Exception();
 
 			}
 
-			boolean find = false;
+			for (Booking booking : bookings) {
 
-			for (String i : map.keySet()) {
+				if (booking.getVenueId().equals(matchVenue.getVenueId())) {
 
-				List<Booking> _bookings = map.get(i);
-
-				find = false;
-
-				for (Booking booking : _bookings) {
-
-					if (booking.getStartTime().isBefore(match.getMatchStartTime())
-							&& booking.getEndTime().isAfter(match.getMatchEndTime())) {
-
-						if (booking.getStatus() == BookingStatus.CONFIRMED) {
-
-							// find = true;
-							_matchVenueId = booking.getVenueId();
-
-							if (_matchVenueId.equals(matchVenue.getVenueId())) {
-
-								find = true;
-								break;
-
-							}
-
-						}
-
-					}
-
-				}
-
-				if (find) {
-
+					matchVenueId = booking.getVenueId();
 					break;
 
 				}
 
 			}
 
-			if (!find) {
-
-				System.out.println("Not find any valid schedule...");
+			if (matchVenueId == null || matchVenueId.isEmpty()) {
 
 				throw new Exception();
 
