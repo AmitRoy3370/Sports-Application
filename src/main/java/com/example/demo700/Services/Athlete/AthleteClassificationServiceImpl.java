@@ -261,15 +261,10 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 		}
 
-		List<Athelete> athletes = new ArrayList<>();
+		List<String> athletesId = list.getContent().stream().map(AthleteClassification::getAthleteId).distinct()
+				.collect(Collectors.toList());
 
-		for (AthleteClassification i : list) {
-
-			Athelete athlete = athleteRepository.findById(i.getAthleteId()).get();
-
-			athletes.add(athlete);
-
-		}
+		List<Athelete> athletes = athleteRepository.findAllById(athletesId);
 
 		List<AthleteRequestDTO> detailsAthlete = getListDetailsFromAthleteList(athletes);
 
@@ -353,19 +348,14 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 		}
 
-		List<Athelete> athletes = new ArrayList<>();
+		List<String> athletesId = list.getContent().stream().map(AthleteClassification::getAthleteId).distinct()
+				.collect(Collectors.toList());
 
-		for (AthleteClassification i : list) {
+		List<Athelete> athletes = athleteRepository.findAllById(athletesId);
 
-			Athelete athlete = athleteRepository.findById(i.getAthleteId()).get();
-
-			athletes.add(athlete);
-
-		}
 		List<AthleteRequestDTO> detailsAthlete = getListDetailsFromAthleteList(athletes);
 
 		return new AthleteListResponseDTO(detailsAthlete, page, size, list.getTotalElements(), list.getTotalPages());
-
 	}
 
 	@Override
@@ -564,78 +554,11 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 		Athelete athleteDetails = athleteRepository.findById(athleteId)
 				.orElseThrow(() -> new NoSuchElementException("Athlete not found"));
 
-		AthleteRequestDTO athlete = new AthleteRequestDTO();
+		List<Athelete> athlete = new ArrayList<>();
 
-		athlete.setId(athleteDetails.getId());
-		athlete.setAge(athleteDetails.getAge());
-		athlete.setGameLogs(athleteDetails.getGameLogs());
-		athlete.setEventAttendence(athleteDetails.getEventAttendence());
-		athlete.setHeight(athleteDetails.getHeight());
-		athlete.setWeight(athleteDetails.getWeight());
-		athlete.setUserId(athleteDetails.getUserId());
-		athlete.setPosition(athleteDetails.getPosition());
-		athlete.setPresentTeam(athleteDetails.getPresentTeam());
-		athlete.setHighlightReels(athleteDetails.getHighlightReels());
+		athlete.add(athleteDetails);
 
-		User user = userRepository.findById(athleteDetails.getUserId())
-				.orElseThrow(() -> new NoSuchElementException("User not found"));
-
-		athlete.setName(user.getName());
-		athlete.setEmail(user.getEmail());
-		athlete.setRoles(user.getRoles());
-
-		try {
-			AthleteLocation location = athleteLocationRepository.findByAthleteId(athleteId);
-			if (location != null) {
-				// AthleteLocation location = locationOpt.get();
-				athlete.setLattitude(location.getLattitude());
-				athlete.setLongitude(location.getLongitude());
-				athlete.setLocationName(location.getLocationName());
-				athlete.setLocationId(location.getId());
-			}
-		} catch (Exception e) {
-			// Location not found
-		}
-
-		try {
-			UserGender genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
-			if (genderOpt != null) {
-				athlete.setGender(genderOpt.getGender());
-				athlete.setUserGenderId(genderOpt.getId());
-			}
-		} catch (Exception e) {
-			// Gender not found
-		}
-
-		try {
-			AthleteClassification classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
-			if (classificationOpt != null) {
-				athlete.setAthleteClassificationTypes(classificationOpt.getAthleteClassificationTypes());
-				athlete.setAthleteClassificationId(classificationOpt.getId());
-			}
-		} catch (Exception e) {
-			// Classification not found
-		}
-
-		try {
-
-			ProfileIamge image = profileImageRepository.findByUserId(user.getId());
-
-			if (image != null) {
-
-				if (image.getImageHex() != null) {
-
-					athlete.setImageHex(image.getImageHex());
-
-				}
-
-			}
-
-		} catch (Exception e) {
-
-		}
-
-		return athlete;
+		return getListDetailsFromAthleteList(athlete).get(0);
 	}
 
 }

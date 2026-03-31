@@ -1,8 +1,16 @@
 package com.example.demo700.Services.Athlete;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -126,16 +134,8 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 	public List<TeamOwnerResponseDTO> seeAllTeamOwner() {
 
 		List<TeamOwner> list = teamOwnerRepository.findAll();
-		
-		List<TeamOwnerResponseDTO> response = new ArrayList<>();
-		
-		for(TeamOwner i : list) {
-			
-			response.add(getTeamOwnerResponse(i));
-			
-		}
-		
-		return response;
+
+		return getTeamOwnerResponseFromList(list);
 
 	}
 
@@ -459,15 +459,7 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		List<TeamOwner> list = teamOwnerRepository.findByAchivementsContainingIgnoreCase(achivement);
 
-		List<TeamOwnerResponseDTO> response = new ArrayList<>();
-		
-		for(TeamOwner i : list) {
-			
-			response.add(getTeamOwnerResponse(i));
-			
-		}
-		
-		return response;
+		return getTeamOwnerResponseFromList(list);
 
 	}
 
@@ -481,15 +473,7 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		List<TeamOwner> list = teamOwnerRepository.findByMatchesContainingIgnoreCase(matchId);
 
-		List<TeamOwnerResponseDTO> response = new ArrayList<>();
-		
-		for(TeamOwner i : list) {
-			
-			response.add(getTeamOwnerResponse(i));
-			
-		}
-		
-		return response;
+		return getTeamOwnerResponseFromList(list);
 	}
 
 	@Override
@@ -557,67 +541,113 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 	private TeamOwnerResponseDTO getTeamOwnerResponse(TeamOwner teamOwner) {
 
-		TeamOwnerResponseDTO response = new TeamOwnerResponseDTO();
+		List<TeamOwner> list = new ArrayList<>();
 
-		response.setId(teamOwner.getId());
-		response.setAthleteId(teamOwner.getAtheleteId());
+		list.add(teamOwner);
 
-		if (!teamOwner.getTeams().isEmpty()) {
-
-			response.setTeamsId(teamOwner.getTeams());
-
-		}
-
-		if (!teamOwner.getMatches().isEmpty()) {
-
-			response.setMatchesId(teamOwner.getMatches());
-
-		}
-
-		if (teamOwner.getAchivements() != null && !teamOwner.getAchivements().isEmpty()) {
-
-			response.setAchivements(teamOwner.getAchivements());
-
-		}
-
-		List<Team> teams = teamRepository.findAllById(teamOwner.getTeams());
-
-		List<String> teamNames = new ArrayList<>();
-
-		for (Team i : teams) {
-
-			teamNames.add(i.getTeamName());
-
-		}
-
-		response.setTeamsName(teamNames);
-
-		List<MatchName> matches = matchNameRepository.findByMatchIdIn(teamOwner.getMatches());
-
-		List<String> matchesName = new ArrayList<>();
-
-		for (MatchName i : matches) {
-
-			matchesName.add(i.getName());
-
-		}
-
-		response.setMatchesName(matchesName);
-
-		try {
-
-			Athelete athlete = atheleteRepository.findById(teamOwner.getAtheleteId()).get();
-			
-			User user = userRepository.findById(athlete.getUserId()).get();
-			
-			response.setTeamOwnerName(user.getName());
-			
-		} catch (Exception e) {
-
-		}
-
-		return response;
+		return getTeamOwnerResponseFromList(list).get(0);
 
 	}
 
+	private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	private List<TeamOwnerResponseDTO> getTeamOwnerResponseFromList(List<TeamOwner> teamOwners) {
+
+		if (teamOwners == null || teamOwners.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		// 🔥 Collect all IDs in one pass
+		Set<String> allAthleteIds = new HashSet<>();
+		Set<String> allTeamIds = new HashSet<>();
+		Set<String> allMatchIds = new HashSet<>();
+
+		for (TeamOwner owner : teamOwners) {
+			if (owner.getAtheleteId() != null) {
+				allAthleteIds.add(owner.getAtheleteId());
+			}
+			if (owner.getTeams() != null) {
+				allTeamIds.addAll(owner.getTeams());
+			}
+			if (owner.getMatches() != null) {
+				allMatchIds.addAll(owner.getMatches());
+			}
+		}
+
+		// 🔥 Batch fetch all data in parallel
+		CompletableFuture<Map<String, Team>> teamFuture = CompletableFuture.supplyAsync(
+				() -> teamRepository.findAllById(allTeamIds).stream().collect(Collectors.toMap(Team::getId, t -> t)),
+				executor);
+
+		CompletableFuture<Map<String, String>> matchNameFuture = CompletableFuture.supplyAsync(() -> matchNameRepository
+				.findByMatchIdIn(new ArrayList<>(allMatchIds)).stream()
+				.collect(Collectors.toMap(MatchName::getMatchId,
+						mn -> (mn.getName() != null && !mn.getName().isBlank()) ? mn.getName() : "Unknown Match")),
+				executor);
+
+		CompletableFuture<Map<String, Athelete>> athleteFuture = CompletableFuture
+				.supplyAsync(() -> atheleteRepository.findAllById(new ArrayList<>(allAthleteIds)).stream()
+						.collect(Collectors.toMap(Athelete::getId, a -> a)), executor);
+
+		CompletableFuture.allOf(teamFuture, matchNameFuture, athleteFuture).join();
+
+		Map<String, Team> teamMap = teamFuture.join();
+		Map<String, String> matchNameMap = matchNameFuture.join();
+		Map<String, Athelete> athleteMap = athleteFuture.join();
+
+		// 🔥 Fetch users (single batch)
+		Map<String, User> userMap = athleteMap.values().stream().map(Athelete::getUserId).distinct()
+				.collect(Collectors.collectingAndThen(Collectors.toList(), userIds -> userIds.isEmpty()
+						? new HashMap<>()
+						: userRepository.findAllById(userIds).stream().collect(Collectors.toMap(User::getId, u -> u))));
+
+		// 🔥 Build athlete name map
+		Map<String, String> athleteNameMap = new HashMap<>();
+		for (var entry : athleteMap.entrySet()) {
+			User user = userMap.get(entry.getValue().getUserId());
+			athleteNameMap.put(entry.getKey(),
+					(user != null && user.getName() != null && !user.getName().isBlank()) ? user.getName()
+							: "Unknown Athlete");
+		}
+
+		// 🔥 Build responses with order preserved
+		return teamOwners.stream().map(owner -> buildResponse(owner, teamMap, matchNameMap, athleteNameMap))
+				.collect(Collectors.toList());
+	}
+
+	private TeamOwnerResponseDTO buildResponse(TeamOwner owner, Map<String, Team> teamMap,
+			Map<String, String> matchNameMap, Map<String, String> athleteNameMap) {
+		TeamOwnerResponseDTO response = new TeamOwnerResponseDTO();
+
+		response.setId(owner.getId());
+		response.setAthleteId(owner.getAtheleteId());
+		response.setTeamOwnerName(athleteNameMap.get(owner.getAtheleteId()));
+
+		// Teams with order preserved
+		if (owner.getTeams() != null && !owner.getTeams().isEmpty()) {
+			response.setTeamsId(new ArrayList<>(owner.getTeams()));
+			response.setTeamsName(owner.getTeams().stream()
+					.map(id -> teamMap.containsKey(id) ? teamMap.get(id).getTeamName() : "Unknown Team")
+					.collect(Collectors.toList()));
+		} else {
+			response.setTeamsId(new ArrayList<>());
+			response.setTeamsName(new ArrayList<>());
+		}
+
+		// Matches with order preserved
+		if (owner.getMatches() != null && !owner.getMatches().isEmpty()) {
+			response.setMatchesId(new ArrayList<>(owner.getMatches()));
+			response.setMatchesName(owner.getMatches().stream()
+					.map(id -> matchNameMap.getOrDefault(id, "Unknown Match")).collect(Collectors.toList()));
+		} else {
+			response.setMatchesId(new ArrayList<>());
+			response.setMatchesName(new ArrayList<>());
+		}
+
+		// Achievements
+		response.setAchivements(
+				owner.getAchivements() != null ? new ArrayList<>(owner.getAchivements()) : new ArrayList<>());
+
+		return response;
+	}
 }
