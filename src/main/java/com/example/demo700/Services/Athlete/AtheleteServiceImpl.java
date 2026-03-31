@@ -1,11 +1,17 @@
 package com.example.demo700.Services.Athlete;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +34,7 @@ import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
 import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
@@ -35,6 +42,7 @@ import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Validator.URLValidator;
@@ -62,6 +70,9 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 	@Autowired
 	MatchRepository matchRepository;
+
+	@Autowired
+	MatchNameRepository matchNameRepository;
 
 	@Autowired
 	ProfileImageRepository profileImageRepository;
@@ -676,8 +687,10 @@ public class AtheleteServiceImpl implements AtheleteService {
 		return yes;
 	}
 
+	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
 	// 🔥 OPTIMIZED BATCH FETCHING for 50TB database
-	public List<AthleteRequestDTO> getListDetailsFromAthleteList(List<Athelete> athletes) {
+	private List<AthleteRequestDTO> getListDetailsFromAthleteList(List<Athelete> athletes) {
 		if (athletes == null || athletes.isEmpty()) {
 			return new ArrayList<>();
 		}
@@ -693,46 +706,85 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 		List<String> userIds = athletes.stream().map(Athelete::getUserId).collect(Collectors.toList());
 
+		// 🔥 CORRECT: flatMap on a List of Lists
+		List<String> allEventAttendanceIds = athletes.stream().filter(athlete -> athlete.getEventAttendence() != null) // Avoid
+																														// null
+				.flatMap(athlete -> athlete.getEventAttendence().stream()) // Convert each List to Stream
+				.distinct() // Remove duplicates
+				.collect(Collectors.toList());
+
+		CompletableFuture<Map<String, User>> userFuture = CompletableFuture.supplyAsync(() -> userRepository
+				.findAllById(userIds).stream().collect(Collectors.toMap(User::getId, Function.identity())), executor);
+
+		CompletableFuture<Map<String, AthleteLocation>> locationFuture = CompletableFuture
+				.supplyAsync(
+						() -> athleteLocationRepository.findByAthleteIdIn(athleteIds).stream()
+								.collect(Collectors.toMap(AthleteLocation::getAthleteId, Function.identity())),
+						executor);
+
+		CompletableFuture<Map<String, UserGender>> genderFuture = CompletableFuture
+				.supplyAsync(() -> athleteGenderRepository.findByUserIdIn(userIds).stream()
+						.collect(Collectors.toMap(UserGender::getUserId, Function.identity())), executor);
+
+		CompletableFuture<Map<String, AthleteClassification>> classificationFuture = CompletableFuture
+				.supplyAsync(
+						() -> athleteClassificationRepository.findByAthleteIdIn(athleteIds).stream()
+								.collect(Collectors.toMap(AthleteClassification::getAthleteId, Function.identity())),
+						executor);
+
+		CompletableFuture<Map<String, String>> matchNameFuture = CompletableFuture.supplyAsync(() -> {
+			try {
+				List<MatchName> matchNames = matchNameRepository.findByMatchIdIn(allEventAttendanceIds);
+
+				if (matchNames == null || matchNames.isEmpty()) {
+					return Collections.emptyMap();
+				}
+
+				return matchNames.stream().filter(mn -> mn != null && mn.getMatchId() != null)
+						.collect(Collectors.toMap(MatchName::getMatchId,
+								mn -> mn.getName() != null && !mn.getName().isBlank() ? mn.getName() : "Unknown Match",
+								(existing, replacement) -> existing // Keep first on duplicate
+				));
+
+			} catch (Exception e) {
+				// log.error("Error fetching match names: {}", e.getMessage());
+				return Collections.emptyMap();
+			}
+		}, executor);
+
+		CompletableFuture<Map<String, ProfileIamge>> profileImageFuture = CompletableFuture
+				.supplyAsync(
+						() -> profileImageRepository.findByUserIdIn(userIds).stream()
+								.collect(Collectors.toMap(ProfileIamge::getUserId, Function.identity(), null)),
+						executor);
+
+		CompletableFuture.allOf(userFuture, locationFuture, genderFuture, classificationFuture, matchNameFuture,
+				profileImageFuture).join();
+
 		// Batch fetch with error handling
-		Map<String, User> userMap = new HashMap<>();
-		Map<String, AthleteLocation> locationMap = new HashMap<>();
-		Map<String, UserGender> genderMap = new HashMap<>();
-		Map<String, AthleteClassification> classificationMap = new HashMap<>();
+		Map<String, User> userMap = userFuture.join();
+		Map<String, AthleteLocation> locationMap = locationFuture.join();
+		Map<String, UserGender> genderMap = genderFuture.join();
+		Map<String, AthleteClassification> classificationMap = classificationFuture.join();
+		Map<String, String> matchNameMap = matchNameFuture.join();
+		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
 
-		try {
-			List<User> users = userRepository.findAllById(userIds);
-			for (User u : users) {
-				userMap.put(u.getId(), u);
-			}
-		} catch (Exception e) {
-			System.err.println("Error fetching users: " + e.getMessage());
-		}
+		int index = 0;
 
-		try {
-			List<AthleteLocation> locations = athleteLocationRepository.findByAthleteIdIn(athleteIds);
-			for (AthleteLocation l : locations) {
-				locationMap.put(l.getAthleteId(), l);
-			}
-		} catch (Exception e) {
-			System.err.println("Error fetching locations: " + e.getMessage());
-		}
+		for (String i : allEventAttendanceIds) {
 
-		try {
-			List<UserGender> genders = athleteGenderRepository.findByUserIdIn(userIds);
-			for (UserGender g : genders) {
-				genderMap.put(g.getUserId(), g);
-			}
-		} catch (Exception e) {
-			System.err.println("Error fetching genders: " + e.getMessage());
-		}
+			if (matchNameMap.containsKey(i)) {
 
-		try {
-			List<AthleteClassification> classifications = athleteClassificationRepository.findByAthleteIdIn(athleteIds);
-			for (AthleteClassification c : classifications) {
-				classificationMap.put(c.getAthleteId(), c);
+			} else {
+
+				String myMatchName = "match-" + (allEventAttendanceIds.size() + index);
+
+				matchNameMap.put(i, myMatchName);
+
 			}
-		} catch (Exception e) {
-			System.err.println("Error fetching classifications: " + e.getMessage());
+
+			index++;
+
 		}
 
 		// Build DTOs
@@ -752,6 +804,13 @@ public class AtheleteServiceImpl implements AtheleteService {
 				dto.setGameLogs(a.getGameLogs());
 				dto.setEventAttendence(a.getEventAttendence());
 				dto.setHighlightReels(a.getHighlightReels());
+
+				List<String> matchNames = a.getEventAttendence() != null
+						? a.getEventAttendence().stream().filter(Objects::nonNull)
+								.map(matchId -> matchNameMap.get(matchId)).collect(Collectors.toList())
+						: new ArrayList<>();
+
+				dto.setEventNames(matchNames);
 
 				User user = userMap.get(a.getUserId());
 				if (user != null) {
@@ -777,20 +836,13 @@ public class AtheleteServiceImpl implements AtheleteService {
 				AthleteClassification cls = classificationMap.get(a.getId());
 				if (cls != null) {
 					dto.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
-					dto.setAthleteClassificationId(cls.getId());
 				}
 
 				try {
 
-					ProfileIamge image = profileImageRepository.findByUserId(user.getId());
+					if (profileImageMap.containsKey(a.getUserId())) {
 
-					if (image != null) {
-
-						if (image.getImageHex() != null) {
-
-							dto.setImageHex(image.getImageHex());
-
-						}
+						dto.setImageHex(profileImageMap.get(a.getUserId()).getImageHex());
 
 					}
 
@@ -811,78 +863,11 @@ public class AtheleteServiceImpl implements AtheleteService {
 		Athelete athleteDetails = athleteRepository.findById(athleteId)
 				.orElseThrow(() -> new NoSuchElementException("Athlete not found"));
 
-		AthleteRequestDTO athlete = new AthleteRequestDTO();
+		List<Athelete> athlete = new ArrayList<>();
 
-		athlete.setId(athleteDetails.getId());
-		athlete.setAge(athleteDetails.getAge());
-		athlete.setGameLogs(athleteDetails.getGameLogs());
-		athlete.setEventAttendence(athleteDetails.getEventAttendence());
-		athlete.setHeight(athleteDetails.getHeight());
-		athlete.setWeight(athleteDetails.getWeight());
-		athlete.setUserId(athleteDetails.getUserId());
-		athlete.setPosition(athleteDetails.getPosition());
-		athlete.setPresentTeam(athleteDetails.getPresentTeam());
-		athlete.setHighlightReels(athleteDetails.getHighlightReels());
+		athlete.add(athleteDetails);
 
-		User user = userRepository.findById(athleteDetails.getUserId())
-				.orElseThrow(() -> new NoSuchElementException("User not found"));
-
-		athlete.setName(user.getName());
-		athlete.setEmail(user.getEmail());
-		athlete.setRoles(user.getRoles());
-
-		try {
-			AthleteLocation location = athleteLocationRepository.findByAthleteId(athleteId);
-			if (location != null) {
-				// AthleteLocation location = locationOpt.get();
-				athlete.setLattitude(location.getLattitude());
-				athlete.setLongitude(location.getLongitude());
-				athlete.setLocationName(location.getLocationName());
-				athlete.setLocationId(location.getId());
-			}
-		} catch (Exception e) {
-			// Location not found
-		}
-
-		try {
-			UserGender genderOpt = athleteGenderRepository.findByUserId(athleteDetails.getUserId());
-			if (genderOpt != null) {
-				athlete.setGender(genderOpt.getGender());
-				athlete.setUserGenderId(genderOpt.getId());
-			}
-		} catch (Exception e) {
-			// Gender not found
-		}
-
-		try {
-			AthleteClassification classificationOpt = athleteClassificationRepository.findByAthleteId(athleteId);
-			if (classificationOpt != null) {
-				athlete.setAthleteClassificationTypes(classificationOpt.getAthleteClassificationTypes());
-				athlete.setAthleteClassificationId(classificationOpt.getId());
-			}
-		} catch (Exception e) {
-			// Classification not found
-		}
-
-		try {
-
-			ProfileIamge image = profileImageRepository.findByUserId(user.getId());
-
-			if (image != null) {
-
-				if (image.getImageHex() != null) {
-
-					athlete.setImageHex(image.getImageHex());
-
-				}
-
-			}
-
-		} catch (Exception e) {
-
-		}
-
-		return athlete;
+		return getListDetailsFromAthleteList(athlete).get(0);
 	}
 
 	// 🔥 Helper method to validate page size for 50TB database

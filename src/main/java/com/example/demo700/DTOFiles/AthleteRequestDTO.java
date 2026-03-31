@@ -17,6 +17,7 @@ public class AthleteRequestDTO {
 	private int age;
 	private List<String> gameLogs;
 	private List<String> eventAttendence;
+	private List<String> eventNames;
 	private List<String> highlightReels;
 	private AthleteClassificationTypes athleteClassificationTypes;
 	private Set<Role> roles;
@@ -201,6 +202,14 @@ public class AthleteRequestDTO {
 		this.imageHex = imageHex;
 	}
 
+	public List<String> getEventNames() {
+		return eventNames;
+	}
+
+	public void setEventNames(List<String> eventNames) {
+		this.eventNames = eventNames;
+	}
+
 	@Override
 	public String toString() {
 		return "AthleteRequestDTO [id=" + id + ", userId=" + userId + ", name=" + name + ", userGenderId="
@@ -208,8 +217,9 @@ public class AthleteRequestDTO {
 				+ ", email=" + email + ", imageHex=" + imageHex + ", gender=" + gender + ", position=" + position
 				+ ", presentTeam=" + presentTeam + ", locationName=" + locationName + ", height=" + height + ", weight="
 				+ weight + ", lattitude=" + lattitude + ", longitude=" + longitude + ", age=" + age + ", gameLogs="
-				+ gameLogs + ", eventAttendence=" + eventAttendence + ", highlightReels=" + highlightReels
-				+ ", athleteClassificationTypes=" + athleteClassificationTypes + ", roles=" + roles + "]";
+				+ gameLogs + ", eventAttendence=" + eventAttendence + ", eventNames=" + eventNames + ", highlightReels="
+				+ highlightReels + ", athleteClassificationTypes=" + athleteClassificationTypes + ", roles=" + roles
+				+ "]";
 	}
 
 }

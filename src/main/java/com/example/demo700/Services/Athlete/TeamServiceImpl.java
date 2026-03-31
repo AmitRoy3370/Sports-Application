@@ -1,10 +1,15 @@
 package com.example.demo700.Services.Athlete;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -716,6 +721,8 @@ public class TeamServiceImpl implements TeamService {
 
 	}
 
+	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
 	/**
 	 * 🔥 Build single team response
 	 */
@@ -736,63 +743,84 @@ public class TeamServiceImpl implements TeamService {
 		}
 
 		// 🔥 STEP 1: Collect all IDs from all teams
-		List<String> allAthleteIds = new ArrayList<>();
-		List<String> allScoutIds = new ArrayList<>();
-		List<String> allCoachIds = new ArrayList<>();
-		List<String> allDoctorIds = new ArrayList<>();
-		List<String> allMatchIds = new ArrayList<>();
-		List<String> allTeamOwnerIds = new ArrayList<>();
+		List<String> allAthleteIds = teams.stream().filter(team -> team.getAtheletes() != null)
+				.flatMap(team -> team.getAtheletes().stream()).distinct().collect(Collectors.toList());
 
-		for (Team team : teams) {
-			if (team.getAtheletes() != null)
-				allAthleteIds.addAll(team.getAtheletes());
-			if (team.getScouts() != null)
-				allScoutIds.addAll(team.getScouts());
-			if (team.getCoaches() != null)
-				allCoachIds.addAll(team.getCoaches());
-			if (team.getDoctors() != null)
-				allDoctorIds.addAll(team.getDoctors());
-			if (team.getMatches() != null)
-				allMatchIds.addAll(team.getMatches());
-			if (team.getTeamOwnerId() != null)
-				allTeamOwnerIds.add(team.getTeamOwnerId());
-		}
+		List<String> allScoutIds = teams.stream().filter(team -> team.getScouts() != null)
+				.flatMap(team -> team.getScouts().stream()).distinct().collect(Collectors.toList());
 
-		// Remove duplicates
-		allAthleteIds = allAthleteIds.stream().distinct().collect(Collectors.toList());
-		allScoutIds = allScoutIds.stream().distinct().collect(Collectors.toList());
-		allCoachIds = allCoachIds.stream().distinct().collect(Collectors.toList());
-		allDoctorIds = allDoctorIds.stream().distinct().collect(Collectors.toList());
-		allMatchIds = allMatchIds.stream().distinct().collect(Collectors.toList());
-		allTeamOwnerIds = allTeamOwnerIds.stream().distinct().collect(Collectors.toList());
+		List<String> allCoachIds = teams.stream().filter(team -> team.getCoaches() != null)
+				.flatMap(team -> team.getCoaches().stream()).distinct().collect(Collectors.toList());
+
+		List<String> allDoctorIds = teams.stream().filter(team -> team.getDoctors() != null)
+				.flatMap(team -> team.getDoctors().stream()).distinct().collect(Collectors.toList());
+
+		List<String> allMatchIds = teams.stream().filter(team -> team.getMatches() != null)
+				.flatMap(team -> team.getMatches().stream()).distinct().collect(Collectors.toList());
+
+		List<String> allTeamOwnerIds = teams.stream().map(Team::getTeamOwnerId).filter(Objects::nonNull).distinct()
+				.collect(Collectors.toList());
+
+		CompletableFuture<Map<String, TeamOwner>> teamOwnerFuture = CompletableFuture
+				.supplyAsync(() -> teamOwnerRepository.findAllById(allTeamOwnerIds).stream().distinct()
+						.collect(Collectors.toMap(TeamOwner::getId, owner -> owner)), executor);
+
+		CompletableFuture<Map<String, Athelete>> athleteFuture = CompletableFuture.supplyAsync(
+				() -> !allAthleteIds.isEmpty() ? atheleteRepository.findAllById(allAthleteIds).stream().distinct()
+						.collect(Collectors.toMap(Athelete::getId, athlete -> athlete)) : new HashMap<>(),
+				executor);
+
+		CompletableFuture<Map<String, Scouts>> scoutsFuture = CompletableFuture.supplyAsync(
+				() -> !allScoutIds.isEmpty() ? scoutsRepository.findAllById(allScoutIds).stream().distinct()
+						.collect(Collectors.toMap(Scouts::getId, scout -> scout)) : new HashMap<>(),
+				executor);
+
+		CompletableFuture<Map<String, Coach>> coachFuture = CompletableFuture
+				.supplyAsync(() -> !allCoachIds.isEmpty() ? coachRepository.findAllById(allCoachIds).stream().distinct()
+						.collect(Collectors.toMap(Coach::getId, coach -> coach)) : new HashMap<>(), executor);
+
+		CompletableFuture<Map<String, Doctor>> doctorFuture = CompletableFuture
+				.supplyAsync(
+						() -> !allDoctorIds.isEmpty() ? doctorRepository.findAllById(allDoctorIds).stream()
+								.collect(Collectors.toMap(Doctor::getId, doctor -> doctor)) : new HashMap<>(),
+						executor);
+
+		CompletableFuture<Map<String, String>> matchNameFuture = CompletableFuture.supplyAsync(() -> {
+			try {
+				List<MatchName> matchNamesList = matchNameRepository.findByMatchIdIn(allMatchIds);
+
+				if (matchNamesList == null || matchNamesList.isEmpty()) {
+					return Collections.emptyMap();
+				}
+
+				return matchNamesList.stream().filter(mn -> mn != null && mn.getMatchId() != null)
+						.collect(Collectors.toMap(MatchName::getMatchId,
+								mn -> mn.getName() != null && !mn.getName().isBlank() ? mn.getName() : "Unknown Match",
+								(existing, replacement) -> existing // Keep first on duplicate
+				));
+
+			} catch (Exception e) {
+				// log.error("Error fetching match names: {}", e.getMessage());
+				return Collections.emptyMap();
+			}
+		}, executor);
+
+		CompletableFuture
+				.allOf(teamOwnerFuture, athleteFuture, scoutsFuture, coachFuture, doctorFuture, matchNameFuture).join();
 
 		// 🔥 STEP 2: Batch fetch ALL data
-		Map<String, TeamOwner> teamOwnerMap = !allTeamOwnerIds.isEmpty() ? teamOwnerRepository
-				.findAllById(allTeamOwnerIds).stream().collect(Collectors.toMap(TeamOwner::getId, owner -> owner))
-				: new HashMap<>();
+		Map<String, TeamOwner> teamOwnerMap = teamOwnerFuture.join();
 
-		Map<String, Athelete> athleteMap = !allAthleteIds.isEmpty() ? atheleteRepository.findAllById(allAthleteIds)
-				.stream().collect(Collectors.toMap(Athelete::getId, athlete -> athlete)) : new HashMap<>();
+		Map<String, Athelete> athleteMap = athleteFuture.join();
 
-		Map<String, Scouts> scoutMap = !allScoutIds.isEmpty() ? scoutsRepository.findAllById(allScoutIds).stream()
-				.collect(Collectors.toMap(Scouts::getId, scout -> scout)) : new HashMap<>();
+		Map<String, Scouts> scoutMap = scoutsFuture.join();
 
-		Map<String, Coach> coachMap = !allCoachIds.isEmpty() ? coachRepository.findAllById(allCoachIds).stream()
-				.collect(Collectors.toMap(Coach::getId, coach -> coach)) : new HashMap<>();
+		Map<String, Coach> coachMap = coachFuture.join();
 
-		Map<String, Doctor> doctorMap = !allDoctorIds.isEmpty() ? doctorRepository.findAllById(allDoctorIds).stream()
-				.collect(Collectors.toMap(Doctor::getId, doctor -> doctor)) : new HashMap<>();
+		Map<String, Doctor> doctorMap = doctorFuture.join();
 
 		// 🔥 STEP 3: Fetch match names (preserving order)
-		Map<String, String> matchNameMap = new HashMap<>();
-		if (!allMatchIds.isEmpty()) {
-			List<MatchName> matchNames = matchNameRepository.findByMatchIdIn(allMatchIds);
-			for (MatchName mn : matchNames) {
-				if (mn.getMatchId() != null && mn.getName() != null) {
-					matchNameMap.put(mn.getMatchId(), mn.getName());
-				}
-			}
-		}
+		Map<String, String> matchNameMap = matchNameFuture.join();
 
 		// 🔥 STEP 4: Collect all User IDs
 		List<String> allUserIds = new ArrayList<>();
@@ -955,23 +983,23 @@ public class TeamServiceImpl implements TeamService {
 
 			// 🔥 Set Matches Names (PRESERVING ORDER - CRITICAL FIX)
 			List<String> matchesName = new ArrayList<>();
-			
+
 			int index = 0;
-			
+
 			if (team.getMatches() != null) {
 				for (String matchId : team.getMatches()) {
 					String matchName = matchNameMap.get(matchId);
 					if (matchName != null && !matchName.isBlank()) {
 						matchesName.add(matchName);
 					} else {
-						
+
 						String myMatchName = "match-" + (team.getMatches().size() + index);
-						
+
 						matchesName.add(myMatchName);
 					}
-					
+
 					++index;
-					
+
 				}
 			}
 			response.setMatchesName(matchesName);
