@@ -634,11 +634,16 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 			response.setTeamsName(new ArrayList<>());
 		}
 
+		int totalMatches = owner.getMatches().size();
+
+		java.util.concurrent.atomic.AtomicInteger index = new java.util.concurrent.atomic.AtomicInteger(0);
+
 		// Matches with order preserved
 		if (owner.getMatches() != null && !owner.getMatches().isEmpty()) {
 			response.setMatchesId(new ArrayList<>(owner.getMatches()));
 			response.setMatchesName(owner.getMatches().stream()
-					.map(id -> matchNameMap.getOrDefault(id, "Unknown Match")).collect(Collectors.toList()));
+					.map(id -> matchNameMap.getOrDefault(id, "match" + (index.getAndIncrement() + totalMatches)))
+					.collect(Collectors.toList()));
 		} else {
 			response.setMatchesId(new ArrayList<>());
 			response.setMatchesName(new ArrayList<>());
