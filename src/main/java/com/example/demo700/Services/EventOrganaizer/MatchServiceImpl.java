@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1290,6 +1293,8 @@ public class MatchServiceImpl implements MatchService {
 
 	}
 
+	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
 	private List<MatchResponse> getMatchResponseFromMatchList(List<Match> matches) {
 
 		if (matches == null || matches.isEmpty()) {
@@ -1307,21 +1312,42 @@ public class MatchServiceImpl implements MatchService {
 				.collect(Collectors.toList());
 		List<String> matchesId = matches.stream().map(Match::getId).distinct().collect(Collectors.toList());
 
-		Map<String, EventOrganaizer> organaizerMap = eventOrganaizersId.isEmpty() ? new HashMap()
-				: eventOrganaizerRepository.findAllById(eventOrganaizersId).stream()
-						.collect(Collectors.toMap(EventOrganaizer::getId, Function.identity()));
+		CompletableFuture<Map<String, EventOrganaizer>> organaizerFuture = CompletableFuture
+				.supplyAsync(
+						() -> eventOrganaizersId.isEmpty() ? new HashMap()
+								: eventOrganaizerRepository.findAllById(eventOrganaizersId).stream()
+										.collect(Collectors.toMap(EventOrganaizer::getId, Function.identity())),
+						executor);
 
-		Map<String, Team> teamMap = teamsId.isEmpty() ? new HashMap<>()
-				: teamRepository.findAllById(teamsId).stream()
-						.collect(Collectors.toMap(Team::getId, Function.identity()));
+		CompletableFuture<Map<String, Team>> teamFuture = CompletableFuture
+				.supplyAsync(() -> teamsId.isEmpty() ? new HashMap<>()
+						: teamRepository.findAllById(teamsId).stream()
+								.collect(Collectors.toMap(Team::getId, Function.identity())),
+						executor);
 
-		Map<String, MatchVenue> matchVenueMap = matchesId.isEmpty() ? new HashMap<>()
-				: matchVenueRepository.findByMatchIdIn(matchesId).stream()
-						.collect(Collectors.toMap(MatchVenue::getMatchId, Function.identity()));
+		CompletableFuture<Map<String, MatchVenue>> matchVenueFuture = CompletableFuture
+				.supplyAsync(
+						() -> matchesId.isEmpty() ? new HashMap<>()
+								: matchVenueRepository.findByMatchIdIn(matchesId).stream()
+										.collect(Collectors.toMap(MatchVenue::getMatchId, Function.identity())),
+						executor);
 
-		Map<String, MatchName> nameMap = matchesId.isEmpty() ? new HashMap<>()
-				: matchNameRepository.findByMatchIdIn(matchesId).stream()
-						.collect(Collectors.toMap(MatchName::getMatchId, Function.identity()));
+		CompletableFuture<Map<String, MatchName>> matchNameFuture = CompletableFuture
+				.supplyAsync(
+						() -> matchesId.isEmpty() ? new HashMap<>()
+								: matchNameRepository.findByMatchIdIn(matchesId).stream()
+										.collect(Collectors.toMap(MatchName::getMatchId, Function.identity())),
+						executor);
+
+		CompletableFuture.allOf(organaizerFuture, teamFuture, matchVenueFuture, matchNameFuture).join();
+
+		Map<String, EventOrganaizer> organaizerMap = organaizerFuture.join();
+
+		Map<String, Team> teamMap = teamFuture.join();
+
+		Map<String, MatchVenue> matchVenueMap = matchVenueFuture.join();
+
+		Map<String, MatchName> nameMap = matchNameFuture.join();
 
 		List<String> allUsersId = organaizerMap.values().stream().map(EventOrganaizer::getUserId)
 				.filter(Objects::nonNull).distinct().collect(Collectors.toList());
@@ -1329,6 +1355,18 @@ public class MatchServiceImpl implements MatchService {
 		Map<String, User> allUserMap = allUsersId.isEmpty() ? new HashMap<>()
 				: userRepository.findAllById(allUsersId).stream()
 						.collect(Collectors.toMap(User::getId, Function.identity()));
+
+		List<String> allVenueIds = matchVenueMap.values().stream().map(MatchVenue::getVenueId).filter(Objects::nonNull)
+				.distinct().collect(Collectors.toList());
+
+		CompletableFuture<Map<String, Venue>> venueFuture = CompletableFuture.supplyAsync(() -> {
+			if (allVenueIds.isEmpty())
+				return new HashMap<>();
+			return venueRepository.findAllById(allVenueIds).stream()
+					.collect(Collectors.toMap(Venue::getId, Function.identity()));
+		}, executor);
+
+		Map<String, Venue> venueMap = venueFuture.join();
 
 		int index = 0;
 
@@ -1369,7 +1407,12 @@ public class MatchServiceImpl implements MatchService {
 			MatchVenue venue = matchVenueMap.get(match.getId());
 			if (venue != null) {
 				response.setMatchVenueId(venue.getVenueId());
-				venueRepository.findById(venue.getVenueId()).ifPresent(v -> response.setMatchVenue(v.getName()));
+				Venue venueObj = venueMap.get(venue.getVenueId());
+				if (venueObj != null) {
+					response.setMatchVenue(venueObj.getName());
+					
+				}
+
 			}
 
 			// 🔥 Set match name
