@@ -499,10 +499,28 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 		}, executor);
 
 		CompletableFuture<Map<String, ProfileIamge>> profileImageFuture = CompletableFuture
-				.supplyAsync(
-						() -> profileImageRepository.findByUserIdIn(userIds).stream()
-								.collect(Collectors.toMap(ProfileIamge::getUserId, Function.identity(), null)),
-						executor);
+		        .supplyAsync(() -> {
+		            try {
+		                if (userIds.isEmpty()) {
+		                    return new HashMap<>();
+		                }
+		                List<ProfileIamge> images = profileImageRepository.findByUserIdIn(userIds);
+		                if (images == null || images.isEmpty()) {
+		                    return new HashMap<>();
+		                }
+		                return images.stream()
+		                    .filter(img -> img != null && img.getUserId() != null)
+		                    .collect(Collectors.toMap(
+		                        ProfileIamge::getUserId,
+		                        Function.identity(),
+		                        (existing, replacement) -> existing  // ✅ Proper merge function
+		                    ));
+		            } catch (Exception e) {
+		                System.err.println("Error fetching profile images: " + e.getMessage());
+		                return new HashMap<>();
+		            }
+		        }, executor);
+
 
 		CompletableFuture.allOf(userFuture, locationFuture, genderFuture, classificationFuture, matchNameFuture,
 				profileImageFuture).join();
