@@ -395,234 +395,209 @@ public class UserActiveServiceImpl implements UserActiveService {
 
 	private List<UserActiveResponseDTO> getUserActiveResponseFromList(List<UserActive> activeUsers) {
 
+		if (activeUsers == null || activeUsers.isEmpty()) {
+			return new ArrayList<>();
+		}
+
 		List<UserActiveResponseDTO> responses = new ArrayList<>();
 
-		List<String> allUsersId = activeUsers.stream().filter(Objects::nonNull).distinct().map(UserActive::getUserId)
-				.distinct().collect(Collectors.toList());
+		List<String> allUsersId = activeUsers.stream().filter(Objects::nonNull).map(UserActive::getUserId).distinct()
+				.collect(Collectors.toList());
 
-		CompletableFuture<Map<String, User>> userFuture = CompletableFuture.supplyAsync(() -> userRepository
-				.findAllById(allUsersId).stream().collect(Collectors.toMap(User::getId, Function.identity())),
-				executor);
+		if (allUsersId.isEmpty()) {
+			return responses;
+		}
 
-		CompletableFuture<Map<String, String>> nameFuture = CompletableFuture
-				.supplyAsync(() -> userRepository.findAllById(allUsersId).isEmpty() ? new HashMap<>()
-						: userRepository.findAllById(allUsersId).stream()
-								.collect(Collectors.toMap(User::getId, User::getName)),
-						executor);
+		// ✅ FIX 1: একবারেই সব user fetch করুন
+		CompletableFuture<Map<String, User>> userFuture = CompletableFuture.supplyAsync(() -> {
+			List<User> users = userRepository.findAllById(allUsersId);
+			if (users.isEmpty()) {
+				return new HashMap<>();
+			}
+			return users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+		}, executor);
 
+		// ✅ FIX 2: Athlete fetch
 		List<Athelete> allAthletes = athleteRepository.findByUserIdIn(allUsersId);
-
-		CompletableFuture<Map<String, Athelete>> athleteFuture = CompletableFuture
-				.supplyAsync(
-						() -> allAthletes.isEmpty() ? new HashMap<>()
-								: allAthletes.stream().filter(athlete -> athlete != null && athlete.getUserId() != null)
-										.collect(Collectors.toMap(Athelete::getUserId, Function.identity(), null)),
-						executor);
+		Map<String, Athelete> athleteMap = allAthletes.stream()
+				.filter(athlete -> athlete != null && athlete.getUserId() != null).collect(Collectors
+						.toMap(Athelete::getUserId, Function.identity(), (existing, replacement) -> existing));
 
 		List<String> allAthleteId = allAthletes.stream().map(Athelete::getId).collect(Collectors.toList());
 
-		CompletableFuture<Map<String, AthleteLocation>> locationFuture = CompletableFuture.supplyAsync(
-				() -> athleteLocationRepository.findByAthleteIdIn(allAthleteId).isEmpty() ? new HashMap<>()
-						: athleteLocationRepository.findByAthleteIdIn(allAthleteId).stream()
-								.filter(loc -> loc != null && loc.getAthleteId() != null)
-								.collect(Collectors.toMap(AthleteLocation::getAthleteId, Function.identity())),
-				executor);
+		// ✅ FIX 3: Location fetch with proper null handling
+		CompletableFuture<Map<String, AthleteLocation>> locationFuture = CompletableFuture.supplyAsync(() -> {
+			if (allAthleteId.isEmpty()) {
+				return new HashMap<>();
+			}
+			List<AthleteLocation> locations = athleteLocationRepository.findByAthleteIdIn(allAthleteId);
+			if (locations.isEmpty()) {
+				return new HashMap<>();
+			}
+			return locations.stream().filter(loc -> loc != null && loc.getAthleteId() != null).collect(Collectors
+					.toMap(AthleteLocation::getAthleteId, Function.identity(), (existing, replacement) -> existing));
+		}, executor);
 
-		CompletableFuture<Map<String, AthleteClassification>> athleteClassificationFuture = CompletableFuture
-				.supplyAsync(
-						() -> athleteClassificationRepository.findByAthleteIdIn(allAthleteId).isEmpty()
-								? new HashMap<>()
-								: athleteClassificationRepository.findByAthleteIdIn(allAthleteId).stream()
-										.filter(c -> c != null && c.getAthleteId() != null).collect(Collectors
-												.toMap(AthleteClassification::getAthleteId, Function.identity())),
-						executor);
+		// ✅ FIX 4: Classification fetch
+		CompletableFuture<Map<String, AthleteClassification>> classificationFuture = CompletableFuture
+				.supplyAsync(() -> {
+					if (allAthleteId.isEmpty()) {
+						return new HashMap<>();
+					}
+					List<AthleteClassification> classifications = athleteClassificationRepository
+							.findByAthleteIdIn(allAthleteId);
+					if (classifications.isEmpty()) {
+						return new HashMap<>();
+					}
+					return classifications.stream().filter(c -> c != null && c.getAthleteId() != null)
+							.collect(Collectors.toMap(AthleteClassification::getAthleteId, Function.identity(),
+									(existing, replacement) -> existing));
+				}, executor);
 
-		CompletableFuture<Map<String, UserGender>> genderFuture = CompletableFuture
-				.supplyAsync(
-						() -> userGenderRepository.findByUserIdIn(allUsersId).isEmpty() ? new HashMap<>()
-								: userGenderRepository.findByUserIdIn(allUsersId).stream()
-										.filter(g -> g != null && g.getUserId() != null)
-										.collect(Collectors.toMap(UserGender::getUserId, Function.identity(), null)),
-						executor);
+		// ✅ FIX 5: Gender fetch
+		CompletableFuture<Map<String, UserGender>> genderFuture = CompletableFuture.supplyAsync(() -> {
+			if (allUsersId.isEmpty()) {
+				return new HashMap<>();
+			}
+			List<UserGender> genders = userGenderRepository.findByUserIdIn(allUsersId);
+			if (genders.isEmpty()) {
+				return new HashMap<>();
+			}
+			return genders.stream().filter(g -> g != null && g.getUserId() != null).collect(
+					Collectors.toMap(UserGender::getUserId, Function.identity(), (existing, replacement) -> existing));
+		}, executor);
 
+		// ✅ FIX 6: Profile image fetch
 		CompletableFuture<Map<String, ProfileIamge>> profileImageFuture = CompletableFuture.supplyAsync(() -> {
+			if (allUsersId.isEmpty()) {
+				return new HashMap<>();
+			}
+			List<ProfileIamge> images = profileImageRepository.findByUserIdIn(allUsersId);
+			if (images == null || images.isEmpty()) {
+				return new HashMap<>();
+			}
+			return images.stream().filter(img -> img != null && img.getUserId() != null).collect(Collectors
+					.toMap(ProfileIamge::getUserId, Function.identity(), (existing, replacement) -> existing));
+		}, executor);
+
+		// ✅ FIX 7: Match names fetch
+		List<String> allEventAttendanceIds = allAthletes.stream()
+				.filter(athlete -> athlete != null && athlete.getEventAttendence() != null)
+				.flatMap(athlete -> athlete.getEventAttendence().stream()).distinct().collect(Collectors.toList());
+
+		CompletableFuture<Map<String, String>> matchNameFuture = CompletableFuture.supplyAsync(() -> {
+			if (allEventAttendanceIds.isEmpty()) {
+				return new HashMap<>();
+			}
 			try {
-				if (allUsersId.isEmpty()) {
+				List<MatchName> matchNames = matchNameRepository.findByMatchIdIn(allEventAttendanceIds);
+				if (matchNames == null || matchNames.isEmpty()) {
 					return new HashMap<>();
 				}
-				List<ProfileIamge> images = profileImageRepository.findByUserIdIn(allUsersId);
-				if (images == null || images.isEmpty()) {
-					return new HashMap<>();
-				}
-				return images.stream().filter(img -> img != null && img.getUserId() != null).collect(Collectors
-						.toMap(ProfileIamge::getUserId, Function.identity(), (existing, replacement) -> existing // ✅
-																													// Proper
-																													// merge
-																													// function
-				));
+				return matchNames.stream().filter(mn -> mn != null && mn.getMatchId() != null).collect(Collectors.toMap(
+						MatchName::getMatchId,
+						mn -> (mn.getName() != null && !mn.getName().isBlank()) ? mn.getName() : "Unknown Match",
+						(existing, replacement) -> existing));
 			} catch (Exception e) {
-				System.err.println("Error fetching profile images: " + e.getMessage());
+				System.err.println("Error fetching match names: " + e.getMessage());
 				return new HashMap<>();
 			}
 		}, executor);
 
-		List<String> allEventAttendanceIds = allAthletes.stream()
-				.filter(athlete -> athlete.getEventAttendence() != null) // Avoid
-				// null
-				.flatMap(athlete -> athlete.getEventAttendence().stream()) // Convert each List to Stream
-				.distinct() // Remove duplicates
-				.collect(Collectors.toList());
+		// Wait for all
+		CompletableFuture.allOf(userFuture, locationFuture, classificationFuture, genderFuture, profileImageFuture,
+				matchNameFuture).join();
 
-		CompletableFuture<Map<String, String>> matchNameFuture = CompletableFuture.supplyAsync(() -> {
-			try {
-				List<MatchName> matchNames = matchNameRepository.findByMatchIdIn(allEventAttendanceIds);
-
-				if (matchNames == null || matchNames.isEmpty()) {
-					return Collections.emptyMap();
-				}
-
-				return matchNames.stream().filter(mn -> mn != null && mn.getMatchId() != null)
-						.collect(Collectors.toMap(MatchName::getMatchId,
-								mn -> mn.getName() != null && !mn.getName().isBlank() ? mn.getName() : "Unknown Match",
-								(existing, replacement) -> existing // Keep first on duplicate
-				));
-
-			} catch (Exception e) {
-				// log.error("Error fetching match names: {}", e.getMessage());
-				return Collections.emptyMap();
-			}
-		}, executor);
-
-		CompletableFuture.allOf(userFuture, nameFuture, athleteFuture, locationFuture, athleteClassificationFuture,
-				genderFuture, profileImageFuture, matchNameFuture).join();
-
-		Map<String, String> userNameMap = nameFuture.join();
-		Map<String, Athelete> athletes = athleteFuture.join();
-		Map<String, AthleteLocation> athleteLocations = locationFuture.join();
-		Map<String, AthleteClassification> classifications = athleteClassificationFuture.join();
-		Map<String, UserGender> genders = genderFuture.join();
-		Map<String, ProfileIamge> profileImages = profileImageFuture.join();
-		Map<String, String> matchNameMap = matchNameFuture.join();
+		// Get results
 		Map<String, User> userMap = userFuture.join();
+		Map<String, AthleteLocation> locationMap = locationFuture.join();
+		Map<String, AthleteClassification> classificationMap = classificationFuture.join();
+		Map<String, UserGender> genderMap = genderFuture.join();
+		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
+		Map<String, String> matchNameMap = matchNameFuture.join();
 
+		// ✅ FIX 8: Default values for missing match names
+		for (String eventId : allEventAttendanceIds) {
+			matchNameMap.putIfAbsent(eventId, "Unknown Match");
+		}
+
+		// ✅ FIX 9: Build responses with proper null checks
 		for (UserActive activeUser : activeUsers) {
-
-			UserActiveResponseDTO response = new UserActiveResponseDTO();
-
-			// all user active info
-
-			response.setId(activeUser.getId());
-			response.setActive(activeUser.isActive());
-			response.setUserId(activeUser.getUserId());
-
-			// all user info
-
 			try {
+				UserActiveResponseDTO response = new UserActiveResponseDTO();
 
-				response.setUserName(userNameMap.get(activeUser.getUserId()));
-				response.setName(response.getUserName());
+				// Basic info
+				response.setId(activeUser.getId());
+				response.setActive(activeUser.isActive());
+				response.setUserId(activeUser.getUserId());
 
-			} catch (Exception e) {
-
-			}
-
-			response.setRoles(userMap.get(activeUser.getUserId()).getRoles());
-			response.setEmail(userMap.get(activeUser.getUserId()).getEmail());
-
-			// collect profile images
-
-			try {
-
-				response.setImageHex(profileImages.get(activeUser.getUserId()).getImageHex());
-
-			} catch (Exception e) {
-
-			}
-
-			// collect user gender
-
-			try {
-
-				response.setGender(genders.get(activeUser.getUserId()).getGender());
-				response.setUserGenderId(genders.get(activeUser.getUserId()).getId());
-
-			} catch (Exception e) {
-
-			}
-
-			// all athlete info
-
-			try {
-
-				Athelete athlete = athletes.get(activeUser.getUserId());
-
-				if (athlete == null) {
-
-					throw new Exception();
-
+				// ✅ User info with null check
+				User user = userMap.get(activeUser.getUserId());
+				if (user != null) {
+					response.setEmail(user.getEmail());
+					response.setRoles(user.getRoles());
+					response.setUserName(user.getName());
+					response.setName(user.getName());
 				}
 
-				response.setAthleteId(athlete.getId());
-				response.setAge(athlete.getAge());
-				response.setHeight(athlete.getHeight());
-				response.setEventAttendence(athlete.getEventAttendence());
-				response.setGameLogs(athlete.getGameLogs());
-				response.setPosition(athlete.getPosition());
-				response.setWeight(athlete.getWeight());
-				response.setHighlightReels(athlete.getHighlightReels());
+				// ✅ Profile image
+				ProfileIamge profileImage = profileImageMap.get(activeUser.getUserId());
+				if (profileImage != null && profileImage.getImageHex() != null) {
+					response.setImageHex(profileImage.getImageHex());
+				}
 
-				// collect all the match name
+				// ✅ Gender
+				UserGender gender = genderMap.get(activeUser.getUserId());
+				if (gender != null) {
+					response.setGender(gender.getGender());
+					response.setUserGenderId(gender.getId());
+				}
 
-				try {
+				// ✅ Athlete info
+				Athelete athlete = athleteMap.get(activeUser.getUserId());
+				if (athlete != null) {
+					response.setAthleteId(athlete.getId());
+					response.setAge(athlete.getAge());
+					response.setHeight(athlete.getHeight());
+					response.setWeight(athlete.getWeight());
+					response.setEventAttendence(athlete.getEventAttendence());
+					response.setGameLogs(athlete.getGameLogs());
+					response.setPosition(athlete.getPosition());
+					response.setHighlightReels(athlete.getHighlightReels());
 
+					// ✅ Match names
 					List<String> matchNames = athlete.getEventAttendence() != null
 							? athlete.getEventAttendence().stream().filter(Objects::nonNull)
-									.map(matchId -> matchNameMap.get(matchId)).collect(Collectors.toList())
+									.map(matchId -> matchNameMap.getOrDefault(matchId, "Unknown Match")).collect(
+											Collectors.toList())
 							: new ArrayList<>();
-
 					response.setEventNames(matchNames);
 
-				} catch (Exception e) {
+					// ✅ Location
+					AthleteLocation location = locationMap.get(athlete.getId());
+					if (location != null) {
+						response.setLattitude(location.getLattitude());
+						response.setLongitude(location.getLongitude());
+						response.setLocationId(location.getId());
+					}
 
+					// ✅ Classification
+					AthleteClassification classification = classificationMap.get(athlete.getId());
+					if (classification != null) {
+						response.setAthleteClassificationId(classification.getId());
+						response.setAthleteClassificationTypes(classification.getAthleteClassificationTypes());
+					}
 				}
 
-				// collect all the athlete location
-
-				try {
-
-					AthleteLocation location = athleteLocations.get(athlete.getId());
-
-					response.setLattitude(location.getLattitude());
-					response.setLongitude(location.getLongitude());
-					response.setLocationId(location.getId());
-
-				} catch (Exception e) {
-
-				}
-
-				// collect the classification
-
-				try {
-
-					AthleteClassification classification = classifications.get(athlete.getId());
-
-					response.setAthleteClassificationId(classification.getId());
-					response.setAthleteClassificationTypes(classification.getAthleteClassificationTypes());
-
-				} catch (Exception e) {
-
-				}
+				responses.add(response);
 
 			} catch (Exception e) {
-
+				System.err.println(
+						"Error building response for user: " + activeUser.getUserId() + " - " + e.getMessage());
 			}
-
-			responses.add(response);
-
 		}
 
 		return responses;
-
 	}
 
 	@PreDestroy
