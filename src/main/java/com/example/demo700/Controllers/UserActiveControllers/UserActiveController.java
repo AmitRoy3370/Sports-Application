@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo700.DTOFiles.UserActiveResponseDTO;
 import com.example.demo700.Model.UserActiveModel.UserActive;
 import com.example.demo700.Services.UserActiveServices.UserActiveService;
 
@@ -63,7 +64,7 @@ public class UserActiveController {
     @GetMapping("/all")
     public ResponseEntity<?> findAll() {
         try {
-            List<UserActive> list = userActiveService.findAll();
+            List<UserActiveResponseDTO> list = userActiveService.findAll();
             return ResponseEntity.ok(list);
 
         } catch (Exception e) {

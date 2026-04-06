@@ -2,6 +2,7 @@ package com.example.demo700.Services.UserActiveServices;
 
 import java.util.List;
 
+import com.example.demo700.DTOFiles.UserActiveResponseDTO;
 import com.example.demo700.Model.UserActiveModel.UserActive;
 
 public interface UserActiveService {
@@ -10,13 +11,13 @@ public interface UserActiveService {
 
 	public UserActive updateUserActive(UserActive userActive, String userId, String id);
 
-	public UserActive findById(String id);
+	public UserActiveResponseDTO findById(String id);
 
-	public List<UserActive> findAll();
+	public List<UserActiveResponseDTO> findAll();
 
-	public UserActive findByUserId(String userId);
+	public UserActiveResponseDTO findByUserId(String userId);
 
-	public List<UserActive> findByActive(boolean active);
+	public List<UserActiveResponseDTO> findByActive(boolean active);
 
 	public boolean removeUserActive(String id, String userId);
 

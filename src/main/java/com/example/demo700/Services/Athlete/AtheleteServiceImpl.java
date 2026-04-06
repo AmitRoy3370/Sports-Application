@@ -713,23 +713,30 @@ public class AtheleteServiceImpl implements AtheleteService {
 				.distinct() // Remove duplicates
 				.collect(Collectors.toList());
 
-		CompletableFuture<Map<String, User>> userFuture = CompletableFuture.supplyAsync(() -> userRepository
-				.findAllById(userIds).stream().collect(Collectors.toMap(User::getId, Function.identity())), executor);
-
-		CompletableFuture<Map<String, AthleteLocation>> locationFuture = CompletableFuture
-				.supplyAsync(
-						() -> athleteLocationRepository.findByAthleteIdIn(athleteIds).stream()
-								.collect(Collectors.toMap(AthleteLocation::getAthleteId, Function.identity())),
+		CompletableFuture<Map<String, User>> userFuture = CompletableFuture
+				.supplyAsync(() -> userRepository.findAllById(userIds).isEmpty() ? new HashMap<>()
+						: userRepository.findAllById(userIds).stream()
+								.collect(Collectors.toMap(User::getId, Function.identity())),
 						executor);
 
+		CompletableFuture<Map<String, AthleteLocation>> locationFuture = CompletableFuture.supplyAsync(
+				() -> athleteLocationRepository.findByAthleteIdIn(athleteIds).isEmpty() ? new HashMap<>()
+						: athleteLocationRepository.findByAthleteIdIn(athleteIds).stream()
+								.collect(Collectors.toMap(AthleteLocation::getAthleteId, Function.identity())),
+				executor);
+
 		CompletableFuture<Map<String, UserGender>> genderFuture = CompletableFuture
-				.supplyAsync(() -> athleteGenderRepository.findByUserIdIn(userIds).stream()
-						.collect(Collectors.toMap(UserGender::getUserId, Function.identity())), executor);
+				.supplyAsync(
+						() -> athleteGenderRepository.findByUserIdIn(userIds).isEmpty() ? new HashMap<>()
+								: athleteGenderRepository.findByUserIdIn(userIds).stream()
+										.collect(Collectors.toMap(UserGender::getUserId, Function.identity())),
+						executor);
 
 		CompletableFuture<Map<String, AthleteClassification>> classificationFuture = CompletableFuture
 				.supplyAsync(
-						() -> athleteClassificationRepository.findByAthleteIdIn(athleteIds).stream()
-								.collect(Collectors.toMap(AthleteClassification::getAthleteId, Function.identity())),
+						() -> athleteClassificationRepository.findByAthleteIdIn(athleteIds).isEmpty() ? new HashMap<>()
+								: athleteClassificationRepository.findByAthleteIdIn(athleteIds).stream().collect(
+										Collectors.toMap(AthleteClassification::getAthleteId, Function.identity())),
 						executor);
 
 		CompletableFuture<Map<String, String>> matchNameFuture = CompletableFuture.supplyAsync(() -> {
@@ -752,29 +759,26 @@ public class AtheleteServiceImpl implements AtheleteService {
 			}
 		}, executor);
 
-		CompletableFuture<Map<String, ProfileIamge>> profileImageFuture = CompletableFuture
-		        .supplyAsync(() -> {
-		            try {
-		                if (userIds.isEmpty()) {
-		                    return new HashMap<>();
-		                }
-		                List<ProfileIamge> images = profileImageRepository.findByUserIdIn(userIds);
-		                if (images == null || images.isEmpty()) {
-		                    return new HashMap<>();
-		                }
-		                return images.stream()
-		                    .filter(img -> img != null && img.getUserId() != null)
-		                    .collect(Collectors.toMap(
-		                        ProfileIamge::getUserId,
-		                        Function.identity(),
-		                        (existing, replacement) -> existing  // ✅ Proper merge function
-		                    ));
-		            } catch (Exception e) {
-		                System.err.println("Error fetching profile images: " + e.getMessage());
-		                return new HashMap<>();
-		            }
-		        }, executor);
-
+		CompletableFuture<Map<String, ProfileIamge>> profileImageFuture = CompletableFuture.supplyAsync(() -> {
+			try {
+				if (userIds.isEmpty()) {
+					return new HashMap<>();
+				}
+				List<ProfileIamge> images = profileImageRepository.findByUserIdIn(userIds);
+				if (images == null || images.isEmpty()) {
+					return new HashMap<>();
+				}
+				return images.stream().filter(img -> img != null && img.getUserId() != null).collect(Collectors
+						.toMap(ProfileIamge::getUserId, Function.identity(), (existing, replacement) -> existing // ✅
+																													// Proper
+																													// merge
+																													// function
+				));
+			} catch (Exception e) {
+				System.err.println("Error fetching profile images: " + e.getMessage());
+				return new HashMap<>();
+			}
+		}, executor);
 
 		CompletableFuture.allOf(userFuture, locationFuture, genderFuture, classificationFuture, matchNameFuture,
 				profileImageFuture).join();
