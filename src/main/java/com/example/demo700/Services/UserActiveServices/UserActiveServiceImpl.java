@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,8 @@ import com.example.demo700.Repositories.AthleteRepository.AthleteLocationReposit
 import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Repositories.UserActiveRepositories.UserActiveRepository;
+
+import jakarta.annotation.PreDestroy;
 
 @Service
 public class UserActiveServiceImpl implements UserActiveService {
@@ -617,6 +620,21 @@ public class UserActiveServiceImpl implements UserActiveService {
 
 		return responses;
 
+	}
+
+	@PreDestroy
+	public void cleanup() {
+		if (executor != null) {
+			executor.shutdown();
+			try {
+				if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+					executor.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				executor.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
+		}
 	}
 
 }

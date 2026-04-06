@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,8 @@ import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
 import com.example.demo700.Validator.URLValidator;
+
+import jakarta.annotation.PreDestroy;
 
 @Service
 public class AthleteClassificationServiceImpl implements AthleteClassificationService {
@@ -498,29 +501,26 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 			}
 		}, executor);
 
-		CompletableFuture<Map<String, ProfileIamge>> profileImageFuture = CompletableFuture
-		        .supplyAsync(() -> {
-		            try {
-		                if (userIds.isEmpty()) {
-		                    return new HashMap<>();
-		                }
-		                List<ProfileIamge> images = profileImageRepository.findByUserIdIn(userIds);
-		                if (images == null || images.isEmpty()) {
-		                    return new HashMap<>();
-		                }
-		                return images.stream()
-		                    .filter(img -> img != null && img.getUserId() != null)
-		                    .collect(Collectors.toMap(
-		                        ProfileIamge::getUserId,
-		                        Function.identity(),
-		                        (existing, replacement) -> existing  // ✅ Proper merge function
-		                    ));
-		            } catch (Exception e) {
-		                System.err.println("Error fetching profile images: " + e.getMessage());
-		                return new HashMap<>();
-		            }
-		        }, executor);
-
+		CompletableFuture<Map<String, ProfileIamge>> profileImageFuture = CompletableFuture.supplyAsync(() -> {
+			try {
+				if (userIds.isEmpty()) {
+					return new HashMap<>();
+				}
+				List<ProfileIamge> images = profileImageRepository.findByUserIdIn(userIds);
+				if (images == null || images.isEmpty()) {
+					return new HashMap<>();
+				}
+				return images.stream().filter(img -> img != null && img.getUserId() != null).collect(Collectors
+						.toMap(ProfileIamge::getUserId, Function.identity(), (existing, replacement) -> existing // ✅
+																													// Proper
+																													// merge
+																													// function
+				));
+			} catch (Exception e) {
+				System.err.println("Error fetching profile images: " + e.getMessage());
+				return new HashMap<>();
+			}
+		}, executor);
 
 		CompletableFuture.allOf(userFuture, locationFuture, genderFuture, classificationFuture, matchNameFuture,
 				profileImageFuture).join();
@@ -632,6 +632,21 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 		athlete.add(athleteDetails);
 
 		return getListDetailsFromAthleteList(athlete).get(0);
+	}
+
+	@PreDestroy
+	public void cleanup() {
+		if (executor != null) {
+			executor.shutdown();
+			try {
+				if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+					executor.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				executor.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
+		}
 	}
 
 }

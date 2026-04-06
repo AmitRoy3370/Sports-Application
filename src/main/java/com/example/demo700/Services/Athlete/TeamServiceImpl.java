@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,8 @@ import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
+
+import jakarta.annotation.PreDestroy;
 
 @Service
 public class TeamServiceImpl implements TeamService {
@@ -1010,6 +1013,21 @@ public class TeamServiceImpl implements TeamService {
 		}
 
 		return responses;
+	}
+
+	@PreDestroy
+	public void cleanup() {
+		if (executor != null) {
+			executor.shutdown();
+			try {
+				if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+					executor.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				executor.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
+		}
 	}
 
 }
