@@ -397,8 +397,8 @@ public class UserActiveServiceImpl implements UserActiveService {
 
 		List<UserActiveResponseDTO> responses = new ArrayList<>();
 
-		List<String> allUsersId = activeUsers.stream().map(UserActive::getUserId).distinct()
-				.collect(Collectors.toList());
+		List<String> allUsersId = activeUsers.stream().filter(Objects::nonNull).distinct().map(UserActive::getUserId)
+				.distinct().collect(Collectors.toList());
 
 		CompletableFuture<Map<String, User>> userFuture = CompletableFuture.supplyAsync(() -> userRepository
 				.findAllById(allUsersId).stream().collect(Collectors.toMap(User::getId, Function.identity())),
@@ -415,7 +415,7 @@ public class UserActiveServiceImpl implements UserActiveService {
 		CompletableFuture<Map<String, Athelete>> athleteFuture = CompletableFuture
 				.supplyAsync(
 						() -> allAthletes.isEmpty() ? new HashMap<>()
-								: allAthletes.stream()
+								: allAthletes.stream().filter(athlete -> athlete != null && athlete.getUserId() != null)
 										.collect(Collectors.toMap(Athelete::getUserId, Function.identity(), null)),
 						executor);
 
@@ -424,6 +424,7 @@ public class UserActiveServiceImpl implements UserActiveService {
 		CompletableFuture<Map<String, AthleteLocation>> locationFuture = CompletableFuture.supplyAsync(
 				() -> athleteLocationRepository.findByAthleteIdIn(allAthleteId).isEmpty() ? new HashMap<>()
 						: athleteLocationRepository.findByAthleteIdIn(allAthleteId).stream()
+								.filter(loc -> loc != null && loc.getAthleteId() != null)
 								.collect(Collectors.toMap(AthleteLocation::getAthleteId, Function.identity())),
 				executor);
 
@@ -431,14 +432,16 @@ public class UserActiveServiceImpl implements UserActiveService {
 				.supplyAsync(
 						() -> athleteClassificationRepository.findByAthleteIdIn(allAthleteId).isEmpty()
 								? new HashMap<>()
-								: athleteClassificationRepository.findByAthleteIdIn(allAthleteId).stream().collect(
-										Collectors.toMap(AthleteClassification::getAthleteId, Function.identity())),
+								: athleteClassificationRepository.findByAthleteIdIn(allAthleteId).stream()
+										.filter(c -> c != null && c.getAthleteId() != null).collect(Collectors
+												.toMap(AthleteClassification::getAthleteId, Function.identity())),
 						executor);
 
 		CompletableFuture<Map<String, UserGender>> genderFuture = CompletableFuture
 				.supplyAsync(
 						() -> userGenderRepository.findByUserIdIn(allUsersId).isEmpty() ? new HashMap<>()
 								: userGenderRepository.findByUserIdIn(allUsersId).stream()
+										.filter(g -> g != null && g.getUserId() != null)
 										.collect(Collectors.toMap(UserGender::getUserId, Function.identity(), null)),
 						executor);
 
