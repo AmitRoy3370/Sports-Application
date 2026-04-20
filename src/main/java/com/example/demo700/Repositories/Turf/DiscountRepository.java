@@ -15,5 +15,6 @@ public interface DiscountRepository extends MongoRepository<Discount, String> {
 	List<Discount> findByOwnerId(String ownerId);
 	List<Discount> findByOwnerIdAndVenueId(String ownerId, String venueId);
 	List<Discount> findByVenueId(String venueId);
+	List<Discount> findByVenueIdIn(List<String> venuesId);
 	
 }

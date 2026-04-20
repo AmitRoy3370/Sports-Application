@@ -11,6 +11,7 @@ import com.example.demo700.Models.EventOrganaizer.MatchVenue;
 public interface MatchVenueRepository extends MongoRepository<MatchVenue, String> {
 	
 	List<MatchVenue> findByVenueId(String venueId);
+	List<MatchVenue> findByVenueIdIn(List<String> venueIds);
 	MatchVenue findByMatchId(String matchId);
 	List<MatchVenue> findByMatchIdIn(List<String> matchesId);
 

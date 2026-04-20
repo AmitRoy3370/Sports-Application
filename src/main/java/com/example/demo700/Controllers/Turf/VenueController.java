@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.VenueResponse;
 import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Services.TurfServices.VenueService;
 import com.example.demo700.Validator.AddressValidator;
@@ -76,8 +77,26 @@ public class VenueController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Venue> getById(@PathVariable String id) {
-		return venueService.getVenueById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+	public ResponseEntity<?> getById(@PathVariable String id) {
+
+		try {
+
+			VenueResponse response = venueService.getVenueById(id);
+
+			if (response == null) {
+
+				throw new Exception();
+
+			}
+
+			return ResponseEntity.status(200).body(response);
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body("No venue find...");
+
+		}
+
 	}
 
 	@GetMapping("/search")
@@ -85,7 +104,7 @@ public class VenueController {
 
 		try {
 
-			List<Venue> list = venueService.searchByAddress(q);
+			List<VenueResponse> list = venueService.searchByAddress(q);
 
 			if (list.isEmpty()) {
 
@@ -110,7 +129,7 @@ public class VenueController {
 
 		try {
 
-			List<Venue> list = venueService.getAllVenue();
+			List<VenueResponse> list = venueService.getAllVenue();
 
 			if (list.isEmpty()) {
 
@@ -135,7 +154,7 @@ public class VenueController {
 
 		try {
 
-			Venue venue = venueService.findByName(name);
+			VenueResponse venue = venueService.findByName(name);
 
 			if (venue == null) {
 

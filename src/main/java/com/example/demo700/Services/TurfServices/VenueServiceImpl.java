@@ -1,21 +1,42 @@
 package com.example.demo700.Services.TurfServices;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.MatchResponse;
+import com.example.demo700.DTOFiles.VenueResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
+import com.example.demo700.Models.EventOrganaizer.Match;
+import com.example.demo700.Models.EventOrganaizer.MatchVenue;
+import com.example.demo700.Models.Turf.Booking;
+import com.example.demo700.Models.Turf.Discount;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Repositories.UserRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchRepository;
+import com.example.demo700.Repositories.EventOrganaizer.MatchVenueRepository;
+import com.example.demo700.Repositories.Turf.BookingRepository;
+import com.example.demo700.Repositories.Turf.DiscountRepository;
 import com.example.demo700.Repositories.Turf.OwnerRepository;
+import com.example.demo700.Repositories.Turf.VenueLocationServiceRepository;
 import com.example.demo700.Repositories.Turf.VenueRepository;
+import com.example.demo700.Services.EventOrganaizer.MatchService;
 import com.example.demo700.Validator.AddressValidator;
 import com.example.demo700.Validator.URLValidator;
 
@@ -39,6 +60,15 @@ public class VenueServiceImpl implements VenueService {
 
 	URLValidator urlValidator = new URLValidator();
 	AddressValidator adressValidator = new AddressValidator();
+
+	@Autowired
+	private BookingRepository bookingRepository;
+
+	@Autowired
+	private DiscountRepository discountRepository;
+
+	@Autowired
+	private MatchService matchService;
 
 	@SuppressWarnings("unlikely-arg-type")
 	@Override
@@ -148,12 +178,12 @@ public class VenueServiceImpl implements VenueService {
 	}
 
 	@Override
-	public Optional<Venue> getVenueById(String id) {
-		return venueRepository.findById(id);
+	public VenueResponse getVenueById(String id) {
+		return getVenueResponseFromVenue(venueRepository.findById(id).get());
 	}
 
 	@Override
-	public List<Venue> getAllVenue() {
+	public List<VenueResponse> getAllVenue() {
 
 		List<Venue> list = venueRepository.findAll();
 
@@ -163,13 +193,13 @@ public class VenueServiceImpl implements VenueService {
 
 		}
 
-		return list;
+		return getVenueResponseFromVenueList(list);
 
 	}
 
 	@Override
-	public List<Venue> searchByAddress(String q) {
-		return venueRepository.findByAddressContainingIgnoreCase(q);
+	public List<VenueResponse> searchByAddress(String q) {
+		return getVenueResponseFromVenueList(venueRepository.findByAddressContainingIgnoreCase(q));
 	}
 
 	@Override
@@ -320,32 +350,203 @@ public class VenueServiceImpl implements VenueService {
 	}
 
 	@Override
-	public Venue findByName(String name) {
-		
-		if(name == null) {
-			
+	public VenueResponse findByName(String name) {
+
+		if (name == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
+
 			Venue venue = venueRepository.findByNameIgnoreCase(name);
-			
-			if(venue == null) {
-				
+
+			if (venue == null) {
+
 				throw new Exception("No such venue find at here...");
-				
+
 			}
-			
-			return venue;
-			
-		} catch(Exception e) {
-			
+
+			return getVenueResponseFromVenue(venue);
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException(e.getMessage());
-			
+
 		}
-		
+
+	}
+
+	private VenueResponse getVenueResponseFromVenue(Venue venue) {
+
+		List<Venue> venues = new ArrayList<>();
+
+		venues.add(venue);
+
+		return getVenueResponseFromVenueList(venues).get(0);
+
+	}
+
+	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());;
+
+	private List<VenueResponse> getVenueResponseFromVenueList(List<Venue> venues) {
+
+		List<VenueResponse> responses = new ArrayList<>();
+
+		List<String> allVenueId = venues.stream().map(Venue::getId).collect(Collectors.toList());
+
+		List<String> allOwnersId = venues.stream().map(Venue::getOwnerId).collect(Collectors.toList());
+
+		CompletableFuture<Map<String, User>> userFuture = CompletableFuture.supplyAsync(
+				() -> userRepository.findAllById(allOwnersId).isEmpty() ? new HashMap<>()
+						: userRepository.findAllById(allOwnersId).stream().filter(Objects::nonNull).collect(Collectors
+								.toMap(User::getId, Function.identity(), (existing, replacement) -> existing)),
+				executor);
+
+		CompletableFuture<Map<String, List<Booking>>> bookingFuture = CompletableFuture.supplyAsync(() -> {
+			List<Booking> bookings = bookingRepository.findByVenueIdIn(allVenueId);
+
+			if (bookings == null || bookings.isEmpty()) {
+				return new HashMap<>();
+			}
+
+			// ভেন্যু আইডি অনুযায়ী বুকিং গ্রুপ করুন
+			return bookings.stream().filter(Objects::nonNull).collect(Collectors.groupingBy(Booking::getVenueId));
+		}, executor);
+
+		CompletableFuture<Map<String, List<MatchResponse>>> matchFuture = CompletableFuture.supplyAsync(() -> {
+			List<MatchResponse> matches = matchService.seeAllMatch();
+
+			if (matches == null || matches.isEmpty()) {
+				return new HashMap<>();
+			}
+
+			// ম্যাচ ভেন্যু আইডি অনুযায়ী গ্রুপ করুন
+			return matches.stream().filter(Objects::nonNull).filter(match -> match.getMatchVenueId() != null) // নাল
+																												// ভেন্যু
+																												// আইডি
+																												// ফিল্টার
+					.collect(Collectors.groupingBy(MatchResponse::getMatchVenueId));
+		}, executor);
+
+		CompletableFuture<Map<String, Discount>> discountFuture = CompletableFuture
+				.supplyAsync(
+						() -> discountRepository.findByVenueIdIn(allVenueId)
+								.isEmpty()
+										? new HashMap<>()
+										: discountRepository.findByVenueIdIn(allVenueId).stream()
+												.filter(Objects::nonNull).collect(Collectors.toMap(Discount::getVenueId,
+														Function.identity(), (existing, replacement) -> existing)),
+						executor);
+
+		CompletableFuture.allOf(userFuture, bookingFuture, matchFuture, discountFuture).join();
+
+		Map<String, User> userMap = userFuture.join();
+		Map<String, List<Booking>> bookingMap = bookingFuture.join();
+
+		Map<String, List<MatchResponse>> matchResponseMap = matchFuture.join();
+		Map<String, Discount> discountMap = discountFuture.join();
+
+		for (Venue venue : venues) {
+
+			try {
+
+				VenueResponse response = new VenueResponse();
+
+				try {
+
+					response.setId(venue.getId());
+					response.setAddress(venue.getAddress());
+					response.setName(venue.getName());
+					response.setOwnerId(venue.getOwnerId());
+
+					try {
+
+						response.setOwnerName(userMap.get(venue.getOwnerId()).getName());
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setAmenities(venue.getAmenities());
+
+					} catch (Exception e) {
+
+					}
+
+					response.setBasePricePerHour(venue.getBasePricePerHour());
+
+					try {
+
+						response.setPhotos(venue.getPhotos());
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setPricingPolicy(venue.getPricingPolicy());
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setSportsSupported(venue.getSportsSupported());
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setMatches(matchResponseMap.get(venue.getId()));
+
+					} catch (Exception e) {
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					response.setBookings(bookingMap.get(venue.getId()));
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					Discount discount = discountMap.get(venue.getId());
+
+					response.setDiscountId(discount.getId());
+					response.setDiscountCode(discount.getCode());
+					response.setExpiry(discount.getExpiry());
+					response.setUsageLimit(discount.getUsageLimit());
+					response.setPercentage(discount.getPercentage());
+
+				} catch (Exception e) {
+
+				}
+
+				responses.add(response);
+
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return responses;
+
 	}
 
 }
