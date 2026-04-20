@@ -647,7 +647,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)) {
+				if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE
+						|| TeamJoinRequestRole.ROLE_ATHLETE.equals(teamJoinRequest.getRoleType())) {
 
 					try {
 
@@ -671,7 +673,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
-				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)) {
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_COACH
+						|| (TeamJoinRequestRole.ROLE_COACH.equals(teamJoinRequest.getRoleType()))) {
 
 					try {
 
@@ -701,7 +705,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
-				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)) {
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT
+						|| TeamJoinRequestRole.ROLE_SCOUT.equals(teamJoinRequest.getRoleType())) {
 
 					try {
 
@@ -737,7 +743,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					}
 
-				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_DOCTOR)) {
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_DOCTOR)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR
+						|| TeamJoinRequestRole.ROLE_DOCTOR.equals(teamJoinRequest.getRoleType())) {
 
 					try {
 
