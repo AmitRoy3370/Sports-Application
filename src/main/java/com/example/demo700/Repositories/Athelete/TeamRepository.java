@@ -11,6 +11,7 @@ import com.example.demo700.Models.Athlete.Team;
 public interface TeamRepository extends MongoRepository<Team, String>{
 	
 	Team findByTeamNameIgnoreCase(String teamName);
+	List<Team> findByTeamNameContainingIgnoreCase(String teamName);
 	List<Team> findByTeamOwnerId(String teamOwnerId);
 	Team findByAtheletesContainingIgnoreCase(String atheleteId);
 	Team findByCoachesContainingIgnoreCase(String coachId);

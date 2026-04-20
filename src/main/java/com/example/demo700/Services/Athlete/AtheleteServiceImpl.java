@@ -857,6 +857,7 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 				AthleteClassification cls = classificationMap.get(a.getId());
 				if (cls != null) {
+					dto.setAthleteClassificationId(cls.getId());
 					dto.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
 				}
 
