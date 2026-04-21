@@ -16,4 +16,6 @@ public interface VenueService {
 	Venue updateVeue(String id, Venue updateVenue);
 	boolean removeVenue(String id, String userId);
 	VenueResponse findByName(String name);
+	VenueResponse findBySpecificUser(String venueId, String userId);
+	
 }

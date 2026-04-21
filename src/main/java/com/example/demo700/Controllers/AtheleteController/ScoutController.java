@@ -3,6 +3,8 @@ package com.example.demo700.Controllers.AtheleteController;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.ScoutResponse;
+import com.example.demo700.DTOFiles.ScoutsListResponseDTO;
 import com.example.demo700.ENUMS.AthleteClassificationTypes;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Services.Athlete.ScoutService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/scout")
@@ -50,7 +56,7 @@ public class ScoutController {
 	@GetMapping("/seeAll")
 	public ResponseEntity<?> seeAllScouts() {
 
-		List<Scouts> list = scoutService.seeAllScouts();
+		List<ScoutResponse> list = scoutService.seeAllScouts();
 
 		if (list == null) {
 
@@ -67,7 +73,7 @@ public class ScoutController {
 
 		try {
 
-			Scouts scouts = scoutService.findByAtheleteId(atheleteId);
+			ScoutResponse scouts = scoutService.findByAtheleteId(atheleteId);
 
 			if (scouts == null) {
 
@@ -133,7 +139,7 @@ public class ScoutController {
 	@GetMapping("/searchByEvent")
 	public ResponseEntity<?> findByEvent(@RequestParam String eventId) {
 		try {
-			List<Scouts> list = scoutService.findByEventsContainingIgnoreCase(eventId);
+			List<ScoutResponse> list = scoutService.findByEventsContainingIgnoreCase(eventId);
 			if (list == null || list.isEmpty()) {
 				return ResponseEntity.status(404).body("No scouts found for this event...");
 			}
@@ -147,7 +153,7 @@ public class ScoutController {
 	@GetMapping("/searchByMatch")
 	public ResponseEntity<?> findByMatch(@RequestParam String matchId) {
 		try {
-			List<Scouts> list = scoutService.findByMatchesContainingIgnoreCase(matchId);
+			List<ScoutResponse> list = scoutService.findByMatchesContainingIgnoreCase(matchId);
 			if (list == null || list.isEmpty()) {
 				return ResponseEntity.status(404).body("No scouts found for this match...");
 			}
@@ -171,6 +177,125 @@ public class ScoutController {
 
 		}
 
+	}
+
+	/**
+	 * ✅ Get all scouts with pagination
+	 */
+	@GetMapping("/seeAllPaginated")
+	public ResponseEntity<?> seeAllScoutsPaginated(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, HttpServletRequest request) {
+		try {
+			Pageable pageable = PageRequest.of(page, size);
+			String baseUrl = request.getRequestURL().toString();
+			ScoutsListResponseDTO response = scoutService.findAllScoutsPaginated(pageable, baseUrl);
+			return ResponseEntity.status(200).body(response);
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body("Error: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * ✅ Search scouts by athlete ID with pagination
+	 */
+	@GetMapping("/searchByAtheleteIdPaginated")
+	public ResponseEntity<?> findByAtheleteIdPaginated(@RequestParam String atheleteId,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			HttpServletRequest request) {
+		try {
+			Pageable pageable = PageRequest.of(page, size);
+			String baseUrl = request.getRequestURL().toString();
+			ScoutsListResponseDTO response = scoutService.searchByAtheleteIdPaginated(atheleteId, pageable, baseUrl);
+			return ResponseEntity.status(200).body(response);
+		} catch (Exception e) {
+			return ResponseEntity.status(400).body(e.getMessage());
+		}
+	}
+
+	/**
+	 * ✅ Search scouts by scout ID with pagination
+	 */
+	@GetMapping("/findByIdPaginated")
+	public ResponseEntity<?> findByIdPaginated(@RequestParam String id, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, HttpServletRequest request) {
+		try {
+			Pageable pageable = PageRequest.of(page, size);
+			String baseUrl = request.getRequestURL().toString();
+			ScoutsListResponseDTO response = scoutService.searchByScoutsIdPaginated(id, pageable, baseUrl);
+			return ResponseEntity.status(200).body(response);
+		} catch (Exception e) {
+			return ResponseEntity.status(404).body(e.getMessage());
+		}
+	}
+
+	/**
+	 * ✅ Search scouts by event with pagination
+	 */
+	@GetMapping("/searchByEventPaginated")
+	public ResponseEntity<?> findByEventPaginated(@RequestParam String eventId,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			HttpServletRequest request) {
+		try {
+			Pageable pageable = PageRequest.of(page, size);
+			String baseUrl = request.getRequestURL().toString();
+			ScoutsListResponseDTO response = scoutService.searchByEventsContainingPaginated(eventId, pageable, baseUrl);
+			return ResponseEntity.status(200).body(response);
+		} catch (Exception e) {
+			return ResponseEntity.status(400).body(e.getMessage());
+		}
+	}
+
+	/**
+	 * ✅ Search scouts by match with pagination
+	 */
+	@GetMapping("/searchByMatchPaginated")
+	public ResponseEntity<?> findByMatchPaginated(@RequestParam String matchId,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			HttpServletRequest request) {
+		try {
+			Pageable pageable = PageRequest.of(page, size);
+			String baseUrl = request.getRequestURL().toString();
+			ScoutsListResponseDTO response = scoutService.searchByMatchesContainingPaginated(matchId, pageable,
+					baseUrl);
+			return ResponseEntity.status(200).body(response);
+		} catch (Exception e) {
+			return ResponseEntity.status(400).body(e.getMessage());
+		}
+	}
+
+	/**
+	 * ✅ Search scouts by classification with pagination
+	 */
+	@GetMapping("/findByClassificationPaginated")
+	public ResponseEntity<?> findByAthleteClassificationPaginated(@RequestParam String classification,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			HttpServletRequest request) {
+		try {
+			Pageable pageable = PageRequest.of(page, size);
+			String baseUrl = request.getRequestURL().toString();
+			ScoutsListResponseDTO response = scoutService.searchByClassificationPaginated(
+					AthleteClassificationTypes.valueOf(classification), pageable, baseUrl);
+			return ResponseEntity.status(200).body(response);
+		} catch (Exception e) {
+			return ResponseEntity.status(404).body(e.getMessage());
+		}
+	}
+
+	/**
+	 * ✅ Search scouts by name with pagination
+	 */
+	@GetMapping("/searchByNamePaginated")
+	public ResponseEntity<?> searchByNamePaginated(@RequestParam String name,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			HttpServletRequest request) {
+		try {
+			Pageable pageable = PageRequest.of(page, size);
+			String baseUrl = request.getRequestURL().toString();
+			ScoutsListResponseDTO response = scoutService.searchByNamePaginated(name, pageable, baseUrl);
+			return ResponseEntity.status(200).body(response);
+		} catch (Exception e) {
+			return ResponseEntity.status(400).body(e.getMessage());
+		}
 	}
 
 }

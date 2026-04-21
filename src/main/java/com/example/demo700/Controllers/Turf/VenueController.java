@@ -149,6 +149,21 @@ public class VenueController {
 
 	}
 
+	@GetMapping("/findForSpecificUser")
+	public ResponseEntity<?> findForSpecificUser(@RequestParam() String venueId, @RequestParam() String userId) {
+
+		try {
+
+			return ResponseEntity.status(200).body(venueService.findBySpecificUser(venueId, userId));
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
+
+		}
+
+	}
+
 	@GetMapping("/findByName")
 	public ResponseEntity<?> findByName(@RequestParam String name) {
 

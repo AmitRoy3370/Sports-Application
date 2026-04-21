@@ -103,7 +103,12 @@ public class NotificationServiceImpl implements NotificationService {
 				.orElseThrow(() -> new NoSuchElementException("Notification not found..."));
 		notification.setRead(true);
 		notification.setTimeStamp(Instant.now());
-		return notificationRepository.save(notification);
+		notification = notificationRepository.save(notification);
+
+		cleaner.removeNotification(notificationId);
+
+		return notification;
+
 	}
 
 }

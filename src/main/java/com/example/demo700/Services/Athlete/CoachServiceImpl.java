@@ -689,29 +689,36 @@ public class CoachServiceImpl implements CoachService {
 
 			System.out.println("athletes :- " + athletes.toString());
 
-			for (AthleteClassification i : athletes) {
+			List<String> allAthleteId = athletes.stream().map(AthleteClassification::getAthleteId)
+					.collect(Collectors.toList());
 
-				try {
+			list = coachRepository.findByAtheleteIdIn(allAthleteId);
 
-					Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
-
-					System.out.println("getting athlete :- " + athlete.toString());
-
-					Coach coach = coachRepository.findByAtheleteId(athlete.getId());
-
-					if (coach != null) {
-
-						System.out.println("getting coach :- " + coach.toString());
-
-						list.add(coach);
-
-					}
-
-				} catch (Exception e) {
-
-				}
-
-			}
+			/*
+			 * for (AthleteClassification i : athletes) {
+			 * 
+			 * try {
+			 * 
+			 * Athelete athlete = atheleteRepository.findById(i.getAthleteId()).get();
+			 * 
+			 * System.out.println("getting athlete :- " + athlete.toString());
+			 * 
+			 * Coach coach = coachRepository.findByAtheleteId(athlete.getId());
+			 * 
+			 * if (coach != null) {
+			 * 
+			 * System.out.println("getting coach :- " + coach.toString());
+			 * 
+			 * list.add(coach);
+			 * 
+			 * }
+			 * 
+			 * } catch (Exception e) {
+			 * 
+			 * }
+			 * 
+			 * }
+			 */
 
 			if (list.isEmpty()) {
 

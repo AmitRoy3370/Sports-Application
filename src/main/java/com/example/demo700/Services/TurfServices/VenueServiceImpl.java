@@ -198,6 +198,61 @@ public class VenueServiceImpl implements VenueService {
 	}
 
 	@Override
+	public VenueResponse findBySpecificUser(String venueId, String userId) {
+
+		if (venueId == null || userId == null) {
+
+			throw new NullPointerException("False request...");
+
+		}
+
+		User user;
+
+		try {
+
+			user = userRepository.findById(userId).get();
+
+			if (user == null) {
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such valid user find at here...");
+
+		}
+
+		try {
+
+			VenueResponse gettedResponse = getVenueResponseFromVenue(venueRepository.findById(venueId).get());
+
+			List<Booking> bookings = gettedResponse.getBookings();
+
+			bookings = bookings.stream().filter(Objects::nonNull).filter(booking -> booking.getUserId().equals(userId))
+					.collect(Collectors.toList());
+
+			List<MatchResponse> matches = gettedResponse.getMatches();
+
+			matches = matches.stream().filter(Objects::nonNull).filter(
+					match -> match.getOrganaizerName() != null && match.getOrganaizerName().equals(user.getName()))
+					.collect(Collectors.toList());
+
+			gettedResponse.setBookings(bookings);
+			gettedResponse.setMatches(matches);
+
+			return gettedResponse;
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such venue find at here...");
+
+		}
+
+	}
+
+	@Override
 	public List<VenueResponse> searchByAddress(String q) {
 		return getVenueResponseFromVenueList(venueRepository.findByAddressContainingIgnoreCase(q));
 	}

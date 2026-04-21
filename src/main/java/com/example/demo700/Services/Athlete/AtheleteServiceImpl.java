@@ -810,62 +810,43 @@ public class AtheleteServiceImpl implements AtheleteService {
 		}
 
 		// Build DTOs
-		List<AthleteRequestDTO> dtoList = new ArrayList<>(athletes.size());
+		List<AthleteRequestDTO> responses = new ArrayList<>(athletes.size());
 
-		for (Athelete a : athletes) {
+		for (Athelete athlete : athletes) {
 			try {
-				AthleteRequestDTO dto = new AthleteRequestDTO();
-
-				dto.setId(a.getId());
-				dto.setAge(a.getAge());
-				dto.setHeight(a.getHeight());
-				dto.setWeight(a.getWeight());
-				dto.setUserId(a.getUserId());
-				dto.setPosition(a.getPosition());
-				dto.setPresentTeam(a.getPresentTeam());
-				dto.setGameLogs(a.getGameLogs());
-				dto.setEventAttendence(a.getEventAttendence());
-				dto.setHighlightReels(a.getHighlightReels());
-
-				List<String> matchNames = a.getEventAttendence() != null
-						? a.getEventAttendence().stream().filter(Objects::nonNull)
-								.map(matchId -> matchNameMap.get(matchId)).collect(Collectors.toList())
-						: new ArrayList<>();
-
-				dto.setEventNames(matchNames);
-
-				User user = userMap.get(a.getUserId());
-				if (user != null) {
-					dto.setName(user.getName());
-					dto.setEmail(user.getEmail());
-					dto.setRoles(user.getRoles());
-				}
-
-				AthleteLocation loc = locationMap.get(a.getId());
-				if (loc != null) {
-					dto.setLattitude(loc.getLattitude());
-					dto.setLongitude(loc.getLongitude());
-					dto.setLocationName(loc.getLocationName());
-					dto.setLocationId(loc.getId());
-				}
-
-				UserGender gender = genderMap.get(a.getUserId());
-				if (gender != null) {
-					dto.setGender(gender.getGender());
-					dto.setUserGenderId(gender.getId());
-				}
-
-				AthleteClassification cls = classificationMap.get(a.getId());
-				if (cls != null) {
-					dto.setAthleteClassificationId(cls.getId());
-					dto.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
-				}
+				AthleteRequestDTO response = new AthleteRequestDTO();
 
 				try {
 
-					if (profileImageMap.containsKey(a.getUserId())) {
+					response.setId(athlete.getId());
+					response.setAge(athlete.getAge());
+					response.setHeight(athlete.getHeight());
+					response.setWeight(athlete.getWeight());
+					response.setUserId(athlete.getUserId());
+					response.setPosition(athlete.getPosition());
+					response.setPresentTeam(athlete.getPresentTeam());
 
-						dto.setImageHex(profileImageMap.get(a.getUserId()).getImageHex());
+					try {
+
+						response.setGameLogs(athlete.getGameLogs());
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setEventAttendence(athlete.getEventAttendence());
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setHighlightReels(athlete.getHighlightReels());
+
+					} catch (Exception e) {
 
 					}
 
@@ -873,13 +854,89 @@ public class AtheleteServiceImpl implements AtheleteService {
 
 				}
 
-				dtoList.add(dto);
+				try {
+
+					List<String> matchNames = athlete.getEventAttendence() != null
+							? athlete.getEventAttendence().stream().filter(Objects::nonNull)
+									.map(matchId -> matchNameMap.get(matchId)).collect(Collectors.toList())
+							: new ArrayList<>();
+
+					response.setEventNames(matchNames);
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					User user = userMap.get(athlete.getUserId());
+					if (user != null) {
+						response.setName(user.getName());
+						response.setEmail(user.getEmail());
+						response.setRoles(user.getRoles());
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					AthleteLocation loc = locationMap.get(athlete.getId());
+					if (loc != null) {
+						response.setLattitude(loc.getLattitude());
+						response.setLongitude(loc.getLongitude());
+						response.setLocationName(loc.getLocationName());
+						response.setLocationId(loc.getId());
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					UserGender gender = genderMap.get(athlete.getUserId());
+					if (gender != null) {
+						response.setGender(gender.getGender());
+						response.setUserGenderId(gender.getId());
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					AthleteClassification cls = classificationMap.get(athlete.getId());
+					if (cls != null) {
+						response.setAthleteClassificationId(cls.getId());
+						response.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					if (profileImageMap.containsKey(athlete.getUserId())) {
+
+						response.setImageHex(profileImageMap.get(athlete.getUserId()).getImageHex());
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				responses.add(response);
 			} catch (Exception e) {
-				System.err.println("Error building DTO for athlete: " + a.getId());
+				System.err.println("Error building DTO for athlete: " + athlete.getId());
 			}
 		}
 
-		return dtoList;
+		return responses;
 	}
 
 	private AthleteRequestDTO getDetailsFromAthleteId(String athleteId) {

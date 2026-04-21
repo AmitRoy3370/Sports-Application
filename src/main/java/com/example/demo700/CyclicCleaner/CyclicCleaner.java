@@ -14,6 +14,8 @@ import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Coach;
+import com.example.demo700.Models.Athlete.CoachClassification;
+import com.example.demo700.Models.Athlete.ScoutClassification;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.Athlete.TeamJoinRequest;
@@ -43,7 +45,9 @@ import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
+import com.example.demo700.Repositories.Athelete.CoachClassificationRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
+import com.example.demo700.Repositories.Athelete.ScoutClassificationRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
@@ -85,7 +89,13 @@ public class CyclicCleaner {
 	private CoachRepository coachRepository;
 
 	@Autowired
+	private CoachClassificationRepository coachClassificationRepository;
+
+	@Autowired
 	private ScoutsRepository scoutsRepository;
+
+	@Autowired
+	private ScoutClassificationRepository scoutClassificationRepository;
 
 	@Autowired
 	private TeamRepository teamRepository;
@@ -167,10 +177,10 @@ public class CyclicCleaner {
 
 	@Autowired
 	private UserGenderRepository userGenderRepository;
-	
+
 	@Autowired
 	private UserActiveRepository userActiveRepository;
-	
+
 	public void removeUser(String userId) {
 
 		try {
@@ -190,33 +200,33 @@ public class CyclicCleaner {
 			if (count != userRepository.count()) {
 
 				try {
-					
+
 					UserActive active = userActiveRepository.findByUserId(user.getId());
-					
-					if(active != null) {
-						
+
+					if (active != null) {
+
 						removeUserActive(active.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
-				
+
 				try {
-					
+
 					UserGender gender = userGenderRepository.findById(user.getId()).get();
-					
-					if(gender != null) {
-						
+
+					if (gender != null) {
+
 						removeUserGender(gender.getId());
-						
+
 					}
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
-				
+
 				try {
 
 					List<GymJoinRequest> gymJoinRequests = gymJoinRequestRepository.findByUserId(user.getId());
@@ -677,6 +687,20 @@ public class CyclicCleaner {
 
 					try {
 
+						CoachClassification classification = coachClassificationRepository.findByCoachId(coach.getId());
+
+						if (classification != null) {
+
+							removeCoachClassification(classification.getId());
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
 						List<TeamJoinRequest> list = teamJoinRequestRepository.findByReceiverId(coachId);
 
 						if (!list.isEmpty()) {
@@ -730,6 +754,22 @@ public class CyclicCleaner {
 				scoutsRepository.deleteById(scoutId);
 
 				if (count != scoutsRepository.count()) {
+
+					try {
+
+						ScoutClassification classification = scoutClassificationRepository.findByScoutId(scout.getId());
+
+						if (classification == null) {
+
+							throw new Exception();
+
+						}
+
+						removeScoutClassification(classification.getId());
+
+					} catch (Exception e) {
+
+					}
 
 					try {
 
@@ -2037,55 +2077,105 @@ public class CyclicCleaner {
 		}
 
 	}
-	
+
 	public void removeUserGender(String id) {
-		
+
 		try {
-			
+
 			UserGender gender = userGenderRepository.findById(id).get();
-			
-			if(gender != null) {
-				
+
+			if (gender != null) {
+
 				long count = userGenderRepository.count();
-				
+
 				userGenderRepository.deleteById(id);
-				
-				if(count != userGenderRepository.count()) {
-					
-					//removeUser(gender.getUserId());
-					
+
+				if (count != userGenderRepository.count()) {
+
+					// removeUser(gender.getUserId());
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
 
 	public void removeUserActive(String id) {
-		
+
 		try {
-			
+
 			UserActive userActive = userActiveRepository.findById(id).get();
-			
-			if(userActive != null) {
-				
+
+			if (userActive != null) {
+
 				long count = userActiveRepository.count();
-				
+
 				userActiveRepository.deleteById(id);
-				
-				if(count != userActiveRepository.count()) {
-					
+
+				if (count != userActiveRepository.count()) {
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 		}
-		
+
 	}
-	
+
+	public void removeCoachClassification(String id) {
+
+		try {
+
+			CoachClassification coachClassification = coachClassificationRepository.findById(id).get();
+
+			if (coachClassification != null) {
+
+				long count = coachClassificationRepository.count();
+
+				coachClassificationRepository.deleteById(id);
+
+				if (count != coachClassificationRepository.count()) {
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
+	public void removeScoutClassification(String id) {
+
+		try {
+
+			ScoutClassification classification = scoutClassificationRepository.findById(id).get();
+
+			if (classification == null) {
+
+				throw new Exception();
+
+			}
+
+			long count = scoutClassificationRepository.count();
+
+			scoutClassificationRepository.deleteById(id);
+
+			if (count != scoutClassificationRepository.count()) {
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
 }
