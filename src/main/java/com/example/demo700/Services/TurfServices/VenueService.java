@@ -13,6 +13,7 @@ public interface VenueService {
 
 	List<VenueResponse> searchByAddress(String q);
 	List<VenueResponse> getAllVenue();
+	List<VenueResponse> findByVenueOwner(String ownerId);
 	Venue updateVeue(String id, Venue updateVenue);
 	boolean removeVenue(String id, String userId);
 	VenueResponse findByName(String name);

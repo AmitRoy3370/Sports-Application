@@ -433,6 +433,34 @@ public class VenueServiceImpl implements VenueService {
 
 	}
 
+	public List<VenueResponse> findByVenueOwner(String ownerId) {
+		
+		if(ownerId == null) {
+			
+			throw new NullPointerException("False request....");
+			
+		}
+	
+		try {
+			
+			List<Venue> list = venueRepository.findByOwnerId(ownerId);
+			
+			if(list.isEmpty()) {
+				
+				throw new Exception();
+				
+			}
+			
+			return getVenueResponseFromVenueList(list);
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such venue present at here...");
+			
+		}
+		
+	}
+	
 	private VenueResponse getVenueResponseFromVenue(Venue venue) {
 
 		List<Venue> venues = new ArrayList<>();

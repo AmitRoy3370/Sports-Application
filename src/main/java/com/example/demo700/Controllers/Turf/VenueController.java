@@ -99,6 +99,21 @@ public class VenueController {
 
 	}
 
+	@GetMapping("/findByOwner")
+	public ResponseEntity<?> findByOwner(@RequestParam String ownerId) {
+
+		try {
+
+			return ResponseEntity.status(200).body(venueService.findByVenueOwner(ownerId));
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
+
+		}
+
+	}
+
 	@GetMapping("/search")
 	public ResponseEntity<?> search(@RequestParam String q) {
 

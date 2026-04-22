@@ -1,11 +1,20 @@
 package com.example.demo700.Services.TurfServices;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.VenueLocationResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Turf.Venue;
@@ -112,7 +121,7 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 	}
 
 	@Override
-	public List<VenueLocation> seeAllVenueLocation() {
+	public List<VenueLocationResponse> seeAllVenueLocation() {
 
 		List<VenueLocation> list = venueLocationRepository.findAll();
 
@@ -122,11 +131,11 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		}
 
-		return list;
+		return getAllVenueLocationResponseFromVenueLocationList(list);
 	}
 
 	@Override
-	public VenueLocation searchVenueLocation(String venueLocationId) {
+	public VenueLocationResponse searchVenueLocation(String venueLocationId) {
 
 		if (venueLocationId == null) {
 
@@ -142,11 +151,11 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		}
 
-		return venueLocation;
+		return getVenueResponseFromVenue(venueLocation);
 	}
 
 	@Override
-	public List<VenueLocation> searchVenueLocationByName(String locationName) {
+	public List<VenueLocationResponse> searchVenueLocationByName(String locationName) {
 
 		if (locationName == null) {
 
@@ -162,7 +171,7 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 
 		}
 
-		return list;
+		return getAllVenueLocationResponseFromVenueLocationList(list);
 	}
 
 	@Override
@@ -297,6 +306,55 @@ public class VenueLocationServiceImpl implements VenueLocationService {
 		}
 
 		return count != venueRepository.count();
+	}
+
+	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	private VenueLocationResponse getVenueResponseFromVenue(VenueLocation venue) {
+		
+		List<VenueLocation> list = new ArrayList<>();
+		
+		list.add(venue);
+		
+		return getAllVenueLocationResponseFromVenueLocationList(list).get(0);
+		
+	}
+	
+	private List<VenueLocationResponse> getAllVenueLocationResponseFromVenueLocationList(
+			List<VenueLocation> venueLocations) {
+
+		List<VenueLocationResponse> responses = new ArrayList<>();
+
+		List<String> allVenueId = venueLocations.stream().filter(Objects::nonNull)
+				.filter(venueLocation -> venueLocation.getVenueId() != null).map(VenueLocation::getVenueId)
+				.collect(Collectors.toList());
+
+		CompletableFuture<Map<String, Venue>> venueFuture = CompletableFuture.supplyAsync(() -> venueRepository
+				.findAllById(allVenueId).stream().filter(Objects::nonNull).filter(venue -> venue.getName() != null)
+				.collect(Collectors.toMap(Venue::getId, Function.identity(), (existing, replacement) -> existing)),
+				executor);
+
+		CompletableFuture.allOf(venueFuture).join();
+
+		Map<String, Venue> venueMap = venueFuture.join();
+
+		for (VenueLocation location : venueLocations) {
+
+			VenueLocationResponse response = new VenueLocationResponse();
+
+			response.setId(location.getId());
+			response.setLatitude(location.getLatitude());
+			response.setLongitude(location.getLongitude());
+			response.setLocationName(location.getLocationName());
+			response.setVenueName(venueMap.get(location.getVenueId()).getName());
+			response.setVenueId(location.getVenueId());
+
+			responses.add(response);
+
+		}
+
+		return responses;
+
 	}
 
 }
