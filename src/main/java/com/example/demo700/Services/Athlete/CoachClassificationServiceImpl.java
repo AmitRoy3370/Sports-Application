@@ -452,7 +452,8 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 			if (coachPage.getTotalPages() > 0) {
 				response.setFirstLink(
 						buildUrl(baseUrl, 0, size, "&athleteClassificationTypes=" + athleteClassificationTypes));
-				response.setLastLink(buildUrl(baseUrl, coachPage.getTotalPages() - 1, size, "&athleteClassificationTypes=" + athleteClassificationTypes));
+				response.setLastLink(buildUrl(baseUrl, coachPage.getTotalPages() - 1, size,
+						"&athleteClassificationTypes=" + athleteClassificationTypes));
 			}
 
 			response.setCurrentUrl(requestUrl);
@@ -641,8 +642,17 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 				return new HashMap<>();
 			}
 		}, executor);
-		
-		CompletableFuture<Map<String, CoachClassification>> coachClassificationFuture = CompletableFuture.supplyAsync(() -> coachClassificationRepository.findAll().isEmpty() ? new HashMap<>() : coachClassificationRepository.findAll().stream().filter(Objects::nonNull).filter(coachClassification -> coachClassification.getCoachId() != null).collect(Collectors.toMap(CoachClassification :: getCoachId, Function.identity(), (existing, replacement) -> existing)) , executor);
+
+		CompletableFuture<Map<String, CoachClassification>> coachClassificationFuture = CompletableFuture
+				.supplyAsync(
+						() -> coachClassificationRepository.findAll()
+								.isEmpty()
+										? new HashMap<>()
+										: coachClassificationRepository.findAll().stream().filter(Objects::nonNull)
+												.filter(coachClassification -> coachClassification.getCoachId() != null)
+												.collect(Collectors.toMap(CoachClassification::getCoachId,
+														Function.identity(), (existing, replacement) -> existing)),
+						executor);
 
 		CompletableFuture.allOf(userFuture, locationFuture, genderFuture, classificationFuture, matchNameFuture,
 				profileImageFuture, athleteFuture, coachClassificationFuture).join();
@@ -781,16 +791,16 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 				}
 
 				try {
-					
+
 					CoachClassification classification = coachClassificationMap.get(coach.getId());
-					
+
 					dto.setCoachClassificationId(classification.getId());
 					dto.setCoachClassificationTypes(classification.getCoachClassificationTypes());
-					
-				} catch(Exception e) {
-					
+
+				} catch (Exception e) {
+
 				}
-				
+
 				responses.add(dto);
 
 			} catch (Exception e) {

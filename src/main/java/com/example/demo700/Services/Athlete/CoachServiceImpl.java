@@ -30,6 +30,7 @@ import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.Coach;
+import com.example.demo700.Models.Athlete.CoachClassification;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.EventOrganaizer.MatchName;
@@ -38,6 +39,7 @@ import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
+import com.example.demo700.Repositories.Athelete.CoachClassificationRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
@@ -50,6 +52,9 @@ public class CoachServiceImpl implements CoachService {
 
 	@Autowired
 	private CoachRepository coachRepository;
+
+	@Autowired
+	private CoachClassificationRepository coachClassificationRepository;
 
 	@Autowired
 	private AtheleteRepository atheleteRepository;
@@ -841,8 +846,19 @@ public class CoachServiceImpl implements CoachService {
 			}
 		}, executor);
 
+		CompletableFuture<Map<String, CoachClassification>> coachClassificationFuture = CompletableFuture
+				.supplyAsync(
+						() -> coachClassificationRepository.findAll()
+								.isEmpty()
+										? new HashMap<>()
+										: coachClassificationRepository.findAll().stream().filter(Objects::nonNull)
+												.filter(coachClassification -> coachClassification.getCoachId() != null)
+												.collect(Collectors.toMap(CoachClassification::getCoachId,
+														Function.identity(), (existing, replacement) -> existing)),
+						executor);
+
 		CompletableFuture.allOf(userFuture, locationFuture, genderFuture, classificationFuture, matchNameFuture,
-				profileImageFuture, athleteFuture).join();
+				profileImageFuture, athleteFuture, coachClassificationFuture).join();
 
 		// Batch fetch with error handling
 		Map<String, User> userMap = userFuture.join();
@@ -851,6 +867,7 @@ public class CoachServiceImpl implements CoachService {
 		Map<String, AthleteClassification> classificationMap = classificationFuture.join();
 		Map<String, String> matchNameMap = matchNameFuture.join();
 		Map<String, Athelete> athleteMap = athleteFuture.join();
+		Map<String, CoachClassification> coachClassificationMap = coachClassificationFuture.join();
 		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
 
 		int index = 0;
@@ -971,6 +988,17 @@ public class CoachServiceImpl implements CoachService {
 					} catch (Exception e) {
 
 					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					CoachClassification classification = coachClassificationMap.get(coach.getId());
+
+					dto.setCoachClassificationId(classification.getId());
+					dto.setCoachClassificationTypes(classification.getCoachClassificationTypes());
 
 				} catch (Exception e) {
 
