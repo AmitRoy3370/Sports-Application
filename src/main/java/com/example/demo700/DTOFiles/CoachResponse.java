@@ -9,7 +9,7 @@ import com.example.demo700.ENUMS.Role;
 
 public class CoachResponse {
 
-	private String athleteId, userId, name, userGenderId, athleteClassificationId, locationId;
+	private String athleteId, userId, name, userGenderId, athleteClassificationId, coachClassificationId, locationId;
 	private String email, imageHex;
 	private Gender gender;
 	private String position, presentTeam, locationName, athleteTeam;
@@ -19,7 +19,7 @@ public class CoachResponse {
 	private List<String> eventAttendence;
 	private List<String> eventNames;
 	private List<String> highlightReels;
-	private AthleteClassificationTypes athleteClassificationTypes;
+	private AthleteClassificationTypes athleteClassificationTypes, coachClassificationTypes;
 	private Set<Role> roles;
 
 	private String id;
@@ -31,17 +31,20 @@ public class CoachResponse {
 	private List<String> performanceTracking;
 
 	public CoachResponse(String athleteId, String userId, String name, String userGenderId,
-			String athleteClassificationId, String locationId, String email, String imageHex, Gender gender,
-			String position, String presentTeam, String locationName, double height, double weight, double lattitude,
-			double longitude, int age, List<String> gameLogs, List<String> eventAttendence, List<String> eventNames,
-			List<String> highlightReels, AthleteClassificationTypes athleteClassificationTypes, Set<Role> roles,
-			String id, String teamName, List<String> atheletesVideo, List<String> performanceTracking, String athleteTeam) {
+			String athleteClassificationId, String coachClassificationId, String locationId, String email,
+			String imageHex, Gender gender, String position, String presentTeam, String locationName,
+			String athleteTeam, double height, double weight, double lattitude, double longitude, int age,
+			List<String> gameLogs, List<String> eventAttendence, List<String> eventNames, List<String> highlightReels,
+			AthleteClassificationTypes athleteClassificationTypes, AthleteClassificationTypes coachClassificationTypes,
+			Set<Role> roles, String id, String teamName, List<String> atheletesVideo,
+			List<String> performanceTracking) {
 		super();
 		this.athleteId = athleteId;
 		this.userId = userId;
 		this.name = name;
 		this.userGenderId = userGenderId;
 		this.athleteClassificationId = athleteClassificationId;
+		this.coachClassificationId = coachClassificationId;
 		this.locationId = locationId;
 		this.email = email;
 		this.imageHex = imageHex;
@@ -49,6 +52,7 @@ public class CoachResponse {
 		this.position = position;
 		this.presentTeam = presentTeam;
 		this.locationName = locationName;
+		this.athleteTeam = athleteTeam;
 		this.height = height;
 		this.weight = weight;
 		this.lattitude = lattitude;
@@ -59,12 +63,12 @@ public class CoachResponse {
 		this.eventNames = eventNames;
 		this.highlightReels = highlightReels;
 		this.athleteClassificationTypes = athleteClassificationTypes;
+		this.coachClassificationTypes = coachClassificationTypes;
 		this.roles = roles;
 		this.id = id;
 		this.teamName = teamName;
 		this.atheletesVideo = atheletesVideo;
 		this.performanceTracking = performanceTracking;
-		this.athleteTeam = athleteTeam;
 	}
 
 	public CoachResponse() {
@@ -109,6 +113,14 @@ public class CoachResponse {
 
 	public void setAthleteClassificationId(String athleteClassificationId) {
 		this.athleteClassificationId = athleteClassificationId;
+	}
+
+	public String getCoachClassificationId() {
+		return coachClassificationId;
+	}
+
+	public void setCoachClassificationId(String coachClassificationId) {
+		this.coachClassificationId = coachClassificationId;
 	}
 
 	public String getLocationId() {
@@ -165,6 +177,14 @@ public class CoachResponse {
 
 	public void setLocationName(String locationName) {
 		this.locationName = locationName;
+	}
+
+	public String getAthleteTeam() {
+		return athleteTeam;
+	}
+
+	public void setAthleteTeam(String athleteTeam) {
+		this.athleteTeam = athleteTeam;
 	}
 
 	public double getHeight() {
@@ -247,6 +267,14 @@ public class CoachResponse {
 		this.athleteClassificationTypes = athleteClassificationTypes;
 	}
 
+	public AthleteClassificationTypes getCoachClassificationTypes() {
+		return coachClassificationTypes;
+	}
+
+	public void setCoachClassificationTypes(AthleteClassificationTypes coachClassificationTypes) {
+		this.coachClassificationTypes = coachClassificationTypes;
+	}
+
 	public Set<Role> getRoles() {
 		return roles;
 	}
@@ -287,25 +315,19 @@ public class CoachResponse {
 		this.performanceTracking = performanceTracking;
 	}
 
-	public String getAthleteTeam() {
-		return athleteTeam;
-	}
-
-	public void setAthleteTeam(String athleteTeam) {
-		this.athleteTeam = athleteTeam;
-	}
-
 	@Override
 	public String toString() {
 		return "CoachResponse [athleteId=" + athleteId + ", userId=" + userId + ", name=" + name + ", userGenderId="
-				+ userGenderId + ", athleteClassificationId=" + athleteClassificationId + ", locationId=" + locationId
-				+ ", email=" + email + ", imageHex=" + imageHex + ", gender=" + gender + ", position=" + position
-				+ ", presentTeam=" + presentTeam + ", locationName=" + locationName + ", athleteTeam=" + athleteTeam
-				+ ", height=" + height + ", weight=" + weight + ", lattitude=" + lattitude + ", longitude=" + longitude
-				+ ", age=" + age + ", gameLogs=" + gameLogs + ", eventAttendence=" + eventAttendence + ", eventNames="
-				+ eventNames + ", highlightReels=" + highlightReels + ", athleteClassificationTypes="
-				+ athleteClassificationTypes + ", roles=" + roles + ", id=" + id + ", teamName=" + teamName
-				+ ", atheletesVideo=" + atheletesVideo + ", performanceTracking=" + performanceTracking + "]";
+				+ userGenderId + ", athleteClassificationId=" + athleteClassificationId + ", coachClassificationId="
+				+ coachClassificationId + ", locationId=" + locationId + ", email=" + email + ", imageHex=" + imageHex
+				+ ", gender=" + gender + ", position=" + position + ", presentTeam=" + presentTeam + ", locationName="
+				+ locationName + ", athleteTeam=" + athleteTeam + ", height=" + height + ", weight=" + weight
+				+ ", lattitude=" + lattitude + ", longitude=" + longitude + ", age=" + age + ", gameLogs=" + gameLogs
+				+ ", eventAttendence=" + eventAttendence + ", eventNames=" + eventNames + ", highlightReels="
+				+ highlightReels + ", athleteClassificationTypes=" + athleteClassificationTypes
+				+ ", coachClassificationTypes=" + coachClassificationTypes + ", roles=" + roles + ", id=" + id
+				+ ", teamName=" + teamName + ", atheletesVideo=" + atheletesVideo + ", performanceTracking="
+				+ performanceTracking + "]";
 	}
 
 }

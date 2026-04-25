@@ -28,6 +28,7 @@ import com.example.demo700.Models.User;
 import com.example.demo700.Models.UserGender;
 import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.AthleteClassification;
+import com.example.demo700.Models.Athlete.ScoutClassification;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
@@ -38,6 +39,7 @@ import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
+import com.example.demo700.Repositories.Athelete.ScoutClassificationRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
@@ -50,6 +52,9 @@ public class ScoutServiceImpl implements ScoutService {
 
 	@Autowired
 	private ScoutsRepository scoutsRepository;
+
+	@Autowired
+	private ScoutClassificationRepository scoutClassificationRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -512,10 +517,11 @@ public class ScoutServiceImpl implements ScoutService {
 
 			}
 
-			List<String> allAthleteId = athletes.stream().map(AthleteClassification::getAthleteId).collect(Collectors.toList());
-			
+			List<String> allAthleteId = athletes.stream().map(AthleteClassification::getAthleteId)
+					.collect(Collectors.toList());
+
 			list = scoutsRepository.findByAtheleteIdIn(allAthleteId);
-			
+
 			if (list.isEmpty()) {
 
 				throw new Exception();
@@ -635,8 +641,19 @@ public class ScoutServiceImpl implements ScoutService {
 			}
 		}, executor);
 
+		CompletableFuture<Map<String, ScoutClassification>> scoutClassificationFuture = CompletableFuture
+				.supplyAsync(
+						() -> scoutClassificationRepository.findAll()
+								.isEmpty()
+										? new HashMap<>()
+										: scoutClassificationRepository.findAll().stream().filter(Objects::nonNull)
+												.filter(scoutClassification -> scoutClassification.getScoutId() != null)
+												.collect(Collectors.toMap(ScoutClassification::getScoutId,
+														Function.identity(), (existing, replacement) -> existing)),
+						executor);
+
 		CompletableFuture.allOf(athleteFuture, userFuture, locationFuture, genderFuture, classificationFuture,
-				matchNameFuture, profileImageFuture).join();
+				matchNameFuture, profileImageFuture, scoutClassificationFuture).join();
 
 		Map<String, Athelete> athleteMap = athleteFuture.join();
 		Map<String, User> userMap = userFuture.join();
@@ -644,6 +661,7 @@ public class ScoutServiceImpl implements ScoutService {
 		Map<String, UserGender> genderMap = genderFuture.join();
 		Map<String, AthleteClassification> classificationMap = classificationFuture.join();
 		Map<String, String> matchNameMap = matchNameFuture.join();
+		Map<String, ScoutClassification> scoutClassificationMap = scoutClassificationFuture.join();
 		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
 
 		for (Scouts scout : scouts) {
@@ -810,6 +828,17 @@ public class ScoutServiceImpl implements ScoutService {
 
 				}
 
+				try {
+
+					ScoutClassification classification = scoutClassificationMap.get(scout.getId());
+
+					response.setScoutClassificationId(classification.getId());
+					response.setScoutClassificationTypes(classification.getScoutClassificationTypes());
+
+				} catch (Exception e) {
+
+				}
+
 				responses.add(response);
 
 			} catch (Exception e) {
@@ -902,7 +931,7 @@ public class ScoutServiceImpl implements ScoutService {
 
 		int pageSize = pageable.getPageSize();
 		int currentPage = pageable.getPageNumber();
-		
+
 		int start = (int) pageable.getOffset();
 		int end = Math.min(start + pageSize, allResponses.size());
 

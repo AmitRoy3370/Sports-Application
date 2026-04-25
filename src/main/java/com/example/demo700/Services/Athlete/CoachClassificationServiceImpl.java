@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -640,9 +641,11 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 				return new HashMap<>();
 			}
 		}, executor);
+		
+		CompletableFuture<Map<String, CoachClassification>> coachClassificationFuture = CompletableFuture.supplyAsync(() -> coachClassificationRepository.findAll().isEmpty() ? new HashMap<>() : coachClassificationRepository.findAll().stream().filter(Objects::nonNull).filter(coachClassification -> coachClassification.getCoachId() != null).collect(Collectors.toMap(CoachClassification :: getCoachId, Function.identity(), (existing, replacement) -> existing)) , executor);
 
 		CompletableFuture.allOf(userFuture, locationFuture, genderFuture, classificationFuture, matchNameFuture,
-				profileImageFuture, athleteFuture).join();
+				profileImageFuture, athleteFuture, coachClassificationFuture).join();
 
 		// Batch fetch with error handling
 		Map<String, User> userMap = userFuture.join();
@@ -651,6 +654,7 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 		Map<String, AthleteClassification> classificationMap = classificationFuture.join();
 		Map<String, String> matchNameMap = matchNameFuture.join();
 		Map<String, Athelete> athleteMap = athleteFuture.join();
+		Map<String, CoachClassification> coachClassificationMap = coachClassificationFuture.join();
 		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
 
 		int index = 0;
@@ -776,6 +780,17 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 
 				}
 
+				try {
+					
+					CoachClassification classification = coachClassificationMap.get(coach.getId());
+					
+					dto.setCoachClassificationId(classification.getId());
+					dto.setCoachClassificationTypes(classification.getCoachClassificationTypes());
+					
+				} catch(Exception e) {
+					
+				}
+				
 				responses.add(dto);
 
 			} catch (Exception e) {

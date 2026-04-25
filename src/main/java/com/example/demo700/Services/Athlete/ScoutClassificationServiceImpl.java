@@ -594,8 +594,10 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 			}
 		}, executor);
 
+		CompletableFuture<Map<String, ScoutClassification>> scoutClassificationFuture = CompletableFuture.supplyAsync(() -> scoutClassificationRepository.findAll().isEmpty() ? new HashMap<>() : scoutClassificationRepository.findAll().stream().filter(Objects::nonNull).filter(scoutClassification -> scoutClassification.getScoutId() != null).collect(Collectors.toMap(ScoutClassification::getScoutId, Function.identity(), (existing, replacement) -> existing)) , executor);
+		
 		CompletableFuture.allOf(athleteFuture, userFuture, locationFuture, genderFuture, classificationFuture,
-				matchNameFuture, profileImageFuture).join();
+				matchNameFuture, profileImageFuture, scoutClassificationFuture).join();
 
 		Map<String, Athelete> athleteMap = athleteFuture.join();
 		Map<String, User> userMap = userFuture.join();
@@ -603,6 +605,7 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 		Map<String, UserGender> genderMap = genderFuture.join();
 		Map<String, AthleteClassification> classificationMap = classificationFuture.join();
 		Map<String, String> matchNameMap = matchNameFuture.join();
+		Map<String, ScoutClassification> scoutClassificationMap = scoutClassificationFuture.join();
 		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
 
 		for (Scouts scout : scouts) {
@@ -767,6 +770,18 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 
 				} catch (Exception e) {
 
+				}
+				
+				try {
+					
+					ScoutClassification classification = scoutClassificationMap.get(scout.getId());
+					
+					response.setScoutClassificationId(classification.getId());
+					response.setScoutClassificationTypes(classification.getScoutClassificationTypes());
+					
+				} catch(Exception e) {
+					
+					
 				}
 
 				responses.add(response);
