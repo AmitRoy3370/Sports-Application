@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.TurfOwnerResponse;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Services.TurfServices.TurfOwnerService;
 
@@ -44,7 +45,7 @@ public class OwnerController {
 	@GetMapping("/seeAll")
 	public ResponseEntity<?> seeAll() {
 
-		List<Owner> list = turfOwnerService.seeAllOwner();
+		List<TurfOwnerResponse> list = turfOwnerService.seeAllOwner();
 
 		if (list.isEmpty()) {
 
@@ -61,7 +62,7 @@ public class OwnerController {
 		
 		try {
 			
-			Owner owner = turfOwnerService.findByUserId(userId);
+			TurfOwnerResponse owner = turfOwnerService.findByUserId(userId);
 			
 			if(owner == null) {
 				
@@ -84,7 +85,7 @@ public class OwnerController {
 		
 		try {
 			
-			List<Owner> list = turfOwnerService.searchByName(name);
+			List<TurfOwnerResponse> list = turfOwnerService.searchByName(name);
 			
 			if(list.isEmpty()) {
 				
@@ -107,7 +108,7 @@ public class OwnerController {
 		
 		try {
 			
-			List<Owner> list = turfOwnerService.searchByPhone(phone);
+			List<TurfOwnerResponse> list = turfOwnerService.searchByPhone(phone);
 			
 			if(list.isEmpty()) {
 				

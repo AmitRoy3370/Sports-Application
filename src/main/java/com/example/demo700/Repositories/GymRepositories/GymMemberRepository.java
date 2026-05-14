@@ -11,6 +11,7 @@ import com.example.demo700.Models.GymModels.GymMember;
 public interface GymMemberRepository extends MongoRepository<GymMember, String> {
 
 	public GymMember findByGymId(String gymId);
+	public List<GymMember> findByGymIdIn(List<String> gymIds);
 	public List<GymMember> findByGymMembersContainingIgnoreCase(String gymMembers);
 	
 }

@@ -13,6 +13,7 @@ import com.example.demo700.Models.EventOrganaizer.Match;
 public interface MatchRepository extends MongoRepository<Match, String> {
 
 	public List<Match> findByOrganaizerId(String organaizerId);
+	public List<Match> findByOrganaizerIdIn(List<String> organaizersId);
 	public List<Match> findByTeamsContainingIgnoreCase(String teamId);
 	public List<Match> findByGameLogsContainingIgnoreCase(String gameLogs);
 	public List<Match> findByVideosContainingIgnoreCase(String video);

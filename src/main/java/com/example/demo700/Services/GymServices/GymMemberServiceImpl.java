@@ -1,14 +1,24 @@
 package com.example.demo700.Services.GymServices;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.GymMemberResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.GymModels.GymMember;
@@ -149,7 +159,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 	}
 
 	@Override
-	public GymMember findByGymId(String gymId) {
+	public GymMemberResponse findByGymId(String gymId) {
 
 		if (gymId == null) {
 
@@ -167,7 +177,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 
 			}
 
-			return gymMember;
+			return getGymMemberResponse(gymMember);
 
 		} catch (Exception e) {
 
@@ -178,7 +188,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 	}
 
 	@Override
-	public List<GymMember> findByGymMembersContaingingIgnoreCase(String gymMembers) {
+	public List<GymMemberResponse> findByGymMembersContaingingIgnoreCase(String gymMembers) {
 
 		if (gymMembers == null) {
 
@@ -196,7 +206,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 
 			}
 
-			return list;
+			return getGymMemberResponse(list);
 
 		} catch (Exception e) {
 
@@ -207,7 +217,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 	}
 
 	@Override
-	public GymMember findById(String id) {
+	public GymMemberResponse findById(String id) {
 
 		if (id == null) {
 
@@ -225,7 +235,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 
 			}
 
-			return gymMember;
+			return getGymMemberResponse(gymMember);
 
 		} catch (Exception e) {
 
@@ -236,7 +246,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 	}
 
 	@Override
-	public List<GymMember> seeAll() {
+	public List<GymMemberResponse> seeAll() {
 
 		try {
 
@@ -248,7 +258,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 
 			}
 
-			return list;
+			return getGymMemberResponse(list);
 
 		} catch (Exception e) {
 
@@ -338,4 +348,76 @@ public class GymMemberServiceImpl implements GymMemberService {
 		return count != gymMemberRepository.count();
 	}
 
+	@Override
+	public List<GymMemberResponse> findByGymIdIn(List<String> gymId) {
+		
+		List<GymMember> list = gymMemberRepository.findByGymIdIn(gymId);
+		
+		return getGymMemberResponse(list);
+		
+	}
+	
+	private ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	private GymMemberResponse getGymMemberResponse(GymMember gymMember) {
+
+		List<GymMember> list = new ArrayList<>();
+
+		list.add(gymMember);
+
+		return getGymMemberResponse(list).get(0);
+
+	}
+
+	private List<GymMemberResponse> getGymMemberResponse(List<GymMember> gymMembers) {
+
+		List<String> membersIdList = gymMembers.stream().filter(Objects::nonNull)
+				.filter(gymMember -> gymMember.getGymMembers() != null && !gymMember.getGymMembers().isEmpty())
+				.flatMap(gymMember -> gymMember.getGymMembers().stream()).filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		List<String> gymIds = gymMembers.stream().map(GymMember::getGymId).collect(Collectors.toList());
+
+		List<Gyms> gyms = gymsRepository.findAllById(gymIds);
+
+		CompletableFuture<Map<String, Gyms>> gymFuture = CompletableFuture
+				.supplyAsync(() -> gyms.isEmpty() ? new HashMap<>()
+						: gyms.stream().filter(Objects::nonNull).filter(gym -> gym.getGymName() != null)
+								.collect(Collectors.toMap(Gyms::getId, Function.identity())),
+						executors);
+
+		List<User> users = userRepository.findAllById(membersIdList);
+		Map<String, User> userMap = users.stream().collect(Collectors.toMap(User::getId, Function.identity()));
+
+		CompletableFuture<Map<String, Set<String>>> gymMembersFuture = CompletableFuture
+				.supplyAsync(() -> gymMembers.stream().filter(Objects::nonNull)
+						.filter(gymMember -> gymMember.getGymMembers() != null && !gymMember.getGymMembers().isEmpty())
+						.collect(Collectors.toMap(GymMember::getId, 
+								gymMember -> gymMember.getGymMembers().stream() 
+										.filter(Objects::nonNull).map(member -> {
+											User user = userMap.get(member);
+											return user != null ? user.getName() : "Unknown";
+										}).collect(Collectors.toSet()))),
+						executors);
+
+		CompletableFuture.allOf(gymMembersFuture, gymFuture).join();
+
+		Map<String, Set<String>> gymMembersMap = gymMembersFuture.join();
+
+		Map<String, Gyms> gymMap = gymFuture.join();
+
+		/*gymMembersMap.forEach((gymId, memberNames) -> {
+			System.out.println("Gym ID: " + gymId + " -> Members: " + memberNames);
+		});*/
+
+		List<GymMemberResponse> responses = gymMembers.stream().filter(Objects::nonNull).map(gymMember -> {
+			Set<String> memberNames = gymMembersMap.getOrDefault(gymMember.getId(), new HashSet<>());
+			return new GymMemberResponse(gymMember.getId(), gymMember.getGymId(),
+					gymMap.containsKey(gymMember.getGymId()) ? "Un Known"
+							: gymMap.get(gymMember.getGymId()).getGymName(),
+					gymMember.getGymMembers(), memberNames);
+		}).collect(Collectors.toList());
+
+		return responses;
+	}
 }

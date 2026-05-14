@@ -14,11 +14,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
 import com.example.demo700.DTOFiles.MatchResponse;
+import com.example.demo700.DTOFiles.VenueListResponseDTO;
 import com.example.demo700.DTOFiles.VenueResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
@@ -349,6 +353,35 @@ public class VenueServiceImpl implements VenueService {
 		return venue;
 	}
 
+	@Override
+	public List<VenueResponse> findByNameContainingIgnoreCase(String name) {
+
+		if (name == null) {
+
+			throw new NullPointerException("False request...");
+
+		}
+
+		try {
+
+			List<Venue> list = venueRepository.findByNameContainingIgnoreCase(name);
+
+			if (list.isEmpty()) {
+
+				throw new Exception();
+
+			}
+
+			return getVenueResponseFromVenueList(list);
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such venue present at here...");
+
+		}
+
+	}
+
 	@SuppressWarnings("unlikely-arg-type")
 	@Override
 	public boolean removeVenue(String id, String userId) {
@@ -434,33 +467,298 @@ public class VenueServiceImpl implements VenueService {
 	}
 
 	public List<VenueResponse> findByVenueOwner(String ownerId) {
-		
-		if(ownerId == null) {
-			
+
+		if (ownerId == null) {
+
 			throw new NullPointerException("False request....");
-			
+
 		}
-	
+
 		try {
-			
+
 			List<Venue> list = venueRepository.findByOwnerId(ownerId);
-			
-			if(list.isEmpty()) {
-				
+
+			if (list.isEmpty()) {
+
 				throw new Exception();
-				
+
 			}
-			
+
 			return getVenueResponseFromVenueList(list);
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such venue present at here...");
-			
+
 		}
-		
+
 	}
-	
+
+	@Override
+	public List<VenueResponse> findByVenueOwners(List<String> ownersId) {
+
+		try {
+
+			List<Venue> venues = venueRepository.findByOwnerIdIn(ownersId);
+
+			if (venues.isEmpty()) {
+
+				return new ArrayList<>();
+
+			}
+
+			return getVenueResponseFromVenueList(venues);
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("No such venue find at here....");
+
+		}
+
+	}
+
+	// ========== PAGINATED METHODS IMPLEMENTATION ==========
+
+	@Override
+	public VenueListResponseDTO getAllVenuesPaginated(int page, int size, String sortBy, String sortDir) {
+
+		// Validate and set default values
+		page = Math.max(0, page);
+		size = (size <= 0) ? 10 : Math.min(size, 100); // Max 100 items per page
+
+		// Create sort direction
+		Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String sortField = (sortBy == null || sortBy.isEmpty()) ? "name" : sortBy;
+
+		// Create Pageable object
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+		// Fetch paginated data
+		Page<Venue> venuePage = venueRepository.findAll(pageable);
+
+		// Convert Venue entities to VenueResponse DTOs
+		List<VenueResponse> venueResponses = getVenueResponseFromVenueList(venuePage.getContent());
+
+		// Build and return the response DTO with navigation links
+		return buildVenueListResponseDTO(venueResponses, venuePage, "/api/venues", "");
+	}
+
+	@Override
+	public VenueListResponseDTO searchVenuesByAddressPaginated(String address, int page, int size, String sortBy,
+			String sortDir) {
+
+		if (address == null || address.isEmpty()) {
+			return getAllVenuesPaginated(page, size, sortBy, sortDir);
+		}
+
+		// Validate parameters
+		page = Math.max(0, page);
+		size = (size <= 0) ? 10 : Math.min(size, 100);
+
+		// Create sort
+		Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String sortField = (sortBy == null || sortBy.isEmpty()) ? "name" : sortBy;
+
+		// Create Pageable
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+		// Fetch paginated data by address
+		Page<Venue> venuePage = venueRepository.findByAddressContainingIgnoreCase(address, pageable);
+
+		// Convert to DTOs
+		List<VenueResponse> venueResponses = getVenueResponseFromVenueList(venuePage.getContent());
+
+		// Build response with search params
+		String searchParams = "address=" + address;
+		return buildVenueListResponseDTO(venueResponses, venuePage, "/api/venues/search/by-address", searchParams);
+	}
+
+	@Override
+	public VenueListResponseDTO searchVenuesByNamePaginated(String name, int page, int size, String sortBy,
+			String sortDir) {
+
+		if (name == null || name.isEmpty()) {
+			return getAllVenuesPaginated(page, size, sortBy, sortDir);
+		}
+
+		// Validate parameters
+		page = Math.max(0, page);
+		size = (size <= 0) ? 10 : Math.min(size, 100);
+
+		// Create sort
+		Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String sortField = (sortBy == null || sortBy.isEmpty()) ? "name" : sortBy;
+
+		// Create Pageable
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+		// Fetch paginated data by name
+		Page<Venue> venuePage = venueRepository.findByNameContainingIgnoreCase(name, pageable);
+
+		// Convert to DTOs
+		List<VenueResponse> venueResponses = getVenueResponseFromVenueList(venuePage.getContent());
+
+		// Build response
+		String searchParams = "name=" + name;
+		return buildVenueListResponseDTO(venueResponses, venuePage, "/api/venues/search/by-name", searchParams);
+	}
+
+	@Override
+	public VenueListResponseDTO getVenuesByOwnerPaginated(String ownerId, int page, int size, String sortBy,
+			String sortDir) {
+
+		if (ownerId == null || ownerId.isEmpty()) {
+			throw new IllegalArgumentException("Owner ID cannot be null or empty");
+		}
+
+		// Validate parameters
+		page = Math.max(0, page);
+		size = (size <= 0) ? 10 : Math.min(size, 100);
+
+		// Create sort
+		Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String sortField = (sortBy == null || sortBy.isEmpty()) ? "name" : sortBy;
+
+		// Create Pageable
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+		// Fetch paginated data by owner
+		Page<Venue> venuePage = venueRepository.findByOwnerId(ownerId, pageable);
+
+		// Convert to DTOs
+		List<VenueResponse> venueResponses = getVenueResponseFromVenueList(venuePage.getContent());
+
+		// Build response
+		String searchParams = "ownerId=" + ownerId;
+		return buildVenueListResponseDTO(venueResponses, venuePage, "/api/venues/owner", searchParams);
+	}
+
+	@Override
+	public VenueListResponseDTO getVenuesByOwnersPaginated(List<String> ownersId, int page, int size, String sortBy,
+			String sortDir) {
+
+		if (ownersId == null || ownersId.isEmpty()) {
+			return getAllVenuesPaginated(page, size, sortBy, sortDir);
+		}
+
+		// Validate parameters
+		page = Math.max(0, page);
+		size = (size <= 0) ? 10 : Math.min(size, 100);
+
+		// Create sort
+		Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+		String sortField = (sortBy == null || sortBy.isEmpty()) ? "name" : sortBy;
+
+		// Create Pageable
+		Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
+		// Fetch paginated data by owners list
+		Page<Venue> venuePage = venueRepository.findByOwnerIdIn(ownersId, pageable);
+
+		// Convert to DTOs
+		List<VenueResponse> venueResponses = getVenueResponseFromVenueList(venuePage.getContent());
+
+		// Build response
+		String searchParams = "ownersId=" + String.join(",", ownersId);
+		return buildVenueListResponseDTO(venueResponses, venuePage, "/api/venues/owners", searchParams);
+	}
+
+	// ========== HELPER METHOD TO BUILD VenueListResponseDTO ==========
+
+	private VenueListResponseDTO buildVenueListResponseDTO(List<VenueResponse> venues, Page<Venue> venuePage,
+			String baseUrl, String searchParams) {
+
+		VenueListResponseDTO response = new VenueListResponseDTO();
+
+		// Set basic pagination info
+		response.setVenues(venues);
+		response.setCurrentPage(venuePage.getNumber());
+		response.setPageSize(venuePage.getSize());
+		response.setTotalElements(venuePage.getTotalElements());
+		response.setTotalPages(venuePage.getTotalPages());
+		response.setHasNext(venuePage.hasNext());
+		response.setHasPrevious(venuePage.hasPrevious());
+
+		// Set current URL
+		String currentUrl = baseUrl + "?page=" + venuePage.getNumber() + "&size=" + venuePage.getSize();
+		if (searchParams != null && !searchParams.isEmpty()) {
+			currentUrl += "&" + searchParams;
+		}
+		response.setCurrentUrl(currentUrl);
+		response.setSearchParams(searchParams);
+
+		// Build navigation links
+		buildNavigationLinks(response, venuePage, baseUrl, searchParams);
+
+		// Set helpful messages
+		response.setMessage(generatePaginationMessage(venuePage));
+		response.setSuggestedPageSize(getSuggestedPageSize(venuePage.getTotalElements()));
+		response.setNavigationInstructions(getNavigationInstructions());
+
+		return response;
+	}
+
+	private void buildNavigationLinks(VenueListResponseDTO response, Page<Venue> page, String baseUrl,
+			String searchParams) {
+
+		String paramPrefix = (searchParams != null && !searchParams.isEmpty()) ? "&" : "?";
+		String fullParamPrefix = (searchParams != null && !searchParams.isEmpty()) ? "&" : "?";
+
+		// Self link (current page)
+		response.setSelfLink(baseUrl + "?page=" + page.getNumber() + "&size=" + page.getSize()
+				+ (searchParams != null && !searchParams.isEmpty() ? "&" + searchParams : ""));
+
+		// First link
+		response.setFirstLink(baseUrl + "?page=0&size=" + page.getSize()
+				+ (searchParams != null && !searchParams.isEmpty() ? "&" + searchParams : ""));
+
+		// Last link
+		response.setLastLink(baseUrl + "?page=" + (page.getTotalPages() - 1) + "&size=" + page.getSize()
+				+ (searchParams != null && !searchParams.isEmpty() ? "&" + searchParams : ""));
+
+		// Next link (if exists)
+		if (page.hasNext()) {
+			response.setNextLink(baseUrl + "?page=" + (page.getNumber() + 1) + "&size=" + page.getSize()
+					+ (searchParams != null && !searchParams.isEmpty() ? "&" + searchParams : ""));
+		}
+
+		// Previous link (if exists)
+		if (page.hasPrevious()) {
+			response.setPrevLink(baseUrl + "?page=" + (page.getNumber() - 1) + "&size=" + page.getSize()
+					+ (searchParams != null && !searchParams.isEmpty() ? "&" + searchParams : ""));
+		}
+	}
+
+	private String generatePaginationMessage(Page<Venue> page) {
+		if (page.isEmpty()) {
+			return "No venues found. Try adjusting your search criteria or check back later.";
+		}
+
+		long start = page.getNumber() * page.getSize() + 1;
+		long end = Math.min(start + page.getSize() - 1, page.getTotalElements());
+
+		return String.format("Showing %d to %d of %d venues. Page %d of %d.", start, end, page.getTotalElements(),
+				page.getNumber() + 1, page.getTotalPages());
+	}
+
+	private String getSuggestedPageSize(long totalElements) {
+		if (totalElements <= 10)
+			return "5";
+		if (totalElements <= 50)
+			return "10";
+		if (totalElements <= 100)
+			return "20";
+		if (totalElements <= 500)
+			return "50";
+		return "100";
+	}
+
+	private String getNavigationInstructions() {
+		return "Use 'page' parameter for page number (0-indexed), 'size' for items per page, "
+				+ "'sortBy' for field name, and 'sortDir' for 'asc' or 'desc'. "
+				+ "Follow the provided links (nextLink, prevLink, firstLink, lastLink) for easy navigation.";
+	}
+
 	private VenueResponse getVenueResponseFromVenue(Venue venue) {
 
 		List<Venue> venues = new ArrayList<>();

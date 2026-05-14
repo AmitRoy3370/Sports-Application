@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo700.DTOFiles.DoctorResponse;
 import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Services.DoctorServices.DoctorService;
 
@@ -39,7 +40,7 @@ public class DoctorController {
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllDoctors() {
 		try {
-			List<Doctor> doctors = doctorService.seeAllDoctor();
+			List<DoctorResponse> doctors = doctorService.seeAllDoctor();
 			return new ResponseEntity<>(doctors, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -50,7 +51,7 @@ public class DoctorController {
 	@GetMapping("/by-id/{doctorId}")
 	public ResponseEntity<?> getDoctorById(@PathVariable String doctorId) {
 		try {
-			Doctor doctor = doctorService.findById(doctorId);
+			DoctorResponse doctor = doctorService.findById(doctorId);
 			return new ResponseEntity<>(doctor, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -61,7 +62,7 @@ public class DoctorController {
 	@GetMapping("/by-user/{userId}")
 	public ResponseEntity<?> getDoctorByUserId(@PathVariable String userId) {
 		try {
-			Doctor doctor = doctorService.findByUserId(userId);
+			DoctorResponse doctor = doctorService.findByUserId(userId);
 			
 			if(doctor == null) {
 				
@@ -79,7 +80,7 @@ public class DoctorController {
 	@GetMapping("/experience/{year}")
 	public ResponseEntity<?> getDoctorsByExperience(@PathVariable int year) {
 		try {
-			List<Doctor> doctors = doctorService.findByYearOfExperiencesGreaterThan(year);
+			List<DoctorResponse> doctors = doctorService.findByYearOfExperiencesGreaterThan(year);
 			return new ResponseEntity<>(doctors, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -90,7 +91,7 @@ public class DoctorController {
 	@GetMapping("/designation/{designation}")
 	public ResponseEntity<?> getDoctorsByDesignation(@PathVariable String designation) {
 		try {
-			List<Doctor> doctors = doctorService.findByDesignationIgnoreCase(designation);
+			List<DoctorResponse> doctors = doctorService.findByDesignationIgnoreCase(designation);
 			return new ResponseEntity<>(doctors, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -101,7 +102,7 @@ public class DoctorController {
 	@GetMapping("/degree/{degree}")
 	public ResponseEntity<?> getDoctorsByDegree(@PathVariable String degree) {
 		try {
-			List<Doctor> doctors = doctorService.findByDegressContainingIgnoreCase(degree);
+			List<DoctorResponse> doctors = doctorService.findByDegressContainingIgnoreCase(degree);
 			return new ResponseEntity<>(doctors, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -112,7 +113,7 @@ public class DoctorController {
 	@GetMapping("/working/{work}")
 	public ResponseEntity<?> getDoctorsByWorkingExperience(@PathVariable String work) {
 		try {
-			List<Doctor> doctors = doctorService.findByWorkingExperiencesContainingIgnoreCase(work);
+			List<DoctorResponse> doctors = doctorService.findByWorkingExperiencesContainingIgnoreCase(work);
 			return new ResponseEntity<>(doctors, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

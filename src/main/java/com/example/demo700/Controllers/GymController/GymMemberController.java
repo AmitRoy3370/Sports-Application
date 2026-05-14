@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo700.DTOFiles.GymMemberResponse;
 import com.example.demo700.Models.GymModels.GymMember;
 import com.example.demo700.Services.GymServices.GymMemberService;
 
@@ -51,7 +52,7 @@ public class GymMemberController {
     @GetMapping("/gym/{gymId}")
     public ResponseEntity<?> findByGymId(@PathVariable String gymId) {
         try {
-            GymMember member = gymMemberService.findByGymId(gymId);
+        	GymMemberResponse member = gymMemberService.findByGymId(gymId);
             return ResponseEntity.ok(member);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -62,7 +63,7 @@ public class GymMemberController {
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable String id) {
         try {
-            GymMember member = gymMemberService.findById(id);
+        	GymMemberResponse member = gymMemberService.findById(id);
             return ResponseEntity.ok(member);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -74,7 +75,7 @@ public class GymMemberController {
     public ResponseEntity<?> findByGymMembersContaining(
             @RequestParam String gymMembers) {
         try {
-            List<GymMember> list =
+            List<GymMemberResponse> list =
                     gymMemberService.findByGymMembersContaingingIgnoreCase(gymMembers);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
@@ -86,7 +87,7 @@ public class GymMemberController {
     @GetMapping("/all")
     public ResponseEntity<?> seeAll() {
         try {
-            List<GymMember> list = gymMemberService.seeAll();
+            List<GymMemberResponse> list = gymMemberService.seeAll();
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

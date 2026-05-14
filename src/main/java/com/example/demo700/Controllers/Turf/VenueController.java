@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo700.DTOFiles.VenueListResponseDTO;
 import com.example.demo700.DTOFiles.VenueResponse;
 import com.example.demo700.Models.Turf.Venue;
 import com.example.demo700.Services.TurfServices.VenueService;
@@ -246,6 +247,47 @@ public class VenueController {
 
 		}
 
+	}
+
+	// Get all venues with pagination
+	@GetMapping("/paginated")
+	public ResponseEntity<VenueListResponseDTO> getAllVenuesPaginated(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "name") String sortBy,
+			@RequestParam(defaultValue = "asc") String sortDir) {
+
+		VenueListResponseDTO response = venueService.getAllVenuesPaginated(page, size, sortBy, sortDir);
+		return ResponseEntity.ok(response);
+	}
+
+	// Search venues by address with pagination
+	@GetMapping("/search/by-address")
+	public ResponseEntity<VenueListResponseDTO> searchVenuesByAddress(@RequestParam String address,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "name") String sortBy, @RequestParam(defaultValue = "asc") String sortDir) {
+
+		VenueListResponseDTO response = venueService.searchVenuesByAddressPaginated(address, page, size, sortBy,
+				sortDir);
+		return ResponseEntity.ok(response);
+	}
+
+	// Search venues by name with pagination
+	@GetMapping("/search/by-name")
+	public ResponseEntity<VenueListResponseDTO> searchVenuesByName(@RequestParam String name,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "name") String sortBy, @RequestParam(defaultValue = "asc") String sortDir) {
+
+		VenueListResponseDTO response = venueService.searchVenuesByNamePaginated(name, page, size, sortBy, sortDir);
+		return ResponseEntity.ok(response);
+	}
+
+	// Get venues by owner with pagination
+	@GetMapping("/owner/{ownerId}")
+	public ResponseEntity<VenueListResponseDTO> getVenuesByOwner(@PathVariable String ownerId,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+			@RequestParam(defaultValue = "name") String sortBy, @RequestParam(defaultValue = "asc") String sortDir) {
+
+		VenueListResponseDTO response = venueService.getVenuesByOwnerPaginated(ownerId, page, size, sortBy, sortDir);
+		return ResponseEntity.ok(response);
 	}
 
 }

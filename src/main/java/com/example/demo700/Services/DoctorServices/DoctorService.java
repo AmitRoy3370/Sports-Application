@@ -2,18 +2,19 @@ package com.example.demo700.Services.DoctorServices;
 
 import java.util.List;
 
+import com.example.demo700.DTOFiles.DoctorResponse;
 import com.example.demo700.Models.DoctorModels.Doctor;
 
 public interface DoctorService {
 	
 	public Doctor addDoctor(String userId, Doctor doctor);
-	public List<Doctor> seeAllDoctor();
-	Doctor findByUserId(String userId);
-	List<Doctor> findByYearOfExperiencesGreaterThan(int year);
-	List<Doctor> findByDesignationIgnoreCase(String designation);
-	List<Doctor> findByDegressContainingIgnoreCase(String degress);
-	List<Doctor> findByWorkingExperiencesContainingIgnoreCase(String workingExperiences);
-	Doctor findById(String doctorId);
+	public List<DoctorResponse> seeAllDoctor();
+	DoctorResponse findByUserId(String userId);
+	List<DoctorResponse> findByYearOfExperiencesGreaterThan(int year);
+	List<DoctorResponse> findByDesignationIgnoreCase(String designation);
+	List<DoctorResponse> findByDegressContainingIgnoreCase(String degress);
+	List<DoctorResponse> findByWorkingExperiencesContainingIgnoreCase(String workingExperiences);
+	DoctorResponse findById(String doctorId);
 	public Doctor updateDoctor(String userId, String doctorId, Doctor updatedDoctor);
 	public boolean deleteDoctor(String userId, String doctorId);
 

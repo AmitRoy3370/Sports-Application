@@ -1,12 +1,23 @@
 package com.example.demo700.Services.EventOrganaizer;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.EventOrganaizerResponse;
+import com.example.demo700.DTOFiles.MatchResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
@@ -26,7 +37,10 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 	@Autowired
 	private MatchRepository matchRepository;
-	
+
+	@Autowired
+	private MatchService matchService;
+
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -112,14 +126,14 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 	}
 
 	@Override
-	public List<EventOrganaizer> seeAll() {
+	public List<EventOrganaizerResponse> seeAll() {
 
-		return eventOrganaizerRepository.findAll();
+		return getEventOrganaizerResponse(eventOrganaizerRepository.findAll());
 
 	}
 
 	@Override
-	public EventOrganaizer findByUserId(String userId) {
+	public EventOrganaizerResponse findByUserId(String userId) {
 
 		if (userId == null) {
 
@@ -145,11 +159,11 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 		EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByUserId(userId);
 
-		return eventOrganaizer;
+		return getEventOrganaizerResponse(eventOrganaizer);
 	}
 
 	@Override
-	public EventOrganaizer findByOrganaizationName(String organaizationName) {
+	public EventOrganaizerResponse findByOrganaizationName(String organaizationName) {
 
 		if (organaizationName == null) {
 
@@ -159,11 +173,11 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 		EventOrganaizer eventOrganaizer = eventOrganaizerRepository.findByOrganaizationName(organaizationName);
 
-		return eventOrganaizer;
+		return getEventOrganaizerResponse(eventOrganaizer);
 	}
 
 	@Override
-	public List<EventOrganaizer> findByMatchesContainingIgnoreCase(String matchId) {
+	public List<EventOrganaizerResponse> findByMatchesContainingIgnoreCase(String matchId) {
 
 		if (matchId == null) {
 
@@ -171,7 +185,7 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 
 		}
 
-		return eventOrganaizerRepository.findByMatchesContainingIgnoreCase(matchId);
+		return getEventOrganaizerResponse(eventOrganaizerRepository.findByMatchesContainingIgnoreCase(matchId));
 	}
 
 	@Override
@@ -265,35 +279,35 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 			throw new ArithmeticException(e.getMessage());
 
 		}
-		
+
 		try {
-			
-			if(!eventOrganaizer.getMatches().isEmpty()) {
-				
-				for(String i : eventOrganaizer.getMatches()) {
-					
+
+			if (!eventOrganaizer.getMatches().isEmpty()) {
+
+				for (String i : eventOrganaizer.getMatches()) {
+
 					Match match = matchRepository.findById(i).get();
-					
-					if(match == null) {
-						
+
+					if (match == null) {
+
 						throw new Exception();
-						
+
 					}
-					
-					if(!match.getOrganaizerId().equals(eventOrganaizerId)) {
-					
+
+					if (!match.getOrganaizerId().equals(eventOrganaizerId)) {
+
 						throw new Exception();
-						
+
 					}
-					
+
 				}
-				
+
 			}
-			
-		} catch(Exception e) {
-			
+
+		} catch (Exception e) {
+
 			throw new ArithmeticException("Event organaizer's match information is invalid...");
-			
+
 		}
 
 		eventOrganaizer.setId(eventOrganaizerId);
@@ -381,24 +395,116 @@ public class EventOrganaizerServiceImpl implements EventOrganaizerService {
 	}
 
 	@Override
-	public EventOrganaizer findByEventOrganaizerId(String eventOrganaizerId) {
-		
-		if(eventOrganaizerId == null) {
-			
+	public EventOrganaizerResponse findByEventOrganaizerId(String eventOrganaizerId) {
+
+		if (eventOrganaizerId == null) {
+
 			throw new NullPointerException("False request...");
-			
+
 		}
-		
+
 		try {
-			
-			return eventOrganaizerRepository.findById(eventOrganaizerId).get();
-			
-		} catch(Exception e) {
-			
+
+			return getEventOrganaizerResponse(eventOrganaizerRepository.findById(eventOrganaizerId).get());
+
+		} catch (Exception e) {
+
 			throw new NoSuchElementException("No such event organaizer find at here...");
-			
+
 		}
-		
+
+	}
+
+	private ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	private EventOrganaizerResponse getEventOrganaizerResponse(EventOrganaizer organaizer) {
+
+		List<EventOrganaizer> list = new ArrayList<>();
+
+		list.add(organaizer);
+
+		return getEventOrganaizerResponse(list).get(0);
+
+	}
+
+	private List<EventOrganaizerResponse> getEventOrganaizerResponse(List<EventOrganaizer> eventOrganaizers) {
+
+		List<EventOrganaizerResponse> responses = new ArrayList<>();
+
+		List<String> usersId = eventOrganaizers.stream().map(EventOrganaizer::getUserId).collect(Collectors.toList());
+
+		List<User> users = userRepository.findAllById(usersId);
+
+		List<String> organaizersId = eventOrganaizers.stream().filter(Objects::nonNull).map(EventOrganaizer::getId)
+				.collect(Collectors.toList());
+
+		CompletableFuture<Map<String, User>> userFuture = CompletableFuture
+				.supplyAsync(() -> users.isEmpty() ? new HashMap<>()
+						: users.stream().filter(Objects::nonNull).filter(user -> user.getName() != null)
+								.collect(Collectors.toMap(User::getId, Function.identity())),
+						executors);
+
+		List<MatchResponse> matches = matchService.findByOrganaizerIdIn(organaizersId);
+
+		CompletableFuture<Map<String, List<MatchResponse>>> matchFuture = CompletableFuture.supplyAsync(() -> {
+
+			if (matches.isEmpty()) {
+
+				return new HashMap<String, List<MatchResponse>>();
+
+			}
+
+			return matches.stream().filter(Objects::nonNull)
+					.collect(Collectors.groupingBy(MatchResponse::getOrganaizerId));
+
+		}, executors);
+
+		CompletableFuture.allOf(userFuture, matchFuture).join();
+
+		Map<String, User> userMap = userFuture.join();
+		Map<String, List<MatchResponse>> matchMap = matchFuture.join();
+
+		for (EventOrganaizer organaizer : eventOrganaizers) {
+
+			try {
+
+				EventOrganaizerResponse response = new EventOrganaizerResponse();
+
+				response.setId(organaizer.getId());
+				response.setUserId(organaizer.getUserId());
+				response.setOrganaizationName(organaizer.getOrganaizationName());
+				response.setMatches(organaizer.getMatches());
+
+				try {
+
+					response.setMatchesName(matchMap.get(organaizer.getId()));
+
+				} catch (Exception e) {
+
+					response.setMatchesName(new ArrayList<>());
+
+				}
+
+				try {
+
+					response.setUserName(userMap.get(organaizer.getUserId()).getName());
+
+				} catch (Exception e) {
+
+					response.setUserName("Un named");
+
+				}
+
+				responses.add(response);
+
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return responses;
+
 	}
 
 }

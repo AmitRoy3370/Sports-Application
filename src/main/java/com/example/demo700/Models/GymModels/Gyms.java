@@ -15,7 +15,6 @@ public class Gyms {
 	@Id
 	private String id;
 
-	@NonNull
 	@Indexed
 	private String gymTrainer;// this is basically an userId
 
@@ -27,14 +26,14 @@ public class Gyms {
 	private String tradeLicenseId;
 	@Indexed
 	private String tinNumber;
-	
+
 	@Indexed
 	private Instant openingTime;
 	@Indexed
 	private Instant closingTime;
 
-	private String coverImageId;     // GridFS / Cloud image id
-    private List<String> gymImages;  // image ids
+	private String coverImageId; // GridFS / Cloud image id
+	private List<String> gymImages; // image ids
 
 	@NonNull
 	private String gymName;

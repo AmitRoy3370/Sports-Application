@@ -11,6 +11,7 @@ public interface MatchService {
 	public Match createMatch(Match match, String userId);
 	public List<MatchResponse> seeAllMatch();
 	public List<MatchResponse> findByOrganaizerId(String organaizerId);
+	public List<MatchResponse> findByOrganaizerIdIn(List<String> organaizersId);
 	public List<MatchResponse> findByTeamsContainingIgnoreCase(String teamId);
 	public List<MatchResponse> findByGameLogsContainingIgnoreCase(String gameLogs);
 	public List<MatchResponse> findByVideosContainingIgnoreCase(String video);

@@ -1051,6 +1051,21 @@ public class MatchServiceImpl implements MatchService {
 	}
 
 	@Override
+	public List<MatchResponse> findByOrganaizerIdIn(List<String> organaizersId) {
+	
+		if(organaizersId.isEmpty()) {
+			
+			return new ArrayList<>();
+			
+		}
+		
+		List<Match> matches = matchRepository.findByOrganaizerIdIn(organaizersId);
+		
+		return getMatchResponseFromMatchList(matches);
+		
+	}
+	
+	@Override
 	public boolean deleteMatch(String matchId, String userId) {
 
 		if (matchId == null || userId == null) {

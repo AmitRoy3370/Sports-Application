@@ -1,16 +1,28 @@
 package com.example.demo700.Services.DoctorServices;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.DoctorResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
+import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Repositories.UserRepository;
+import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 
 @Service
@@ -21,6 +33,9 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private TeamRepository teamRepository;
 
 	@Autowired
 	private CyclicCleaner cleaner;
@@ -80,7 +95,7 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 
 	@Override
-	public List<Doctor> seeAllDoctor() {
+	public List<DoctorResponse> seeAllDoctor() {
 
 		List<Doctor> list = doctorRepository.findAll();
 
@@ -90,11 +105,11 @@ public class DoctorServiceImpl implements DoctorService {
 
 		}
 
-		return list;
+		return getDoctorResponse(list);
 	}
 
 	@Override
-	public Doctor findByUserId(String userId) {
+	public DoctorResponse findByUserId(String userId) {
 
 		if (userId == null) {
 
@@ -112,7 +127,7 @@ public class DoctorServiceImpl implements DoctorService {
 
 			}
 
-			return doctor;
+			return getDoctorResponse(doctor);
 
 		} catch (Exception e) {
 
@@ -123,7 +138,7 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 
 	@Override
-	public List<Doctor> findByYearOfExperiencesGreaterThan(int year) {
+	public List<DoctorResponse> findByYearOfExperiencesGreaterThan(int year) {
 
 		List<Doctor> list = doctorRepository.findByYearOfExperiencesGreaterThan(year);
 
@@ -133,11 +148,11 @@ public class DoctorServiceImpl implements DoctorService {
 
 		}
 
-		return list;
+		return getDoctorResponse(list);
 	}
 
 	@Override
-	public List<Doctor> findByDesignationIgnoreCase(String designation) {
+	public List<DoctorResponse> findByDesignationIgnoreCase(String designation) {
 
 		if (designation == null) {
 
@@ -153,11 +168,11 @@ public class DoctorServiceImpl implements DoctorService {
 
 		}
 
-		return list;
+		return getDoctorResponse(list);
 	}
 
 	@Override
-	public List<Doctor> findByDegressContainingIgnoreCase(String degress) {
+	public List<DoctorResponse> findByDegressContainingIgnoreCase(String degress) {
 
 		if (degress == null) {
 
@@ -173,11 +188,11 @@ public class DoctorServiceImpl implements DoctorService {
 
 		}
 
-		return list;
+		return getDoctorResponse(list);
 	}
 
 	@Override
-	public List<Doctor> findByWorkingExperiencesContainingIgnoreCase(String workingExperiences) {
+	public List<DoctorResponse> findByWorkingExperiencesContainingIgnoreCase(String workingExperiences) {
 
 		if (workingExperiences == null) {
 
@@ -193,11 +208,11 @@ public class DoctorServiceImpl implements DoctorService {
 
 		}
 
-		return list;
+		return getDoctorResponse(list);
 	}
 
 	@Override
-	public Doctor findById(String doctorId) {
+	public DoctorResponse findById(String doctorId) {
 
 		if (doctorId == null) {
 
@@ -215,7 +230,7 @@ public class DoctorServiceImpl implements DoctorService {
 
 			}
 
-			return doctor;
+			return getDoctorResponse(doctor);
 
 		} catch (Exception e) {
 
@@ -351,11 +366,11 @@ public class DoctorServiceImpl implements DoctorService {
 				throw new Exception("No such doctor exist at here...");
 
 			}
-			
-			if(!doctor.getUserId().equals(userId)) {
-				
+
+			if (!doctor.getUserId().equals(userId)) {
+
 				throw new Exception("You can only delete yourself...");
-				
+
 			}
 
 		} catch (Exception e) {
@@ -369,6 +384,101 @@ public class DoctorServiceImpl implements DoctorService {
 		cleaner.removeDoctor(doctorId);
 
 		return count != doctorRepository.count();
+	}
+
+	private ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	private DoctorResponse getDoctorResponse(Doctor doctor) {
+
+		List<Doctor> list = new ArrayList<>();
+
+		list.add(doctor);
+
+		return getDoctorResponse(list).get(0);
+
+	}
+
+	private List<DoctorResponse> getDoctorResponse(List<Doctor> doctors) {
+
+		List<DoctorResponse> responses = new ArrayList<>();
+
+		List<String> allUserId = doctors.stream().map(Doctor::getUserId).collect(Collectors.toList());
+
+		List<String> allDoctorId = doctors.stream().map(Doctor::getId).collect(Collectors.toList());
+
+		List<User> users = userRepository.findAllById(allUserId);
+
+		CompletableFuture<Map<String, String>> teamFuture = CompletableFuture.supplyAsync(() -> {
+
+			List<Team> teams = teamRepository.findByDoctorsIn(allDoctorId);
+
+			if (teams.isEmpty()) {
+
+				return new HashMap<String, String>();
+
+			}
+
+			return teams.stream().filter(Objects::nonNull).filter(team -> team.getDoctors() != null)
+					.flatMap(team -> team.getDoctors().stream().filter(Objects::nonNull)
+							.map(doctorId -> Map.entry(doctorId, team.getTeamName())))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+							(existing, replacement) -> existing));
+
+		}, executors);
+
+		CompletableFuture<Map<String, User>> userFuture = CompletableFuture
+				.supplyAsync(() -> users.isEmpty() ? new HashMap<>()
+						: users.stream().filter(Objects::nonNull).filter(user -> user.getName() != null)
+								.collect(Collectors.toMap(User::getId, Function.identity())),
+						executors);
+
+		CompletableFuture.allOf(userFuture, teamFuture).join();
+
+		Map<String, User> userMap = userFuture.join();
+		Map<String, String> teamMap = teamFuture.join();
+
+		for (Doctor doctor : doctors) {
+
+			try {
+
+				DoctorResponse response = new DoctorResponse();
+
+				response.setId(doctor.getId());
+				response.setDegress(doctor.getDegress());
+				response.setDesignation(doctor.getDesignation());
+				response.setUserId(doctor.getUserId());
+				response.setWorkingExperiences(doctor.getWorkingExperiences());
+
+				try {
+
+					response.setTeamName(teamMap.getOrDefault(doctor.getId(), "Un named"));
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					response.setUserName(userMap.get(doctor.getUserId()).getName());
+
+				} catch (Exception e) {
+
+					response.setUserName("Un named");
+
+				}
+
+				response.setYearOfExperiences(doctor.getYearOfExperiences());
+
+				responses.add(response);
+
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return responses;
+
 	}
 
 }

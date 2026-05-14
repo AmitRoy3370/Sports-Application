@@ -1,11 +1,22 @@
 package com.example.demo700.Services.TurfServices;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
+import com.example.demo700.DTOFiles.TurfOwnerResponse;
+import com.example.demo700.DTOFiles.VenueResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.Turf.Owner;
@@ -21,6 +32,9 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private VenueService venueService;
 
 	@Autowired
 	private CyclicCleaner cleaner;
@@ -96,9 +110,9 @@ public class OwnerServiceImpl implements TurfOwnerService {
 	}
 
 	@Override
-	public List<Owner> seeAllOwner() {
+	public List<TurfOwnerResponse> seeAllOwner() {
 
-		return ownerRepository.findAll();
+		return getTrufOwnersResponse(ownerRepository.findAll());
 	}
 
 	@Override
@@ -262,7 +276,7 @@ public class OwnerServiceImpl implements TurfOwnerService {
 	}
 
 	@Override
-	public Owner findByUserId(String userId) {
+	public TurfOwnerResponse findByUserId(String userId) {
 
 		if (userId == null) {
 
@@ -274,7 +288,7 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 			Owner owner = ownerRepository.searchByUserId(userId);
 
-			return owner;
+			return getTurfOwnerResponse(owner);
 
 		} catch (Exception e) {
 
@@ -284,7 +298,7 @@ public class OwnerServiceImpl implements TurfOwnerService {
 	}
 
 	@Override
-	public List<Owner> searchByName(String name) {
+	public List<TurfOwnerResponse> searchByName(String name) {
 
 		if (name == null) {
 
@@ -300,11 +314,11 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 		}
 
-		return list;
+		return getTrufOwnersResponse(list);
 	}
 
 	@Override
-	public List<Owner> searchByPhone(String phone) {
+	public List<TurfOwnerResponse> searchByPhone(String phone) {
 
 		if (phone == null) {
 
@@ -320,7 +334,86 @@ public class OwnerServiceImpl implements TurfOwnerService {
 
 		}
 
-		return list;
+		return getTrufOwnersResponse(list);
+	}
+
+	private ExecutorService executors = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	private TurfOwnerResponse getTurfOwnerResponse(Owner owner) {
+
+		List<Owner> list = new ArrayList<>();
+
+		list.add(owner);
+
+		return getTrufOwnersResponse(list).get(0);
+
+	}
+
+	private List<TurfOwnerResponse> getTrufOwnersResponse(List<Owner> owners) {
+
+		List<TurfOwnerResponse> responses = new ArrayList<>();
+
+		List<String> usersId = owners.stream().map(Owner::getUserId).collect(Collectors.toList());
+
+		List<User> users = userRepository.findAllById(usersId);
+
+		List<VenueResponse> venues = venueService.findByVenueOwners(usersId);
+
+		CompletableFuture<Map<String, User>> userFuture = CompletableFuture
+				.supplyAsync(() -> users.isEmpty() ? new HashMap<>()
+						: users.stream().filter(Objects::nonNull).filter(user -> user.getName() != null)
+								.collect(Collectors.toMap(User::getId, Function.identity())),
+						executors);
+
+		CompletableFuture<Map<String, List<VenueResponse>>> venueFuture = CompletableFuture
+				.supplyAsync(() -> venues.isEmpty() ? new HashMap<>()
+						: venues.stream().filter(Objects::nonNull)
+								.collect(Collectors.groupingBy(VenueResponse::getOwnerId)),
+						executors);
+
+		CompletableFuture.allOf(userFuture, venueFuture).join();
+
+		Map<String, User> userMap = userFuture.join();
+		Map<String, List<VenueResponse>> venueMap = venueFuture.join();
+
+		for (Owner owner : owners) {
+
+			try {
+
+				TurfOwnerResponse response = new TurfOwnerResponse();
+
+				response.setId(owner.getId());
+				response.setPhone(owner.getPhone());
+				response.setUserId(owner.getUserId());
+
+				try {
+
+					response.setUserName(userMap.get(owner.getUserId()).getName());
+
+				} catch (Exception e) {
+
+					response.setUserName("UnNamed");
+
+				}
+
+				try {
+
+					response.setVenueDetails(venueMap.get(owner.getUserId()));
+
+				} catch (Exception e) {
+
+				}
+
+				responses.add(response);
+
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return responses;
+
 	}
 
 }

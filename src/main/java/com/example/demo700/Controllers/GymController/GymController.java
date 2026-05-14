@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo700.DTOFiles.GymResponse;
 import com.example.demo700.Models.GymModels.Gyms;
 import com.example.demo700.Services.FileUploadServices.ImageService;
 import com.example.demo700.Services.GymServices.GymService;
@@ -249,7 +250,7 @@ public class GymController {
 
 		try {
 
-			List<Gyms> list = gymService.findByGymTrainer(trainerId);
+			List<GymResponse> list = gymService.findByGymTrainer(trainerId);
 			return ResponseEntity.ok(list);
 
 		} catch (Exception e) {

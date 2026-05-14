@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo700.DTOFiles.EventOrganaizerResponse;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Services.EventOrganaizer.EventOrganaizerService;
 
@@ -44,7 +45,7 @@ public class EventOrganaizerController {
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllEventOrganizers() {
 		try {
-			List<EventOrganaizer> organizers = eventOrganaizerService.seeAll();
+			List<EventOrganaizerResponse> organizers = eventOrganaizerService.seeAll();
 			return new ResponseEntity<>(organizers, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>("Failed to fetch organizers: " + e.getMessage(),
@@ -58,7 +59,7 @@ public class EventOrganaizerController {
 	@GetMapping("/user/{userId}")
 	public ResponseEntity<?> getByUserId(@PathVariable String userId) {
 		try {
-			EventOrganaizer organizer = eventOrganaizerService.findByUserId(userId);
+			EventOrganaizerResponse organizer = eventOrganaizerService.findByUserId(userId);
 			return new ResponseEntity<>(organizer, HttpStatus.OK);
 		} catch (NoSuchElementException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -73,7 +74,7 @@ public class EventOrganaizerController {
 	@GetMapping("/name/{organaizationName}")
 	public ResponseEntity<?> getByOrganizationName(@PathVariable String organaizationName) {
 		try {
-			EventOrganaizer organizer = eventOrganaizerService.findByOrganaizationName(organaizationName);
+			EventOrganaizerResponse organizer = eventOrganaizerService.findByOrganaizationName(organaizationName);
 			return new ResponseEntity<>(organizer, HttpStatus.OK);
 		} catch (NullPointerException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -101,7 +102,7 @@ public class EventOrganaizerController {
 	@GetMapping("/match/{matchId}")
 	public ResponseEntity<?> getByMatchId(@PathVariable String matchId) {
 		try {
-			List<EventOrganaizer> organizers = eventOrganaizerService.findByMatchesContainingIgnoreCase(matchId);
+			List<EventOrganaizerResponse> organizers = eventOrganaizerService.findByMatchesContainingIgnoreCase(matchId);
 			return new ResponseEntity<>(organizers, HttpStatus.OK);
 		} catch (NullPointerException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
