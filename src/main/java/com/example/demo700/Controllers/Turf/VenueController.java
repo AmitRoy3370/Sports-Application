@@ -185,9 +185,9 @@ public class VenueController {
 
 		try {
 
-			VenueResponse venue = venueService.findByName(name);
+			List<VenueResponse> venue = venueService.findByNameContainingIgnoreCase(name);
 
-			if (venue == null) {
+			if (venue == null || venue.isEmpty()) {
 
 				return ResponseEntity.status(404).body("No venue find at here...");
 

@@ -30,9 +30,9 @@ public interface VenueRepository extends MongoRepository<Venue, String> {
 
 	List<Venue> findByNameContainingIgnoreCase(String name);
 
-	@Query("{ 'name': { $regex: '^?0$', $options: 'i' } }")
+	@Query("{ 'name': { $regex: ?0, $options: 'i' } }")
 	Page<Venue> findByNameContainingIgnoreCase(String name, Pageable pageable);
-	
-	 Page<Venue> findAll(Pageable pageable);
+
+	Page<Venue> findAll(Pageable pageable);
 
 }

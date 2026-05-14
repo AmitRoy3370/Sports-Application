@@ -413,7 +413,7 @@ public class GymMemberServiceImpl implements GymMemberService {
 		List<GymMemberResponse> responses = gymMembers.stream().filter(Objects::nonNull).map(gymMember -> {
 			Set<String> memberNames = gymMembersMap.getOrDefault(gymMember.getId(), new HashSet<>());
 			return new GymMemberResponse(gymMember.getId(), gymMember.getGymId(),
-					gymMap.containsKey(gymMember.getGymId()) ? "Un Known"
+					!gymMap.containsKey(gymMember.getGymId()) ? "Un Known"
 							: gymMap.get(gymMember.getGymId()).getGymName(),
 					gymMember.getGymMembers(), memberNames);
 		}).collect(Collectors.toList());
