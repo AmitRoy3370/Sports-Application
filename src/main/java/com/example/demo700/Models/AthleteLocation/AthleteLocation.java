@@ -1,5 +1,7 @@
 package com.example.demo700.Models.AthleteLocation;
 
+import java.util.Date;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -27,6 +29,10 @@ public class AthleteLocation {
 	@NonNull
 	@Indexed
 	private double longitude;
+	
+	@SuppressWarnings("removal")
+	@Indexed(expireAfterSeconds = 60)
+	private Date lastActivity;
 
 	public AthleteLocation(String userId, String locationName, double lattitude, double longitude) {
 		super();
@@ -34,6 +40,7 @@ public class AthleteLocation {
 		this.locationName = locationName;
 		this.lattitude = lattitude;
 		this.longitude = longitude;
+		this.lastActivity = new Date();
 	}
 
 	public AthleteLocation() {
@@ -80,10 +87,18 @@ public class AthleteLocation {
 		this.longitude = longitude;
 	}
 
+	public Date getLastActivity() {
+		return lastActivity;
+	}
+
+	public void setLastActivity(Date lastActivity) {
+		this.lastActivity = lastActivity;
+	}
+
 	@Override
 	public String toString() {
-		return "AthleteLocation [id=" + id + ", athleteId=" + athleteId + ", locationName=" + locationName + ", lattitude="
-				+ lattitude + ", longitude=" + longitude + "]";
+		return "AthleteLocation [id=" + id + ", athleteId=" + athleteId + ", locationName=" + locationName
+				+ ", lattitude=" + lattitude + ", longitude=" + longitude + ", lastActivity=" + lastActivity + "]";
 	}
 
 }
