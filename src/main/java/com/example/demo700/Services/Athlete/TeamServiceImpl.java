@@ -788,9 +788,38 @@ public class TeamServiceImpl implements TeamService {
 	    Map<String, Doctor> doctorMap = doctorFuture.join();
 	    Map<String, String> matchNameMap = matchNameFuture.join();
 	    
+	    Set<String> remainingAthlete = new HashSet<>();
+	    
+	    for(Scouts scout : scoutMap.values()) {
+	    	
+	    	remainingAthlete.add(scout.getAtheleteId());
+	    	
+	    }
+	    
+	    for(Coach coach : coachMap.values()) {
+	    	
+	    	remainingAthlete.add(coach.getAtheleteId());
+	    	
+	    }
+	    
+	    for(TeamOwner owner : teamOwnerMap.values()) {
+	    	
+	    	remainingAthlete.add(owner.getAtheleteId());
+	    	
+	    }
+	    
+	    idCollector.athleteIds.addAll(remainingAthlete);
+	    
+	    athleteMap = fetchAthletes(idCollector.athleteIds);
+	    
+	    System.out.println("scouts map :- " + scoutMap);
+	    System.out.println("Team owner map :- " + teamOwnerMap);
+	    
 	    // 🔥 STEP 3: Batch fetch ALL users in ONE query (most critical optimization)
 	    Map<String, User> userMap = fetchAllUsersBatch(teams, athleteMap, teamOwnerMap, 
 	                                                    scoutMap, coachMap, doctorMap);
+	    
+	    System.out.println("User Map :- " + userMap);
 	    
 	    // 🔥 STEP 4: Build responses in O(n) time
 	    List<TeamResponseDTO> responses = buildResponses(teams, teamOwnerMap, athleteMap, 
@@ -924,20 +953,26 @@ public class TeamServiceImpl implements TeamService {
 	 */
 	private Map<String, TeamOwner> fetchTeamOwners(Set<String> teamOwnerIds) {
 	    if (teamOwnerIds == null || teamOwnerIds.isEmpty()) return Collections.emptyMap();
-	    return teamOwnerRepository.findAllById(teamOwnerIds)
+	    return teamOwnerRepository.findAllById(new ArrayList<>(teamOwnerIds))
 	        .stream()
 	        .collect(Collectors.toMap(TeamOwner::getId, Function.identity()));
 	}
 
 	private Map<String, Athelete> fetchAthletes(Set<String> athleteIds) {
 	    if (athleteIds == null || athleteIds.isEmpty()) return Collections.emptyMap();
-	    return atheleteRepository.findAllById(athleteIds)
+	    return atheleteRepository.findAllById(new ArrayList<>(athleteIds))
 	        .stream()
 	        .collect(Collectors.toMap(Athelete::getId, Function.identity()));
 	}
 
 	private Map<String, Scouts> fetchScouts(Set<String> scoutIds) {
+		
+		System.out.println("Checking null values....");
+		
 	    if (scoutIds == null || scoutIds.isEmpty()) return Collections.emptyMap();
+	    
+	    System.out.println("returning scout name map");
+	    
 	    return scoutsRepository.findAllById(scoutIds)
 	        .stream()
 	        .collect(Collectors.toMap(Scouts::getId, Function.identity()));
@@ -945,14 +980,14 @@ public class TeamServiceImpl implements TeamService {
 
 	private Map<String, Coach> fetchCoaches(Set<String> coachIds) {
 	    if (coachIds == null || coachIds.isEmpty()) return Collections.emptyMap();
-	    return coachRepository.findAllById(coachIds)
+	    return coachRepository.findAllById(new ArrayList<>(coachIds))
 	        .stream()
 	        .collect(Collectors.toMap(Coach::getId, Function.identity()));
 	}
 
 	private Map<String, Doctor> fetchDoctors(Set<String> doctorIds) {
 	    if (doctorIds == null || doctorIds.isEmpty()) return Collections.emptyMap();
-	    return doctorRepository.findAllById(doctorIds)
+	    return doctorRepository.findAllById(new ArrayList<>(doctorIds))
 	        .stream()
 	        .collect(Collectors.toMap(Doctor::getId, Function.identity()));
 	}
@@ -1087,22 +1122,42 @@ public class TeamServiceImpl implements TeamService {
 	 */
 	private List<String> getScoutNamesInOrder(List<String> scoutIds, Map<String, Scouts> scoutMap,
 	                                           Map<String, Athelete> athleteMap, Map<String, User> userMap) {
-	    if (scoutIds == null || scoutIds.isEmpty()) return new ArrayList<>();
 	    
+		System.out.println("Checking nul values...");
+		
+		if (scoutIds == null || scoutIds.isEmpty()) return new ArrayList<>();
+	    
+		System.out.println("Null value passed");
+		
 	    List<String> names = new ArrayList<>(scoutIds.size());
 	    for (String id : scoutIds) {
 	        Scouts scout = scoutMap.get(id);
+	        
+	        System.out.println("scout in loop :- " + scout.toString());
+	        
 	        if (scout != null && scout.getAtheleteId() != null) {
 	            Athelete athlete = athleteMap.get(scout.getAtheleteId());
+	            
+	            System.out.println("athlete in loop :- " + athlete);
+	            
 	            if (athlete != null && athlete.getUserId() != null) {
 	                User user = userMap.get(athlete.getUserId());
+	                
+	                System.out.println("User map in loop :- " + user);
+	                
 	                String name = (user != null && user.getName() != null && !user.getName().isBlank())
 	                              ? user.getName() : "scout";
 	                names.add(name);
 	            } else {
+	            	
+	            	System.out.println("Un known name from the athlete");
+	            	
 	                names.add("Unknown scout");
 	            }
 	        } else {
+	        	
+	        	System.out.println("Un known name from the scout...");
+	        	
 	            names.add("Unknown scout");
 	        }
 	    }
