@@ -17,6 +17,12 @@ public interface UserActiveService {
 
 	public UserActiveResponseDTO findByUserId(String userId);
 
+	public void updateUserActivity(String userId, boolean isActive);
+
+	public boolean isUserActive(String userId);
+
+	public long getActiveUsersCount();
+
 	public List<UserActiveResponseDTO> findByActive(boolean active);
 
 	public boolean removeUserActive(String id, String userId);

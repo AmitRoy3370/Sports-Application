@@ -2,6 +2,7 @@ package com.example.demo700.Services.UserActiveServices;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -210,6 +211,42 @@ public class UserActiveServiceImpl implements UserActiveService {
 		}
 
 		return userActive;
+	}
+
+	/**
+	 * Update user's last activity timestamp
+	 */
+	public void updateUserActivity(String userId, boolean isActive) {
+		UserActive userActive = userActiveRepository.findByUserId(userId);
+
+		if (userActive == null) {
+			userActive = new UserActive(userId, isActive);
+		} else {
+			userActive.setActive(isActive);
+			userActive.setLastActivity(new Date());
+		}
+
+		userActiveRepository.save(userActive);
+	}
+
+	/**
+	 * Check if user is currently active (last activity within 60 seconds)
+	 */
+	public boolean isUserActive(String userId) {
+		UserActive userActive = userActiveRepository.findByUserId(userId);
+		if (userActive == null)
+			return false;
+
+		long secondsSinceLastActivity = (System.currentTimeMillis() - userActive.getLastActivity().getTime()) / 1000;
+		return userActive.isActive() && secondsSinceLastActivity < 60;
+	}
+
+	/**
+	 * Get count of currently active users
+	 */
+	public long getActiveUsersCount() {
+		Date activeSince = new Date(System.currentTimeMillis() - 60000);
+		return userActiveRepository.countActiveUsers(activeSince);
 	}
 
 	@Override
