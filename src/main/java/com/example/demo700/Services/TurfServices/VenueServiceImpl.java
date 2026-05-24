@@ -234,17 +234,26 @@ public class VenueServiceImpl implements VenueService {
 
 			List<Booking> bookings = gettedResponse.getBookings();
 
-			bookings = bookings.stream().filter(Objects::nonNull).filter(booking -> booking.getUserId().equals(userId))
+			if(bookings != null) {
+
+			     bookings = bookings.stream().filter(Objects::nonNull).filter(booking -> booking.getUserId().equals(userId))
 					.collect(Collectors.toList());
+                 gettedResponse.setBookings(bookings);
+
+			}
 
 			List<MatchResponse> matches = gettedResponse.getMatches();
 
-			matches = matches.stream().filter(Objects::nonNull).filter(
+			if(matches != null) {
+
+			      matches = matches.stream().filter(Objects::nonNull).filter(
 					match -> match.getOrganaizerName() != null && match.getOrganaizerName().equals(user.getName()))
 					.collect(Collectors.toList());
 
-			gettedResponse.setBookings(bookings);
-			gettedResponse.setMatches(matches);
+
+			      gettedResponse.setMatches(matches);
+
+			}
 
 			return gettedResponse;
 
