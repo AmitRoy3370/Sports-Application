@@ -4,26 +4,146 @@ import java.time.Instant;
 
 public class ChatMessageResponse {
 
-	private String id, senderUserId, receiverId, content;
-	private String senderUserName, receiverName;
+	private String id;
+	private String senderId;
+	private String senderName;
+	private SenderInfo senderInfo;
+	private ReceiverInfo receiverInfo;
 	private Instant timeStamp;
 
-	public ChatMessageResponse(String id, String senderUserId, String receiverId, String content, String senderUserName,
-			String receiverName, Instant timeStamp) {
-		super();
+	// Nested DTO for sender information
+	public static class SenderInfo {
+		private String receiverName;
+		private String receiverId;
+		private String message;
+		private boolean readChat;
+
+		// Constructors
+		public SenderInfo() {
+		}
+
+		public SenderInfo(String receiverName, String receiverId, String message, boolean readChat) {
+			this.receiverName = receiverName;
+			this.receiverId = receiverId;
+			this.message = message;
+			this.readChat = readChat;
+		}
+
+		// Getters and Setters
+		public String getReceiverName() {
+			return receiverName;
+		}
+
+		public void setReceiverName(String receiverName) {
+			this.receiverName = receiverName;
+		}
+
+		public String getReceiverId() {
+			return receiverId;
+		}
+
+		public void setReceiverId(String receiverId) {
+			this.receiverId = receiverId;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+		public boolean isReadChat() {
+			return readChat;
+		}
+
+		public void setReadChat(boolean readChat) {
+			this.readChat = readChat;
+		}
+
+		@Override
+		public String toString() {
+			return "SenderInfo [receiverName=" + receiverName + ", receiverId=" + receiverId + ", message=" + message
+					+ ", readChat=" + readChat + "]";
+		}
+
+	}
+
+	// Nested DTO for receiver information
+	public static class ReceiverInfo {
+		private String senderId;
+		private String senderName;
+		private String message;
+		private boolean readChat;
+
+		// Constructors
+		public ReceiverInfo() {
+		}
+
+		public ReceiverInfo(String senderId, String senderName, String message, boolean readChat) {
+			this.senderId = senderId;
+			this.senderName = senderName;
+			this.message = message;
+			this.readChat = readChat;
+		}
+
+		// Getters and Setters
+		public String getSenderId() {
+			return senderId;
+		}
+
+		public void setSenderId(String senderId) {
+			this.senderId = senderId;
+		}
+
+		public String getSenderName() {
+			return senderName;
+		}
+
+		public void setSenderName(String senderName) {
+			this.senderName = senderName;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+		public boolean isReadChat() {
+			return readChat;
+		}
+
+		public void setReadChat(boolean readChat) {
+			this.readChat = readChat;
+		}
+
+		@Override
+		public String toString() {
+			return "ReceiverInfo [senderId=" + senderId + ", senderName=" + senderName + ", message=" + message
+					+ ", readChat=" + readChat + "]";
+		}
+
+	}
+
+	// Constructors for ChatResponse
+	public ChatMessageResponse() {
+	}
+
+	public ChatMessageResponse(String id, String senderId, String senderName, SenderInfo senderInfo, ReceiverInfo receiverInfo,
+			Instant timeStamp) {
 		this.id = id;
-		this.senderUserId = senderUserId;
-		this.receiverId = receiverId;
-		this.content = content;
-		this.senderUserName = senderUserName;
-		this.receiverName = receiverName;
+		this.senderId = senderId;
+		this.senderName = senderName;
+		this.senderInfo = senderInfo;
+		this.receiverInfo = receiverInfo;
 		this.timeStamp = timeStamp;
 	}
 
-	public ChatMessageResponse() {
-		super();
-	}
-
+	// Getters and Setters for ChatResponse fields
 	public String getId() {
 		return id;
 	}
@@ -32,44 +152,36 @@ public class ChatMessageResponse {
 		this.id = id;
 	}
 
-	public String getSenderUserId() {
-		return senderUserId;
+	public String getSenderId() {
+		return senderId;
 	}
 
-	public void setSenderUserId(String senderUserId) {
-		this.senderUserId = senderUserId;
+	public void setSenderId(String senderId) {
+		this.senderId = senderId;
 	}
 
-	public String getReceiverId() {
-		return receiverId;
+	public String getSenderName() {
+		return senderName;
 	}
 
-	public void setReceiverId(String receiverId) {
-		this.receiverId = receiverId;
+	public void setSenderName(String senderName) {
+		this.senderName = senderName;
 	}
 
-	public String getContent() {
-		return content;
+	public SenderInfo getSenderInfo() {
+		return senderInfo;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
+	public void setSenderInfo(SenderInfo senderInfo) {
+		this.senderInfo = senderInfo;
 	}
 
-	public String getSenderUserName() {
-		return senderUserName;
+	public ReceiverInfo getReceiverInfo() {
+		return receiverInfo;
 	}
 
-	public void setSenderUserName(String senderUserName) {
-		this.senderUserName = senderUserName;
-	}
-
-	public String getReceiverName() {
-		return receiverName;
-	}
-
-	public void setReceiverName(String receiverName) {
-		this.receiverName = receiverName;
+	public void setReceiverInfo(ReceiverInfo receiverInfo) {
+		this.receiverInfo = receiverInfo;
 	}
 
 	public Instant getTimeStamp() {
@@ -82,9 +194,8 @@ public class ChatMessageResponse {
 
 	@Override
 	public String toString() {
-		return "ChatMessageResponse [id=" + id + ", senderUserId=" + senderUserId + ", receiverId=" + receiverId
-				+ ", content=" + content + ", senderUserName=" + senderUserName + ", receiverName=" + receiverName
-				+ ", timeStamp=" + timeStamp + "]";
+		return "ChatResponse [id=" + id + ", senderId=" + senderId + ", senderName=" + senderName + ", senderInfo="
+				+ senderInfo + ", receiverInfo=" + receiverInfo + ", timeStamp=" + timeStamp + "]";
 	}
 
 }

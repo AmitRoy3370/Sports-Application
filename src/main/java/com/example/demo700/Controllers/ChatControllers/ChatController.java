@@ -77,7 +77,7 @@ public class ChatController {
 
 		try {
 
-			ChatMessageResponse chat = chatService.getChatMessageById(id);
+			ChatMessage chat = chatService.getChatMessageById(id);
 
 			if (chat == null) {
 
@@ -99,11 +99,32 @@ public class ChatController {
 	 * ✅ REST API: Get all chat message
 	 */
 	@GetMapping("/seeAll")
-	public ResponseEntity<?> seeAllChatMessage() {
+	public ResponseEntity<?> seeAllChatMessage(@RequestParam String userId) {
 
 		try {
 
-			return ResponseEntity.status(200).body(chatService.seeAllChatMessage());
+			return ResponseEntity.status(200).body(chatService.seeAllChatMessage(userId));
+
+		} catch (Exception e) {
+
+			return ResponseEntity.status(404).body(e.getMessage());
+
+		}
+
+	}
+
+	/**
+	 * ✅ REST API: Get chat history of a person
+	 */
+
+	@GetMapping("/personalChatHistory")
+	public ResponseEntity<?> findByReceiverOrSender(@RequestParam String receiver, @RequestParam String sender) {
+
+		try {
+
+			List<ChatMessageResponse> list = chatService.findByReceiverOrSender(receiver, sender);
+
+			return ResponseEntity.status(200).body(list);
 
 		} catch (Exception e) {
 

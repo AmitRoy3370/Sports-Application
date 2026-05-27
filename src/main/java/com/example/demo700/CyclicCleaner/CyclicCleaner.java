@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.ENUMS.TeamJoinRequestRole;
+import com.example.demo700.Models.ChatModels.ReadableChat;
 import com.example.demo700.Model.UserActiveModel.UserActive;
 import com.example.demo700.Models.User;
 import com.example.demo700.Models.UserGender;
@@ -54,6 +55,7 @@ import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
+import com.example.demo700.Repositories.ChatRepositories.ReadableChatRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
@@ -180,6 +182,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private UserActiveRepository userActiveRepository;
+	
+	@Autowired
+	private ReadableChatRepository readableChatRepository;
 
 	public void removeUser(String userId) {
 
@@ -2169,6 +2174,30 @@ public class CyclicCleaner {
 			scoutClassificationRepository.deleteById(id);
 
 			if (count != scoutClassificationRepository.count()) {
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+	
+	public void removeReadableChat(String id) {
+
+		try {
+
+			ReadableChat readableChat = readableChatRepository.findById(id).get();
+
+			if (readableChat != null) {
+
+				long count = readableChatRepository.count();
+
+				readableChatRepository.deleteById(id);
+
+				if (count != readableChatRepository.count()) {
+
+				}
 
 			}
 
