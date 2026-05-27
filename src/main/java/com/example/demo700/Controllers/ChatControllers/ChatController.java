@@ -140,7 +140,7 @@ public class ChatController {
 	@GetMapping("/history/{user1}/{user2}")
 	public ResponseEntity<?> getChatHistory(@PathVariable String user1, @PathVariable String user2) {
 		try {
-			List<ChatMessageResponse> history = chatService.getChatHistory(user1, user2);
+			List<ChatMessage> history = chatService.getChatHistory(user1, user2);
 			if (history.isEmpty()) {
 				return new ResponseEntity<>("No chat history found between users", HttpStatus.NOT_FOUND);
 			}

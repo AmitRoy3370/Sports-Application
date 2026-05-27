@@ -142,9 +142,23 @@ public class ChatServiceImpl implements ChatService {
 	}
 
 	@Override
-	public List<ChatMessageResponse> getChatHistory(String user1, String user2) {
+	public List<ChatMessage> getChatHistory(String user1, String user2) {
 
-		return getChatResponseFromListUser(user1, List.of(userRepository.findById(user2).get()));
+		if(user1 == null || user2 == null) {
+			
+			throw new NullPointerException("False request...");
+			
+		}
+		
+		List<ChatMessage> list = chatMessageRepository.findByReceiverAndSender(user1, user2);
+		
+		if(list.isEmpty()) {
+			
+			throw new NoSuchElementException("No such chat yet happened");
+			
+		}
+		
+		return list;
 	}
 
 	@Override
