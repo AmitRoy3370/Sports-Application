@@ -150,7 +150,27 @@ public class ChatServiceImpl implements ChatService {
 			
 		}
 		
-		List<ChatMessage> list = chatMessageRepository.findByReceiverAndSender(user1, user2);
+		List<ChatMessage> list = chatMessageRepository.findBySenderAndReceiver(user1, user2);
+		
+		if(list.isEmpty()) {
+			
+			list = chatMessageRepository.findByReceiverAndSender(user2, user1);
+			
+			if(list.isEmpty()) {
+				
+				throw new NoSuchElementException("No such chat yet happened");
+				
+			}
+			
+		}
+		
+		List<ChatMessage> _list = chatMessageRepository.findByReceiverAndSender(user1, user2);
+		
+		if(!_list.isEmpty()) {
+			
+			list.addAll(_list);
+			
+		}
 		
 		if(list.isEmpty()) {
 			
