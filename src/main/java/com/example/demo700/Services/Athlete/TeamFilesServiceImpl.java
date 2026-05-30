@@ -158,7 +158,7 @@ public class TeamFilesServiceImpl implements TeamFilesService {
 
 		teamFiles = teamFilesRepository.save(teamFiles);
 
-		if (teamFiles != null) {
+		if (teamFiles == null) {
 
 			throw new ArithmeticException("Team files are not uploaded...");
 
@@ -340,7 +340,7 @@ public class TeamFilesServiceImpl implements TeamFilesService {
 
 		teamFiles = teamFilesRepository.save(teamFiles);
 
-		if (teamFiles != null) {
+		if (teamFiles == null) {
 
 			throw new ArithmeticException("Team files are not uploaded...");
 
