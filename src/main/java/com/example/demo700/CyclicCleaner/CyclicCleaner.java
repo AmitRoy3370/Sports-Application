@@ -19,6 +19,7 @@ import com.example.demo700.Models.Athlete.CoachClassification;
 import com.example.demo700.Models.Athlete.ScoutClassification;
 import com.example.demo700.Models.Athlete.Scouts;
 import com.example.demo700.Models.Athlete.Team;
+import com.example.demo700.Models.Athlete.TeamFiles;
 import com.example.demo700.Models.Athlete.TeamJoinRequest;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
@@ -41,6 +42,8 @@ import com.example.demo700.Models.Turf.Discount;
 import com.example.demo700.Models.Turf.GroupBooking;
 import com.example.demo700.Models.Turf.Owner;
 import com.example.demo700.Models.Turf.Venue;
+import com.example.demo700.Models.Turf.VenueFilesRepository;
+import com.example.demo700.Models.Turf.VenueImages;
 import com.example.demo700.Models.Turf.VenueLocation;
 import com.example.demo700.Repositories.UserGenderRepository;
 import com.example.demo700.Repositories.UserRepository;
@@ -50,6 +53,7 @@ import com.example.demo700.Repositories.Athelete.CoachClassificationRepository;
 import com.example.demo700.Repositories.Athelete.CoachRepository;
 import com.example.demo700.Repositories.Athelete.ScoutClassificationRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
+import com.example.demo700.Repositories.Athelete.TeamFilesRepository;
 import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
@@ -130,6 +134,9 @@ public class CyclicCleaner {
 	private VenueLocationServiceRepository venueLocationRepository;
 
 	@Autowired
+	private VenueFilesRepository venueImagesRepository;
+
+	@Autowired
 	private MatchVenueRepository matchVenueRepository;
 
 	@Autowired
@@ -143,6 +150,9 @@ public class CyclicCleaner {
 
 	@Autowired
 	private TeamJoinRequestRepository teamJoinRequestRepository;
+
+	@Autowired
+	private TeamFilesRepository teamFilesRepository;
 
 	@Autowired
 	private ImageService imageService;
@@ -182,7 +192,7 @@ public class CyclicCleaner {
 
 	@Autowired
 	private UserActiveRepository userActiveRepository;
-	
+
 	@Autowired
 	private ReadableChatRepository readableChatRepository;
 
@@ -884,6 +894,20 @@ public class CyclicCleaner {
 
 					try {
 
+						TeamFiles teamFiles = teamFilesRepository.findByTeamId(teamId);
+
+						if (teamFiles != null) {
+
+							removeTeamFiles(teamFiles.getId());
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
 						List<Athelete> list = atheleteRepository.findByPresentTeamIgnoreCase(team.getTeamName());
 
 						if (!list.isEmpty()) {
@@ -1582,6 +1606,20 @@ public class CyclicCleaner {
 
 					try {
 
+						VenueImages venueImages = venueImagesRepository.findByVenueId(venueId);
+
+						if (venueImages != null) {
+
+							removeVenueImages(venueImages.getId());
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
 						List<MatchVenue> matchVenues = matchVenueRepository.findByVenueId(venue.getId());
 
 						if (!matchVenues.isEmpty()) {
@@ -1678,6 +1716,42 @@ public class CyclicCleaner {
 				 * 
 				 * }
 				 */
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
+	public void removeVenueImages(String id) {
+
+		try {
+
+			VenueImages venueImages = venueImagesRepository.findById(id).get();
+
+			if (venueImages != null) {
+
+				long count = venueImagesRepository.count();
+
+				venueImagesRepository.deleteById(id);
+
+				if (count != venueImagesRepository.count()) {
+
+					for (String i : venueImages.getVenueFiles()) {
+
+						try {
+
+							imageService.delete(i);
+
+						} catch (Exception e) {
+
+						}
+
+					}
+
+				}
 
 			}
 
@@ -1955,6 +2029,40 @@ public class CyclicCleaner {
 
 			if (gyms != null) {
 
+				try {
+
+					for (String i : gyms.getGymImages()) {
+
+						try {
+
+							if (imageService.attachmentExists(i)) {
+
+								imageService.delete(i);
+
+							}
+
+						} catch (Exception e) {
+
+						}
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+				try {
+
+					if (imageService.attachmentExists(gyms.getCoverImageId())) {
+
+						imageService.delete(gyms.getCoverImageId());
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
 				long count = gymsRepository.count();
 
 				gymsRepository.deleteById(gymId);
@@ -2182,7 +2290,7 @@ public class CyclicCleaner {
 		}
 
 	}
-	
+
 	public void removeReadableChat(String id) {
 
 		try {
@@ -2196,6 +2304,40 @@ public class CyclicCleaner {
 				readableChatRepository.deleteById(id);
 
 				if (count != readableChatRepository.count()) {
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
+	public void removeTeamFiles(String id) {
+
+		try {
+
+			TeamFiles files = teamFilesRepository.findById(id).get();
+
+			if (files != null) {
+
+				long count = teamFilesRepository.count();
+
+				teamFilesRepository.deleteById(id);
+
+				if (count != teamFilesRepository.count()) {
+
+					for (String i : files.getFiles()) {
+
+						if (imageService.attachmentExists(i)) {
+
+							imageService.delete(i);
+
+						}
+
+					}
 
 				}
 
