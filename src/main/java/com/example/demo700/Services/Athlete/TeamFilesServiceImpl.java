@@ -188,6 +188,22 @@ public class TeamFilesServiceImpl implements TeamFilesService {
 
 			}
 
+			for (String i : teamFiles.getFiles()) {
+
+				try {
+
+					if (!existingFiles.contains(i)) {
+
+						imageService.delete(i);
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
+			}
+
 		} catch (Exception e) {
 
 			throw new NoSuchElementException("No such team files find at here...");
