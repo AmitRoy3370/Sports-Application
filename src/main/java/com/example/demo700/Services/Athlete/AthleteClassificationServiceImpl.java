@@ -600,6 +600,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 				AthleteClassification cls = classificationMap.get(a.getId());
 				if (cls != null) {
 					dto.setAthleteClassificationTypes(cls.getAthleteClassificationTypes());
+					dto.setAthleteClassificationId(cls.getId());
 				}
 
 				try {
