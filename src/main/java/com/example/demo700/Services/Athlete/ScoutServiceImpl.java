@@ -273,7 +273,7 @@ public class ScoutServiceImpl implements ScoutService {
 
 						}
 
-						if (team.getScouts().equals(scout.getId())) {
+						if (team.getScouts().contains(scout.getId())) {
 
 							find = true;
 							break;
