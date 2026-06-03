@@ -1160,6 +1160,28 @@ public class CyclicCleaner {
 
 					try {
 
+						List<EventOrganaizer> organaizers = eventOrganaizerRepository
+								.findByMatchesContainingIgnoreCase(match.getId());
+
+						for (EventOrganaizer i : organaizers) {
+
+							try {
+
+								i.getMatches().remove(match.getId());
+								eventOrganaizerRepository.save(i);
+
+							} catch (Exception e) {
+
+							}
+
+						}
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
 						MatchName matchName = matchNameRepository.findByMatchId(match.getId());
 
 						if (matchName != null) {
