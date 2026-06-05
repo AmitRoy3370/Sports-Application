@@ -1,5 +1,6 @@
 package com.example.demo700.Controllers.UserActiveControllers;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,111 +10,129 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo700.DTOFiles.UserActiveResponseDTO;
 import com.example.demo700.Model.UserActiveModel.UserActive;
+import com.example.demo700.Repositories.UserActiveRepositories.UserActiveRepository;
 import com.example.demo700.Services.UserActiveServices.UserActiveService;
 
 @RestController
 @RequestMapping("/api/user-active")
 public class UserActiveController {
 
-    @Autowired
-    private UserActiveService userActiveService;
+	@Autowired
+	private UserActiveService userActiveService;
 
-    // ================= ADD =================
-    @PostMapping("/add")
-    public ResponseEntity<?> addUserActive(@RequestBody UserActive userActive) {
-        try {
-            UserActive saved = userActiveService.addUserActive(userActive);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+	@Autowired
+	private UserActiveRepository userActiveRepository;
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+	// ================= ADD =================
+	@PostMapping("/add")
+	public ResponseEntity<?> addUserActive(@RequestBody UserActive userActive) {
+		try {
+			UserActive saved = userActiveService.addUserActive(userActive);
+			return ResponseEntity.status(HttpStatus.CREATED).body(saved);
 
-    // ================= UPDATE =================
-    @PutMapping("/update/{id}/{userId}")
-    public ResponseEntity<?> updateUserActive(
-            @RequestBody UserActive userActive,
-            @PathVariable String userId,
-            @PathVariable String id) {
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
 
-        try {
-            UserActive updated =
-                    userActiveService.updateUserActive(userActive, userId, id);
+	// ================= UPDATE =================
+	@PutMapping("/update/{id}/{userId}")
+	public ResponseEntity<?> updateUserActive(@RequestBody UserActive userActive, @PathVariable String userId,
+			@PathVariable String id) {
 
-            return ResponseEntity.ok(updated);
+		try {
+			UserActive updated = userActiveService.updateUserActive(userActive, userId, id);
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+			return ResponseEntity.ok(updated);
 
-    // ================= FIND BY ID =================
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable String id) {
-        try {
-            return ResponseEntity.ok(userActiveService.findById(id));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
+	@PutMapping("/heartbeat/{userId}")
+	public ResponseEntity<?> heartbeat(@PathVariable String userId) {
 
-    // ================= FIND ALL =================
-    @GetMapping("/all")
-    public ResponseEntity<?> findAll() {
-        try {
-            List<UserActiveResponseDTO> list = userActiveService.findAll();
-            return ResponseEntity.ok(list);
+		try {
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
+			UserActive user = userActiveRepository.findByUserId(userId);
 
-    // ================= FIND BY USER ID =================
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> findByUserId(@PathVariable String userId) {
-        try {
-            return ResponseEntity.ok(
-                    userActiveService.findByUserId(userId));
+			if (user == null) {
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
+				throw new Exception("No such user find at here....");
 
-    // ================= FILTER BY ACTIVE (REQUEST PARAM) =================
-    @GetMapping("/status")
-    public ResponseEntity<?> findByActive(@RequestParam boolean active) {
-        try {
-            return ResponseEntity.ok(
-                    userActiveService.findByActive(active));
+			}
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
-        }
-    }
+			user.setLastActivity(new Date());
 
-    // ================= DELETE =================
-    @DeleteMapping("/{id}/{userId}")
-    public ResponseEntity<?> deleteUserActive(
-            @PathVariable String id,
-            @PathVariable String userId) {
+			userActiveRepository.save(user);
 
-        try {
-            boolean deleted =
-                    userActiveService.removeUserActive(id, userId);
+			return ResponseEntity.ok().build();
 
-            return ResponseEntity.ok(deleted);
+		} catch (Exception e) {
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
+			return ResponseEntity.status(400).body(e.toString());
+
+		}
+
+	}
+
+	// ================= FIND BY ID =================
+	@GetMapping("/{id}")
+	public ResponseEntity<?> findById(@PathVariable String id) {
+		try {
+			return ResponseEntity.ok(userActiveService.findById(id));
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
+
+	// ================= FIND ALL =================
+	@GetMapping("/all")
+	public ResponseEntity<?> findAll() {
+		try {
+			List<UserActiveResponseDTO> list = userActiveService.findAll();
+			return ResponseEntity.ok(list);
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
+
+	// ================= FIND BY USER ID =================
+	@GetMapping("/user/{userId}")
+	public ResponseEntity<?> findByUserId(@PathVariable String userId) {
+		try {
+			return ResponseEntity.ok(userActiveService.findByUserId(userId));
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
+
+	// ================= FILTER BY ACTIVE (REQUEST PARAM) =================
+	@GetMapping("/status")
+	public ResponseEntity<?> findByActive(@RequestParam boolean active) {
+		try {
+			return ResponseEntity.ok(userActiveService.findByActive(active));
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
+
+	// ================= DELETE =================
+	@DeleteMapping("/{id}/{userId}")
+	public ResponseEntity<?> deleteUserActive(@PathVariable String id, @PathVariable String userId) {
+
+		try {
+			boolean deleted = userActiveService.removeUserActive(id, userId);
+
+			return ResponseEntity.ok(deleted);
+
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
 }
-
