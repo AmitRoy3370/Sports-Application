@@ -65,7 +65,7 @@ public class UserActiveController {
 
 			user.setLastActivity(new Date());
 
-			userActiveRepository.save(user);
+			userActiveService.updateUserActive(user, userId, user.getId());
 
 			return ResponseEntity.ok().build();
 
