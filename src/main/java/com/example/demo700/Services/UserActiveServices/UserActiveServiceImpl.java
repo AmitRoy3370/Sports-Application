@@ -16,6 +16,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.example.demo700.CyclicCleaner.CyclicCleaner;
@@ -67,6 +72,9 @@ public class UserActiveServiceImpl implements UserActiveService {
 	@Autowired
 	private MatchNameRepository matchNameRepository;
 
+	@Autowired
+	private MongoTemplate mongoTemplate;
+	
 	@Autowired
 	private CyclicCleaner cleaner;
 
@@ -201,16 +209,19 @@ public class UserActiveServiceImpl implements UserActiveService {
 		}
 
 		userActive.setId(id);
+	
+		Query query = new Query(Criteria.where("userId").is(userId));
 
-		userActive = userActiveRepository.save(userActive);
+	    Update update = new Update()
+	            .set("active", userActive.isActive())
+	            .set("lastActivity", new Date());
 
-		if (userActive == null) {
-
-			throw new ArithmeticException("User activeness is not added at here....");
-
-		}
-
-		return userActive;
+	    return mongoTemplate.findAndModify(
+	            query,
+	            update,
+	            FindAndModifyOptions.options().upsert(true).returnNew(true),
+	            UserActive.class
+	    );
 	}
 
 	/**
