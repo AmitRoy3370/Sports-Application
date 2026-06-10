@@ -24,6 +24,8 @@ import com.example.demo700.Models.Athlete.TeamJoinRequest;
 import com.example.demo700.Models.Athlete.TeamOwner;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.ChatModels.ChatMessage;
+import com.example.demo700.Models.ChatModels.Group;
+import com.example.demo700.Models.ChatModels.GroupMessage;
 import com.example.demo700.Models.DoctorModels.Doctor;
 import com.example.demo700.Models.EventOrganaizer.EventOrganaizer;
 import com.example.demo700.Models.EventOrganaizer.Match;
@@ -59,6 +61,8 @@ import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.ChatRepositories.ChatMessageRepository;
+import com.example.demo700.Repositories.ChatRepositories.GroupMessageRepository;
+import com.example.demo700.Repositories.ChatRepositories.GroupRepository;
 import com.example.demo700.Repositories.ChatRepositories.ReadableChatRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
 import com.example.demo700.Repositories.EventOrganaizer.EventOrganaizerRepository;
@@ -147,6 +151,12 @@ public class CyclicCleaner {
 
 	@Autowired
 	private ChatMessageRepository chatMessageRepository;
+
+	@Autowired
+	private GroupRepository groupRepository;
+
+	@Autowired
+	private GroupMessageRepository groupMessageRepository;
 
 	@Autowired
 	private TeamJoinRequestRepository teamJoinRequestRepository;
@@ -2358,6 +2368,62 @@ public class CyclicCleaner {
 							imageService.delete(i);
 
 						}
+
+					}
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
+	public void removeGroupMessage(String id) {
+
+		try {
+
+			GroupMessage groupMessage = groupMessageRepository.findById(id).get();
+
+			if (groupMessage != null) {
+
+				long count = groupMessageRepository.count();
+
+				groupMessageRepository.deleteById(id);
+
+				if (count != groupMessageRepository.count()) {
+
+				}
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+	}
+
+	public void removeGroup(String id) {
+
+		try {
+
+			Group group = groupRepository.findById(id).get();
+
+			if (group != null) {
+
+				long count = groupRepository.count();
+
+				groupRepository.deleteById(id);
+
+				if (count != groupRepository.count()) {
+
+					List<GroupMessage> list = groupMessageRepository.findMessagesByGroupId(group.getId());
+
+					for (GroupMessage i : list) {
+
+						removeGroupMessage(i.getId());
 
 					}
 
