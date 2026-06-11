@@ -4,6 +4,7 @@ import java.util.List;
 import com.example.demo700.Models.ChatModels.Group;
 import com.example.demo700.Models.ChatModels.GroupMessage;
 import com.example.demo700.DTOFiles.GroupMessageResponse;
+import com.example.demo700.DTOFiles.GroupResponse;
 
 public interface GroupService {
     
@@ -11,9 +12,9 @@ public interface GroupService {
     Group createGroup(Group group, String creatorId);
     Group updateGroup(String groupId, Group group, String userId);
     boolean deleteGroup(String groupId, String userId);
-    Group getGroupById(String groupId);
+    GroupResponse getGroupById(String groupId);
     public GroupMessage getGroupMessageById(String id);
-    List<Group> getUserGroups(String userId);
+    List<GroupResponse> getUserGroups(String userId);
     boolean addMemberToGroup(String groupId, String memberId, String adminId);
     boolean removeMemberFromGroup(String groupId, String memberId, String adminId);
     

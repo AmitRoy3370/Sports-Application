@@ -17,6 +17,7 @@ import com.example.demo700.Models.ChatModels.Group;
 import com.example.demo700.Models.ChatModels.GroupMessage;
 import com.example.demo700.Services.ChatServices.GroupService;
 import com.example.demo700.DTOFiles.GroupMessageResponse;
+import com.example.demo700.DTOFiles.GroupResponse;
 
 @RestController
 @RequestMapping("/api/group-chat")
@@ -58,7 +59,7 @@ public class GroupChatController {
     @GetMapping("/{groupId}")
     public ResponseEntity<?> getGroupById(@PathVariable String groupId) {
         try {
-            Group group = groupService.getGroupById(groupId);
+        	GroupResponse group = groupService.getGroupById(groupId);
             return ResponseEntity.ok(group);
         } catch (NullPointerException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -77,7 +78,7 @@ public class GroupChatController {
     @GetMapping("/my-groups/{userId}")
     public ResponseEntity<?> getUserGroups(@PathVariable String userId) {
         try {
-            List<Group> groups = groupService.getUserGroups(userId);
+            List<GroupResponse> groups = groupService.getUserGroups(userId);
             if (groups.isEmpty()) {
                 return new ResponseEntity<>("No groups found for this user", HttpStatus.NOT_FOUND);
             }
