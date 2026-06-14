@@ -798,7 +798,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			} catch (Exception e) {
 
-				throw new ArithmeticException("Only requested member can reject the offer....");
+				throw new ArithmeticException(e.getMessage());
 
 			}
 
