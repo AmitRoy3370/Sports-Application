@@ -692,19 +692,19 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				System.out.println("Stopped at here....");
 
-				throw new Exception();
+				throw new Exception("No such team join request exist at here....");
 
 			}
 
 			count = teamJoinRequestRepository.count();
-			
+
 			System.out.println("team join requst find....");
 
 			if (Instant.now().isAfter(teamJoinRequest.getRequestEndTime())) {
 
 				teamJoinRequestRepository.deleteById(teamJoinRequestId);
 
-				throw new Exception();
+				throw new Exception("Time expired....");
 
 			}
 
@@ -717,13 +717,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					if (athlete == null) {
 
-						throw new Exception();
+						throw new Exception("Athlete not exist for this request....");
 
 					}
 
 					if (!teamJoinRequest.getReceiverId().equals(athlete.getId())) {
 
-						throw new Exception();
+						throw new Exception("This team not request to you....");
 
 					}
 
@@ -734,7 +734,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					if (athlete == null) {
 
-						throw new Exception();
+						throw new Exception("No such coach find at here....");
 
 					}
 
@@ -742,13 +742,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					if (coach == null) {
 
-						throw new Exception();
+						throw new Exception("This coach not exist for this request....");
 
 					}
 
 					if (!teamJoinRequest.getReceiverId().equals(coach.getId())) {
 
-						throw new Exception();
+						throw new Exception("This coach is not requested for this team....");
 
 					}
 
@@ -759,7 +759,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					if (athlete == null) {
 
-						throw new Exception();
+						throw new Exception("No such scout present at here...");
 
 					}
 
@@ -767,13 +767,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					if (scout == null) {
 
-						throw new Exception();
+						throw new Exception("In valid scout....");
 
 					}
 
 					if (!teamJoinRequest.getReceiverId().equals(scout.getId())) {
 
-						throw new Exception();
+						throw new Exception("This scout is not requested for this team...");
 
 					}
 
@@ -784,13 +784,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					if (doctor == null) {
 
-						throw new Exception();
+						throw new Exception("This doctor is in valid....");
 
 					}
 
 					if (!teamJoinRequest.getReceiverId().equals(doctor.getId())) {
 
-						throw new Exception();
+						throw new Exception("This doctor is not requested for this team...");
 
 					}
 
@@ -1017,7 +1017,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			if (!teamJoinRequest.getStatus().equals(TeamJoinRequestStatus.ROLE_PENDING)) {
 
-				throw new Exception();
+				throw new Exception("existing team join request is not applicable by the team owner....");
 
 			}
 
@@ -1027,11 +1027,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		} catch (Exception e) {
 
-			throw new NoSuchElementException("Team Join request is not present...");
+			throw new NoSuchElementException(e.getMessage());
 
 		}
-
-		
 
 		try {
 
