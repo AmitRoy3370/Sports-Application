@@ -730,7 +730,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)
 						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_COACH) {
 
-					Athelete athlete = atheleteRepository.findById(userId).get();
+					Athelete athlete = atheleteRepository.findByUserId(userId).get();
 
 					if (athlete == null) {
 
