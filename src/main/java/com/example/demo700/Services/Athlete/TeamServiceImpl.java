@@ -73,7 +73,7 @@ public class TeamServiceImpl implements TeamService {
 
 	@Autowired
 	private MatchNameRepository matchNameRepository;
-
+	
 	@Autowired
 	private CyclicCleaner cleaner;
 

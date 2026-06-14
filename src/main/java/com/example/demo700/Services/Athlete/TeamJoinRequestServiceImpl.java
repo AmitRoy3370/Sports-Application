@@ -28,6 +28,7 @@ import com.example.demo700.Repositories.Athelete.TeamJoinRequestRepository;
 import com.example.demo700.Repositories.Athelete.TeamOwnerRepository;
 import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.DoctorRepositories.DoctorRepository;
+import com.example.demo700.Services.NotificationServices.NotificationService;
 
 @Service
 public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
@@ -55,6 +56,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 	@Autowired
 	private DoctorRepository doctorRepository;
+
+	@Autowired
+	private NotificationService notificationService;
 
 	@Override
 	public TeamJoinRequest sendJoinRequest(TeamJoinRequest teamJoinRequest, String userId) {
@@ -103,11 +107,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		}
 
+		Team _team = null;
+
 		try {
 
-			Team team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
+			_team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
-			if (team == null) {
+			if (_team == null) {
 
 				throw new Exception();
 
@@ -133,6 +139,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		}
 
+		String receiverId = null;
+
 		try {
 
 			if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE) {
@@ -153,6 +161,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
+				receiverId = athelete.getUserId();
+
 			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_COACH) {
 
 				Coach coach = coachRepository.findById(teamJoinRequest.getReceiverId()).get();
@@ -170,6 +180,10 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					throw new Exception();
 
 				}
+
+				Athelete _athlete = atheleteRepository.findById(coach.getAtheleteId()).get();
+
+				receiverId = _athlete.getUserId();
 
 			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) {
 
@@ -189,6 +203,10 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
+				Athelete _athlete = atheleteRepository.findById(scout.getAtheleteId()).get();
+
+				receiverId = _athlete.getUserId();
+
 			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR) {
 
 				Doctor doctor = doctorRepository.findById(teamJoinRequest.getReceiverId()).get();
@@ -206,6 +224,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					throw new Exception();
 
 				}
+
+				receiverId = doctor.getUserId();
 
 			}
 
@@ -232,6 +252,20 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 		if (teamJoinRequest == null) {
 
 			return null;
+
+		}
+
+		try {
+
+			User user = userRepository.findById(receiverId).get();
+
+			notificationService.sendNotification(receiverId,
+					user.getName() + " you get a team join request from the team " + _team.getTeamName());
+
+			notificationService.sendNotification(userId,
+					"You send a join request to " + user.getName() + " for your team " + _team.getTeamName());
+
+		} catch (Exception e) {
 
 		}
 
@@ -286,11 +320,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		}
 
+		Team _team = null;
+
 		try {
 
-			Team team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
+			_team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
-			if (team == null) {
+			if (_team == null) {
 
 				throw new Exception();
 
@@ -315,6 +351,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 			throw new ArithmeticException("Invalid joining date...");
 
 		}
+
+		String receiverId = null;
 
 		try {
 
@@ -342,6 +380,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
+				receiverId = athelete.getUserId();
+
 			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_COACH) {
 
 				Coach coach = coachRepository.findById(teamJoinRequest.getReceiverId()).get();
@@ -365,6 +405,10 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				} catch (Exception e) {
 
 				}
+
+				Athelete athlete = atheleteRepository.findById(coach.getAtheleteId()).get();
+
+				receiverId = athlete.getUserId();
 
 			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) {
 
@@ -390,6 +434,10 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
+				Athelete athlete = atheleteRepository.findById(scout.getAtheleteId()).get();
+
+				receiverId = athlete.getUserId();
+
 			} else if (teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR) {
 
 				Doctor doctor = doctorRepository.findById(teamJoinRequest.getReceiverId()).get();
@@ -413,6 +461,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				} catch (Exception e) {
 
 				}
+
+				receiverId = doctor.getUserId();
 
 			}
 
@@ -446,7 +496,25 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		teamJoinRequest.setId(teamJoinRequestId);
 
-		teamJoinRequestRepository.save(teamJoinRequest);
+		teamJoinRequest = teamJoinRequestRepository.save(teamJoinRequest);
+
+		if (teamJoinRequest != null) {
+
+			try {
+
+				User user = userRepository.findById(receiverId).get();
+
+				notificationService.sendNotification(receiverId,
+						user.getName() + " you get a team join request from the team " + _team.getTeamName());
+
+				notificationService.sendNotification(userId,
+						"You send a join request to " + user.getName() + " for your team " + _team.getTeamName());
+
+			} catch (Exception e) {
+
+			}
+
+		}
 
 		return teamJoinRequest;
 	}
@@ -583,6 +651,26 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		long count = 0;
 
+		Team _team = null;
+
+		User user = null;
+
+		try {
+
+			user = userRepository.findById(userId).get();
+
+			if (user == null) {
+
+				throw new ArithmeticException();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new NoSuchElementException("Responsed user is in valid...");
+
+		}
+
 		try {
 
 			System.out.println(teamJoinRequestId);
@@ -608,6 +696,8 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			}
 
+			count = teamJoinRequestRepository.count();
+			
 			System.out.println("team join requst find....");
 
 			if (Instant.now().isAfter(teamJoinRequest.getRequestEndTime())) {
@@ -618,9 +708,119 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			}
 
+			try {
+
+				if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE) {
+
+					Athelete athlete = atheleteRepository.findById(userId).get();
+
+					if (athlete == null) {
+
+						throw new Exception();
+
+					}
+
+					if (!teamJoinRequest.getReceiverId().equals(athlete.getId())) {
+
+						throw new Exception();
+
+					}
+
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_COACH) {
+
+					Athelete athlete = atheleteRepository.findById(userId).get();
+
+					if (athlete == null) {
+
+						throw new Exception();
+
+					}
+
+					Coach coach = coachRepository.findByAtheleteId(athlete.getId());
+
+					if (coach == null) {
+
+						throw new Exception();
+
+					}
+
+					if (!teamJoinRequest.getReceiverId().equals(coach.getId())) {
+
+						throw new Exception();
+
+					}
+
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) {
+
+					Athelete athlete = atheleteRepository.findById(userId).get();
+
+					if (athlete == null) {
+
+						throw new Exception();
+
+					}
+
+					Scouts scout = scoutsRepository.findByAtheleteId(athlete.getId());
+
+					if (scout == null) {
+
+						throw new Exception();
+
+					}
+
+					if (!teamJoinRequest.getReceiverId().equals(scout.getId())) {
+
+						throw new Exception();
+
+					}
+
+				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_DOCTOR)
+						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR) {
+
+					Doctor doctor = doctorRepository.findByUserId(userId);
+
+					if (doctor == null) {
+
+						throw new Exception();
+
+					}
+
+					if (!teamJoinRequest.getReceiverId().equals(doctor.getId())) {
+
+						throw new Exception();
+
+					}
+
+				}
+
+			} catch (Exception e) {
+
+				throw new ArithmeticException("Only requested member can reject the offer....");
+
+			}
+
 			if (teamJoinRequest.getStatus().equals(TeamJoinRequestStatus.ROLE_CANCEL)) {
 
 				teamJoinRequestRepository.deleteById(teamJoinRequestId);
+
+				try {
+
+					notificationService.sendNotification(userId,
+							user.getName() + " you reject the request of team " + _team.getTeamName());
+
+					TeamOwner teamOwner = teamOwnerRepository.findById(_team.getTeamOwnerId()).get();
+
+					Athelete athlete = atheleteRepository.findById(teamOwner.getAtheleteId()).get();
+
+					notificationService.sendNotification(athlete.getUserId(),
+							user.getName() + " accept your team join request for team " + _team.getTeamName());
+
+				} catch (Exception e) {
+
+				}
 
 				return false;
 
@@ -630,7 +830,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				teamJoinRequestRepository.deleteById(teamJoinRequestId);
 
-				User user = userRepository.findById(userId)
+				user = userRepository.findById(userId)
 						.orElseThrow(() -> new NoSuchElementException("There is no user based on this id..."));
 
 				if (user == null) {
@@ -639,9 +839,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 				}
 
-				Team team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
+				_team = teamRepository.findById(teamJoinRequest.getTeamId()).get();
 
-				if (team == null) {
+				if (_team == null) {
 
 					throw new Exception();
 
@@ -661,9 +861,15 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 						}
 
-						athelete.setPresentTeam(team.getTeamName());
+						if (athelete.getPresentTeam() != null) {
 
-						System.out.println("User is accept the request for join the team :- " + team.getTeamName());
+							throw new Exception();
+
+						}
+
+						athelete.setPresentTeam(_team.getTeamName());
+
+						System.out.println("User is accept the request for join the team :- " + _team.getTeamName());
 
 						atheleteRepository.save(athelete);
 
@@ -695,7 +901,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 						}
 
-						coach.setTeamName(team.getTeamName());
+						if (coach.getTeamName() != null) {
+
+							throw new Exception();
+
+						}
+
+						coach.setTeamName(_team.getTeamName());
 
 						coachRepository.save(coach);
 
@@ -727,11 +939,29 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 						}
 
+						try {
+
+							Team team2 = teamRepository.findByScoutsContainingIgnoreCase(scouts.getId());
+
+							if (team2 != null) {
+
+								throw new ArithmeticException();
+
+							}
+
+						} catch (ArithmeticException e) {
+
+							throw new ArithmeticException("You are already in a team...");
+
+						} catch (Exception e) {
+
+						}
+
 						if (athelete.getPresentTeam() != null) {
 
 						} else {
 
-							athelete.setPresentTeam(team.getTeamName());
+							athelete.setPresentTeam(_team.getTeamName());
 
 							atheleteRepository.save(athelete);
 
@@ -757,6 +987,24 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 						}
 
+						try {
+
+							Team team2 = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
+
+							if (team2 != null) {
+
+								throw new ArithmeticException();
+
+							}
+
+						} catch (ArithmeticException e) {
+
+							throw new ArithmeticException("You are already in a team");
+
+						} catch (Exception e) {
+
+						}
+
 					} catch (Exception e) {
 
 						throw new NoSuchElementException("No such doctor present at here...");
@@ -773,8 +1021,6 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			}
 
-			count = teamJoinRequestRepository.count();
-
 		} catch (NoSuchElementException e) {
 
 			throw new NoSuchElementException(e.getMessage());
@@ -785,136 +1031,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		}
 
-		User user = null;
-
-		try {
-
-			user = userRepository.findById(userId).get();
-
-			if (user == null) {
-
-				throw new Exception();
-
-			}
-
-			if (!user.getRoles().contains(Role.ROLE_ATHLETE) && !user.getRoles().contains(Role.ROLE_COACH)
-					&& !user.getRoles().contains(Role.ROLE_SCOUT) && !user.getRoles().contains(Role.ROLE_DOCTOR)) {
-
-				throw new Exception();
-
-			}
-
-			System.out.println(teamJoinRequest.getRoleType().toString());
-
-			System.out.println(user.getRoles().contains(Role.valueOf(teamJoinRequest.getRoleType().toString())));
-
-			if (!user.getRoles().contains(Role.valueOf(teamJoinRequest.getRoleType().toString()))) {
-
-				// System.out.println("Stacked at here...");
-
-				throw new Exception();
-
-			}
-
-		} catch (Exception e) {
-
-			throw new NoSuchElementException("No such user find at here...");
-
-		}
-
-		try {
-
-			if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)) {
-
-				System.out.println("Athelete join request sending...");
-
-				Athelete athelete = atheleteRepository.findByUserId(userId).get();
-
-				if (athelete == null) {
-
-					throw new Exception();
-
-				}
-
-				System.out.println("Athelete find...");
-
-				if (!teamJoinRequest.getReceiverId().equals(athelete.getId())) {
-
-					throw new Exception();
-
-				}
-
-			} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_COACH)) {
-
-				Athelete athelete = atheleteRepository.findByUserId(userId).get();
-
-				if (athelete == null) {
-
-					throw new Exception();
-
-				}
-
-				Coach coach = coachRepository.findByAtheleteId(athelete.getId());
-
-				if (coach == null) {
-
-					throw new Exception();
-
-				}
-
-				if (!teamJoinRequest.getReceiverId().equals(coach.getId())) {
-
-					throw new Exception();
-
-				}
-
-			} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)) {
-
-				Athelete athelete = atheleteRepository.findByUserId(userId).get();
-
-				if (athelete == null) {
-
-					throw new Exception();
-
-				}
-
-				Scouts scout = scoutsRepository.findByAtheleteId(athelete.getId());
-
-				if (scout == null) {
-
-					throw new Exception();
-
-				}
-
-				if (!teamJoinRequest.getReceiverId().equals(scout.getId())) {
-
-					throw new Exception();
-
-				}
-
-			} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_DOCTOR)) {
-
-				Doctor doctor = doctorRepository.findByUserId(userId);
-
-				if (doctor == null) {
-
-					throw new Exception();
-
-				}
-
-				if (!teamJoinRequest.getReceiverId().equals(doctor.getId())) {
-
-					throw new Exception();
-
-				}
-
-			}
-
-		} catch (Exception e) {
-
-			throw new NoSuchElementException("This user is not requested from this team...");
-
-		}
+		
 
 		try {
 
@@ -1075,9 +1192,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					try {
 
-						Team _team = teamRepository.findByAtheletesContainingIgnoreCase(athelete.getId());
+						Team _team1 = teamRepository.findByAtheletesContainingIgnoreCase(athelete.getId());
 
-						if (_team == null) {
+						if (_team1 == null) {
 
 							athelete.setPresentTeam(team.getTeamName());
 
@@ -1161,9 +1278,9 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 					try {
 
-						Team _team = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
+						Team _team1 = teamRepository.findByDoctorsContainingIgnoreCase(doctor.getId());
 
-						if (_team != null) {
+						if (_team1 != null) {
 
 							throw new ArithmeticException();
 
@@ -1236,6 +1353,22 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 					throw new ArithmeticException("Some other's member request for that player is still at here...");
 
 				}
+
+			}
+
+			try {
+
+				notificationService.sendNotification(userId,
+						user.getName() + " you are now a member of " + _team.getTeamName());
+
+				TeamOwner teamOwner = teamOwnerRepository.findById(_team.getTeamOwnerId()).get();
+
+				Athelete athlete = atheleteRepository.findById(teamOwner.getAtheleteId()).get();
+
+				notificationService.sendNotification(athlete.getUserId(),
+						user.getName() + " accept your team join request for team " + _team.getTeamName());
+
+			} catch (Exception e) {
 
 			}
 
