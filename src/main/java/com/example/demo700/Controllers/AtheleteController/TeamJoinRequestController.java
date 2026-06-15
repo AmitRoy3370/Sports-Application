@@ -11,6 +11,7 @@ import com.example.demo700.Services.Athlete.TeamJoinRequestService;
 
 import jakarta.jws.soap.InitParam;
 
+import com.example.demo700.DTOFiles.TeamJoinRequestResponse;
 import com.example.demo700.ENUMS.AtheletesTeamJoiningResponse;
 import com.example.demo700.ENUMS.TeamJoinRequestStatus;
 
@@ -75,7 +76,7 @@ public class TeamJoinRequestController {
 	@GetMapping("/receiver/{receiverId}")
 	public ResponseEntity<?> getRequestsByReceiver(@PathVariable String receiverId) {
 		try {
-			List<TeamJoinRequest> requests = teamJoinRequestService.getRequestsByReceiver(receiverId);
+			List<TeamJoinRequestResponse> requests = teamJoinRequestService.getRequestsByReceiver(receiverId);
 			return ResponseEntity.ok(requests);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body("Error fetching receiver requests: " + e.getMessage());
@@ -86,7 +87,7 @@ public class TeamJoinRequestController {
 	@GetMapping("/sender/{senderId}")
 	public ResponseEntity<?> getRequestsBySender(@PathVariable String senderId) {
 		try {
-			List<TeamJoinRequest> requests = teamJoinRequestService.getRequestsBySender(senderId);
+			List<TeamJoinRequestResponse> requests = teamJoinRequestService.getRequestsBySender(senderId);
 			return ResponseEntity.ok(requests);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body("Error fetching sender requests: " + e.getMessage());
@@ -112,7 +113,7 @@ public class TeamJoinRequestController {
 	@GetMapping("/all")
 	public ResponseEntity<?> seeAllTeamJoinRequest() {
 		try {
-			List<TeamJoinRequest> requests = teamJoinRequestService.seeAllTeamJoinRequest();
+			List<TeamJoinRequestResponse> requests = teamJoinRequestService.seeAllTeamJoinRequest();
 			return ResponseEntity.ok(requests);
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body("Error fetching all join requests: " + e.getMessage());
@@ -123,7 +124,7 @@ public class TeamJoinRequestController {
 	@GetMapping("/status/{status}")
 	public ResponseEntity<?> getRequestsByStatus(@PathVariable TeamJoinRequestStatus status) {
 		try {
-			List<TeamJoinRequest> requests = teamJoinRequestService.seeAllTeamJoinRequest().stream()
+			List<TeamJoinRequestResponse> requests = teamJoinRequestService.seeAllTeamJoinRequest().stream()
 					.filter(r -> r.getStatus() == status).toList();
 			return ResponseEntity.ok(requests);
 		} catch (Exception e) {
@@ -136,7 +137,7 @@ public class TeamJoinRequestController {
 
 		try {
 
-			List<TeamJoinRequest> list = teamJoinRequestService.searchByPrice(Double.parseDouble(price));
+			List<TeamJoinRequestResponse> list = teamJoinRequestService.searchByPrice(Double.parseDouble(price));
 
 			return ResponseEntity.status(200).body(list);
 
@@ -153,7 +154,7 @@ public class TeamJoinRequestController {
 
 		try {
 
-			List<TeamJoinRequest> list = teamJoinRequestService.searchByTeamId(teamId);
+			List<TeamJoinRequestResponse> list = teamJoinRequestService.searchByTeamId(teamId);
 
 			if (list.isEmpty()) {
 

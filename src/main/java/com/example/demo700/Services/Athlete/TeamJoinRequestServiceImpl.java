@@ -2,12 +2,22 @@ package com.example.demo700.Services.Athlete;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo700.DTOFiles.TeamJoinRequestResponse;
 import com.example.demo700.ENUMS.AtheletesTeamJoiningResponse;
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.ENUMS.TeamJoinRequestRole;
@@ -520,7 +530,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 	}
 
 	@Override
-	public List<TeamJoinRequest> getRequestsByReceiver(String receiverId) {
+	public List<TeamJoinRequestResponse> getRequestsByReceiver(String receiverId) {
 
 		if (receiverId == null) {
 
@@ -528,18 +538,18 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		}
 
-		return teamJoinRequestRepository.findByReceiverId(receiverId);
+		return getTeamJoinRequestResponse(teamJoinRequestRepository.findByReceiverId(receiverId));
 	}
 
 	@Override
-	public List<TeamJoinRequest> getRequestsBySender(String senderId) {
+	public List<TeamJoinRequestResponse> getRequestsBySender(String senderId) {
 		if (senderId == null) {
 
 			throw new NullPointerException("False request...");
 
 		}
 
-		return teamJoinRequestRepository.findBySenderId(senderId);
+		return getTeamJoinRequestResponse(teamJoinRequestRepository.findBySenderId(senderId));
 	}
 
 	@Override
@@ -626,15 +636,15 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 	}
 
 	@Override
-	public List<TeamJoinRequest> seeAllTeamJoinRequest() {
+	public List<TeamJoinRequestResponse> seeAllTeamJoinRequest() {
 
-		return teamJoinRequestRepository.findAll();
+		return getTeamJoinRequestResponse(teamJoinRequestRepository.findAll());
 	}
 
 	@Override
-	public List<TeamJoinRequest> searchByPrice(double price) {
+	public List<TeamJoinRequestResponse> searchByPrice(double price) {
 
-		return teamJoinRequestRepository.findByPriceGreaterThan(price);
+		return getTeamJoinRequestResponse(teamJoinRequestRepository.findByPriceGreaterThan(price));
 	}
 
 	@Override
@@ -1376,7 +1386,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 	}
 
 	@Override
-	public List<TeamJoinRequest> searchByTeamId(String teamId) {
+	public List<TeamJoinRequestResponse> searchByTeamId(String teamId) {
 
 		if (teamId == null) {
 
@@ -1392,7 +1402,101 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		}
 
-		return list;
+		return getTeamJoinRequestResponse(list);
+	}
+
+	private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
+	private TeamJoinRequestResponse getTeamJoinRequestResponse(TeamJoinRequest teamJoinRequest) {
+
+		return getTeamJoinRequestResponse(List.of(teamJoinRequest)).get(0);
+
+	}
+
+	private List<TeamJoinRequestResponse> getTeamJoinRequestResponse(List<TeamJoinRequest> list) {
+
+		List<TeamJoinRequestResponse> responses = new ArrayList<>();
+
+		CompletableFuture<List<String>> teamIdFuture = CompletableFuture.supplyAsync(
+				() -> list.stream().map(TeamJoinRequest::getTeamId).collect(Collectors.toList()), executor);
+
+		CompletableFuture<Map<String, Team>> teamFuture = teamIdFuture.thenApplyAsync(teamsId -> {
+
+			if (teamsId.isEmpty()) {
+
+				return new HashMap<>();
+
+			}
+
+			return teamRepository.findAllById(teamsId).stream()
+					.collect(Collectors.toMap(Team::getId, Function.identity()));
+
+		}, executor);
+
+		CompletableFuture<List<String>> userIdFuture = CompletableFuture.supplyAsync(() -> {
+
+			List<String> sendersId = list.stream().map(TeamJoinRequest::getSenderId).collect(Collectors.toList());
+
+			Set<String> set = new HashSet<>(sendersId);
+
+			/*List<String> receiversId = list.stream().map(TeamJoinRequest::getReceiverId).collect(Collectors.toList());
+
+			for (String id : receiversId) {
+
+				set.add(id);
+
+			}*/
+
+			return new ArrayList<>(set);
+
+		}, executor);
+
+		CompletableFuture<Map<String, User>> userFuture = userIdFuture.thenApplyAsync(usersId -> {
+
+			if (usersId.isEmpty()) {
+
+				return new HashMap<>();
+
+			}
+
+			return userRepository.findAllById(usersId).stream()
+					.collect(Collectors.toMap(User::getId, Function.identity()));
+
+		}, executor);
+
+		CompletableFuture.allOf(teamIdFuture, teamFuture, userIdFuture, userFuture).join();
+
+		Map<String, Team> teamMap = teamFuture.join();
+		Map<String, User> userMap = userFuture.join();
+		
+		for(TeamJoinRequest request : list) {
+			
+			try {
+				
+				TeamJoinRequestResponse response = new TeamJoinRequestResponse();
+				
+				response.setId(request.getId());
+				response.setPrice(request.getPrice());
+				response.setRequestStartTime(request.getRequestStartTime());
+				response.setRequestEndTime(request.getRequestEndTime());
+				response.setRoleType(request.getRoleType());
+				response.setSenderId(request.getSenderId());
+				response.setReceiverId(request.getReceiverId());
+				response.setSenderName(userMap.get(request.getSenderId()).getName());
+				response.setTeamId(request.getTeamId());
+				response.setTeamName(teamMap.get(request.getTeamId()).getTeamName());
+				response.setStatus(request.getStatus());
+				
+				responses.add(response);
+				
+			} catch(Exception e) {
+				
+			}
+			
+		}
+		
+		return responses;
+
 	}
 
 }
