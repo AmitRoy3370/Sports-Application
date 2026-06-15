@@ -11,6 +11,7 @@ public class ScoutResponse {
 
 	private String userId, name, userGenderId, athleteClassificationId, locationId, scoutClassificationId;
 	private String email, imageHex;
+	private String scoutsTeamId, scoutsTeamName;
 	private Gender gender;
 	private String position, presentAthleteTeam, locationName;
 	private double height, weight, lattitude, longitude;
@@ -41,7 +42,7 @@ public class ScoutResponse {
 			List<String> eventNames, List<String> highlightReels, AthleteClassificationTypes athleteClassificationTypes,
 			AthleteClassificationTypes scoutClassificationTypes, Set<Role> roles, String id, String atheleteId,
 			List<String> scoutsEvents, List<String> scoutsEventNames, List<String> scoutsMatches,
-			List<String> scoutsMatchNames) {
+			List<String> scoutsMatchNames, String scoutsTeamId, String scoutsTeamName) {
 		super();
 		this.userId = userId;
 		this.name = name;
@@ -73,6 +74,8 @@ public class ScoutResponse {
 		this.scoutsEventNames = scoutsEventNames;
 		this.scoutsMatches = scoutsMatches;
 		this.scoutsMatchNames = scoutsMatchNames;
+		this.scoutsTeamId = scoutsTeamId;
+		this.scoutsTeamName = scoutsTeamName;
 	}
 
 	public ScoutResponse() {
@@ -319,20 +322,36 @@ public class ScoutResponse {
 		this.scoutsMatchNames = scoutsMatchNames;
 	}
 
+	public String getScoutsTeamId() {
+		return scoutsTeamId;
+	}
+
+	public void setScoutsTeamId(String scoutsTeamId) {
+		this.scoutsTeamId = scoutsTeamId;
+	}
+
+	public String getScoutsTeamName() {
+		return scoutsTeamName;
+	}
+
+	public void setScoutsTeamName(String scoutsTeamName) {
+		this.scoutsTeamName = scoutsTeamName;
+	}
+
 	@Override
 	public String toString() {
 		return "ScoutResponse [userId=" + userId + ", name=" + name + ", userGenderId=" + userGenderId
 				+ ", athleteClassificationId=" + athleteClassificationId + ", locationId=" + locationId
 				+ ", scoutClassificationId=" + scoutClassificationId + ", email=" + email + ", imageHex=" + imageHex
-				+ ", gender=" + gender + ", position=" + position + ", presentAthleteTeam=" + presentAthleteTeam
-				+ ", locationName=" + locationName + ", height=" + height + ", weight=" + weight + ", lattitude="
-				+ lattitude + ", longitude=" + longitude + ", age=" + age + ", gameLogs=" + gameLogs
-				+ ", eventAttendence=" + eventAttendence + ", eventNames=" + eventNames + ", highlightReels="
-				+ highlightReels + ", athleteClassificationTypes=" + athleteClassificationTypes
-				+ ", scoutClassificationTypes=" + scoutClassificationTypes + ", roles=" + roles + ", id=" + id
-				+ ", atheleteId=" + atheleteId + ", scoutsEvents=" + scoutsEvents + ", scoutsEventNames="
-				+ scoutsEventNames + ", scoutsMatches=" + scoutsMatches + ", scoutsMatchNames=" + scoutsMatchNames
-				+ "]";
+				+ ", scoutsTeamId=" + scoutsTeamId + ", scoutsTeamName=" + scoutsTeamName + ", gender=" + gender
+				+ ", position=" + position + ", presentAthleteTeam=" + presentAthleteTeam + ", locationName="
+				+ locationName + ", height=" + height + ", weight=" + weight + ", lattitude=" + lattitude
+				+ ", longitude=" + longitude + ", age=" + age + ", gameLogs=" + gameLogs + ", eventAttendence="
+				+ eventAttendence + ", eventNames=" + eventNames + ", highlightReels=" + highlightReels
+				+ ", athleteClassificationTypes=" + athleteClassificationTypes + ", scoutClassificationTypes="
+				+ scoutClassificationTypes + ", roles=" + roles + ", id=" + id + ", atheleteId=" + atheleteId
+				+ ", scoutsEvents=" + scoutsEvents + ", scoutsEventNames=" + scoutsEventNames + ", scoutsMatches="
+				+ scoutsMatches + ", scoutsMatchNames=" + scoutsMatchNames + "]";
 	}
 
 }

@@ -3,10 +3,12 @@ package com.example.demo700.Services.Athlete;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -553,11 +555,54 @@ public class ScoutServiceImpl implements ScoutService {
 
 		List<ScoutResponse> responses = new ArrayList<>();
 
+		List<String> scoutsId = scouts.stream().map(Scouts::getId).collect(Collectors.toList());
+
 		List<String> athleteIds = scouts.stream().filter(Objects::nonNull)
 				.filter(scout -> scout.getAtheleteId() != null).map(Scouts::getAtheleteId).collect(Collectors.toList());
 
 		List<Athelete> athletes = atheleteRepository.findAllById(athleteIds).stream().filter(Objects::nonNull)
 				.collect(Collectors.toList());
+
+		CompletableFuture<Map<String, Team>> teamFuture = CompletableFuture.supplyAsync(() -> {
+
+			if (scoutsId == null || scoutsId.isEmpty()) {
+				return Collections.emptyMap();
+			}
+
+			try {
+
+				List<Team> teams = teamRepository.findByScoutsContainingIgnoreCaseIn(scoutsId);
+
+				if (teams == null || teams.isEmpty()) {
+					return Collections.emptyMap();
+				}
+
+				Set<String> scoutsIdSet = new HashSet<>(scoutsId);
+
+				Map<String, Team> teamMap = new HashMap<>();
+
+				for (Team team : teams) {
+					if (team == null || team.getScouts() == null) {
+						continue;
+					}
+
+					for (String scoutId : team.getScouts()) {
+						if (scoutId != null && scoutsIdSet.contains(scoutId)) {
+							teamMap.put(scoutId, team);
+
+							break;
+						}
+					}
+				}
+
+				return teamMap;
+
+			} catch (Exception e) {
+				System.err.println("Error fetching teams: " + e.getMessage());
+				return Collections.emptyMap();
+			}
+
+		}, executor);
 
 		CompletableFuture<Map<String, Athelete>> athleteFuture = CompletableFuture
 				.supplyAsync(() -> athletes.isEmpty() ? new HashMap<>()
@@ -653,7 +698,7 @@ public class ScoutServiceImpl implements ScoutService {
 						executor);
 
 		CompletableFuture.allOf(athleteFuture, userFuture, locationFuture, genderFuture, classificationFuture,
-				matchNameFuture, profileImageFuture, scoutClassificationFuture).join();
+				matchNameFuture, profileImageFuture, scoutClassificationFuture, teamFuture).join();
 
 		Map<String, Athelete> athleteMap = athleteFuture.join();
 		Map<String, User> userMap = userFuture.join();
@@ -663,6 +708,7 @@ public class ScoutServiceImpl implements ScoutService {
 		Map<String, String> matchNameMap = matchNameFuture.join();
 		Map<String, ScoutClassification> scoutClassificationMap = scoutClassificationFuture.join();
 		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
+		Map<String, Team> teamMap = teamFuture.join();
 
 		for (Scouts scout : scouts) {
 
@@ -720,6 +766,15 @@ public class ScoutServiceImpl implements ScoutService {
 								: new ArrayList<>();
 
 						response.setEventNames(matchNames);
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setScoutsTeamId(teamMap.get(scout.getId()).getId());
+						response.setScoutsTeamName(teamMap.get(scout.getId()).getTeamName());
 
 					} catch (Exception e) {
 

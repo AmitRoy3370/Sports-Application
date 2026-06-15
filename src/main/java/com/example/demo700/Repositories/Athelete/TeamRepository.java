@@ -14,8 +14,11 @@ public interface TeamRepository extends MongoRepository<Team, String>{
 	List<Team> findByTeamNameContainingIgnoreCase(String teamName);
 	List<Team> findByTeamOwnerId(String teamOwnerId);
 	Team findByAtheletesContainingIgnoreCase(String atheleteId);
+	List<Team> findByAtheletesContainingIgnoreCaseIn(List<String> athletesId);
 	Team findByCoachesContainingIgnoreCase(String coachId);
+	List<Team> findByCoachesContainingIgnoreCaseIn(List<String> coachesId);
 	Team findByScoutsContainingIgnoreCase(String scoutId);
+	List<Team> findByScoutsContainingIgnoreCaseIn(List<String> scoutsId);
 	List<Team> findByMatchesContainingIgnoreCase(String matchId);
 	Team findByDoctorsContainingIgnoreCase(String doctorId);
 	List<Team> findByDoctorsIn(List<String> doctorsId);

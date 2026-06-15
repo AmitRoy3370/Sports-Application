@@ -3,10 +3,12 @@ package com.example.demo700.Services.Athlete;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,6 +35,7 @@ import com.example.demo700.Models.Athlete.Athelete;
 import com.example.demo700.Models.Athlete.AthleteClassification;
 import com.example.demo700.Models.Athlete.ScoutClassification;
 import com.example.demo700.Models.Athlete.Scouts;
+import com.example.demo700.Models.Athlete.Team;
 import com.example.demo700.Models.AthleteLocation.AthleteLocation;
 import com.example.demo700.Models.EventOrganaizer.MatchName;
 import com.example.demo700.Models.FileUploadModel.ProfileIamge;
@@ -42,6 +45,7 @@ import com.example.demo700.Repositories.Athelete.AtheleteRepository;
 import com.example.demo700.Repositories.Athelete.AthleteClassificationRepository;
 import com.example.demo700.Repositories.Athelete.ScoutClassificationRepository;
 import com.example.demo700.Repositories.Athelete.ScoutsRepository;
+import com.example.demo700.Repositories.Athelete.TeamRepository;
 import com.example.demo700.Repositories.AthleteRepository.AthleteLocationRepository;
 import com.example.demo700.Repositories.EventOrganaizer.MatchNameRepository;
 import com.example.demo700.Repositories.FileUploadRepositories.ProfileImageRepository;
@@ -75,6 +79,9 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 
 	@Autowired
 	private ScoutClassificationRepository scoutClassificationRepository;
+
+	@Autowired
+	private TeamRepository teamRepository;
 
 	@Autowired
 	private CyclicCleaner cleaner;
@@ -265,7 +272,7 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 
 			List<Scouts> allScouts = scoutRepository.findAllById(allScoutId);
 
-			List<ScoutResponse> scoutResponses = getScoutsResponseFromScoutList(allScouts);
+			List<ScoutResponse> scoutResponses = getScoutsResponseFromScoutList(allScouts, list);
 
 			ScoutClassificationListResonseDTO response = new ScoutClassificationListResonseDTO(scoutResponses,
 					classifications.getNumber(), classifications.getSize(), classifications.getTotalElements(),
@@ -320,7 +327,7 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 
 			Scouts scout = scoutRepository.findById(classification.getScoutId()).get();
 
-			return getScoutsResponseFromScout(scout);
+			return getScoutsResponseFromScout(scout, classification);
 
 		} catch (Exception e) {
 
@@ -351,7 +358,7 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 
 			Scouts scout = scoutRepository.findById(classification.getScoutId()).get();
 
-			return getScoutsResponseFromScout(scout);
+			return getScoutsResponseFromScout(scout, classification);
 
 		} catch (Exception e) {
 
@@ -384,7 +391,7 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 
 			List<Scouts> allScouts = scoutRepository.findAllById(allScoutId);
 
-			List<ScoutResponse> scoutResponses = getScoutsResponseFromScoutList(allScouts);
+			List<ScoutResponse> scoutResponses = getScoutsResponseFromScoutList(allScouts, list);
 
 			ScoutClassificationListResonseDTO response = new ScoutClassificationListResonseDTO(scoutResponses,
 					classifications.getNumber(), classifications.getSize(), classifications.getTotalElements(),
@@ -490,21 +497,25 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 
 	}
 
-	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-	private ScoutResponse getScoutsResponseFromScout(Scouts scout) {
+	private ScoutResponse getScoutsResponseFromScout(Scouts scout, ScoutClassification classification) {
 
 		List<Scouts> list = new ArrayList<>();
 
 		list.add(scout);
 
-		return getScoutsResponseFromScoutList(list).get(0);
+		return getScoutsResponseFromScoutList(list, List.of(classification)).get(0);
 
 	}
 
-	private List<ScoutResponse> getScoutsResponseFromScoutList(List<Scouts> scouts) {
+	private List<ScoutResponse> getScoutsResponseFromScoutList(List<Scouts> scouts,
+			List<ScoutClassification> classifications) {
 
 		List<ScoutResponse> responses = new ArrayList<>();
+
+		List<String> scoutsId = scouts.stream().map(Scouts::getId).filter(Objects::nonNull)
+				.collect(Collectors.toList());
 
 		List<String> athleteIds = scouts.stream().filter(Objects::nonNull)
 				.filter(scout -> scout.getAtheleteId() != null).map(Scouts::getAtheleteId).collect(Collectors.toList());
@@ -526,6 +537,47 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 				.flatMap(athlete -> athlete.getEventAttendence().stream()) // Convert each List to Stream
 				.distinct() // Remove duplicates
 				.collect(Collectors.toList());
+
+		CompletableFuture<Map<String, Team>> teamFuture = CompletableFuture.supplyAsync(() -> {
+
+			if (scoutsId == null || scoutsId.isEmpty()) {
+				return Collections.emptyMap();
+			}
+
+			try {
+
+				List<Team> teams = teamRepository.findByScoutsContainingIgnoreCaseIn(scoutsId);
+
+				if (teams == null || teams.isEmpty()) {
+					return Collections.emptyMap();
+				}
+
+				Set<String> scoutsIdSet = new HashSet<>(scoutsId);
+
+				Map<String, Team> teamMap = new HashMap<>();
+
+				for (Team team : teams) {
+					if (team == null || team.getScouts() == null) {
+						continue;
+					}
+
+					for (String scoutId : team.getScouts()) {
+						if (scoutId != null && scoutsIdSet.contains(scoutId)) {
+							teamMap.put(scoutId, team);
+
+							break;
+						}
+					}
+				}
+
+				return teamMap;
+
+			} catch (Exception e) {
+				System.err.println("Error fetching teams: " + e.getMessage());
+				return Collections.emptyMap();
+			}
+
+		}, executor);
 
 		CompletableFuture<Map<String, User>> userFuture = CompletableFuture
 				.supplyAsync(() -> userRepository.findAllById(userIds).isEmpty() ? new HashMap<>()
@@ -594,10 +646,19 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 			}
 		}, executor);
 
-		CompletableFuture<Map<String, ScoutClassification>> scoutClassificationFuture = CompletableFuture.supplyAsync(() -> scoutClassificationRepository.findAll().isEmpty() ? new HashMap<>() : scoutClassificationRepository.findAll().stream().filter(Objects::nonNull).filter(scoutClassification -> scoutClassification.getScoutId() != null).collect(Collectors.toMap(ScoutClassification::getScoutId, Function.identity(), (existing, replacement) -> existing)) , executor);
-		
+		CompletableFuture<Map<String, ScoutClassification>> scoutClassificationFuture = CompletableFuture
+				.supplyAsync(
+						() -> classifications
+								.isEmpty()
+										? new HashMap<>()
+										: classifications.stream().filter(Objects::nonNull)
+												.filter(scoutClassification -> scoutClassification.getScoutId() != null)
+												.collect(Collectors.toMap(ScoutClassification::getScoutId,
+														Function.identity(), (existing, replacement) -> existing)),
+						executor);
+
 		CompletableFuture.allOf(athleteFuture, userFuture, locationFuture, genderFuture, classificationFuture,
-				matchNameFuture, profileImageFuture, scoutClassificationFuture).join();
+				matchNameFuture, profileImageFuture, scoutClassificationFuture, teamFuture).join();
 
 		Map<String, Athelete> athleteMap = athleteFuture.join();
 		Map<String, User> userMap = userFuture.join();
@@ -607,6 +668,7 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 		Map<String, String> matchNameMap = matchNameFuture.join();
 		Map<String, ScoutClassification> scoutClassificationMap = scoutClassificationFuture.join();
 		Map<String, ProfileIamge> profileImageMap = profileImageFuture.join();
+		Map<String, Team> teamMap = teamFuture.join();
 
 		for (Scouts scout : scouts) {
 
@@ -651,6 +713,15 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 						} catch (Exception e) {
 
 						}
+
+					} catch (Exception e) {
+
+					}
+
+					try {
+
+						response.setScoutsTeamId(teamMap.get(scout.getId()).getId());
+						response.setScoutsTeamName(teamMap.get(scout.getId()).getTeamName());
 
 					} catch (Exception e) {
 
@@ -771,17 +842,16 @@ public class ScoutClassificationServiceImpl implements ScoutClassificationServic
 				} catch (Exception e) {
 
 				}
-				
+
 				try {
-					
+
 					ScoutClassification classification = scoutClassificationMap.get(scout.getId());
-					
+
 					response.setScoutClassificationId(classification.getId());
 					response.setScoutClassificationTypes(classification.getScoutClassificationTypes());
-					
-				} catch(Exception e) {
-					
-					
+
+				} catch (Exception e) {
+
 				}
 
 				responses.add(response);

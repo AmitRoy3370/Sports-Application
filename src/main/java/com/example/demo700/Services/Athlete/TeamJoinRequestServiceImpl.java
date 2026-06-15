@@ -713,7 +713,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_ATHLETE)
 						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE) {
 
-					Athelete athlete = atheleteRepository.findById(userId).get();
+					Athelete athlete = atheleteRepository.findByUserId(userId).get();
 
 					if (athlete == null) {
 
@@ -755,7 +755,7 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				} else if (teamJoinRequest.getRoleType().equals(TeamJoinRequestRole.ROLE_SCOUT)
 						|| teamJoinRequest.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) {
 
-					Athelete athlete = atheleteRepository.findById(userId).get();
+					Athelete athlete = atheleteRepository.findByUserId(userId).get();
 
 					if (athlete == null) {
 

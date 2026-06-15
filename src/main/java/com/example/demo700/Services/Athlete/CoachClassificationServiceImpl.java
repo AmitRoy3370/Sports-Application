@@ -310,7 +310,7 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 
 			List<Coach> allCoaches = coachRepository.findAllById(allCoachId);
 
-			List<CoachResponse> coachResponses = getCoachResponseFromCoachList(allCoaches);
+			List<CoachResponse> coachResponses = getCoachResponseFromCoachList(allCoaches, list);
 
 			CoachListResponseDTO response = new CoachListResponseDTO(coachResponses, coachPage.getNumber(),
 					coachPage.getSize(), coachPage.getTotalElements(), coachPage.getTotalPages());
@@ -363,7 +363,7 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 
 			Coach coach = coachRepository.findById(classification.getCoachId()).get();
 
-			return getCoachResponseFromCoach(coach);
+			return getCoachResponseFromCoach(coach, classification);
 
 		} catch (Exception e) {
 
@@ -392,7 +392,8 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 
 			}
 
-			return getCoachResponseFromCoach(coachRepository.findById(classification.getCoachId()).get());
+			return getCoachResponseFromCoach(coachRepository.findById(classification.getCoachId()).get(),
+					classification);
 
 		} catch (Exception e) {
 
@@ -431,7 +432,7 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 
 			List<Coach> allCoaches = coachRepository.findAllById(allCoachId);
 
-			List<CoachResponse> coachResponses = getCoachResponseFromCoachList(allCoaches);
+			List<CoachResponse> coachResponses = getCoachResponseFromCoachList(allCoaches, list);
 
 			CoachListResponseDTO response = new CoachListResponseDTO(coachResponses, coachPage.getNumber(),
 					coachPage.getSize(), coachPage.getTotalElements(), coachPage.getTotalPages());
@@ -540,19 +541,20 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 		return count != coachClassificationRepository.count();
 	}
 
-	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-	private CoachResponse getCoachResponseFromCoach(Coach coach) {
+	private CoachResponse getCoachResponseFromCoach(Coach coach, CoachClassification classification) {
 
 		List<Coach> list = new ArrayList<>();
 
 		list.add(coach);
 
-		return getCoachResponseFromCoachList(list).get(0);
+		return getCoachResponseFromCoachList(list, List.of(classification)).get(0);
 
 	}
 
-	private List<CoachResponse> getCoachResponseFromCoachList(List<Coach> coaches) {
+	private List<CoachResponse> getCoachResponseFromCoachList(List<Coach> coaches,
+			List<CoachClassification> classifications) {
 
 		List<CoachResponse> responses = new ArrayList<>();
 
@@ -645,10 +647,10 @@ public class CoachClassificationServiceImpl implements CoachClassificationServic
 
 		CompletableFuture<Map<String, CoachClassification>> coachClassificationFuture = CompletableFuture
 				.supplyAsync(
-						() -> coachClassificationRepository.findAll()
+						() -> classifications
 								.isEmpty()
 										? new HashMap<>()
-										: coachClassificationRepository.findAll().stream().filter(Objects::nonNull)
+										: classifications.stream().filter(Objects::nonNull)
 												.filter(coachClassification -> coachClassification.getCoachId() != null)
 												.collect(Collectors.toMap(CoachClassification::getCoachId,
 														Function.identity(), (existing, replacement) -> existing)),

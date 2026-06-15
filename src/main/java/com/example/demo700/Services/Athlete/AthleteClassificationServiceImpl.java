@@ -280,7 +280,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 		List<Athelete> athletes = athleteRepository.findAllById(athletesId);
 
-		List<AthleteRequestDTO> detailsAthlete = getListDetailsFromAthleteList(athletes);
+		List<AthleteRequestDTO> detailsAthlete = getListDetailsFromAthleteList(athletes, list.getContent());
 
 		return new AthleteListResponseDTO(detailsAthlete, page, size, list.getTotalElements(), list.getTotalPages());
 	}
@@ -304,7 +304,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 			}
 
-			return getDetailsFromAthleteId(athleteClassification.getAthleteId());
+			return getDetailsFromAthleteId(athleteClassification.getAthleteId(), athleteClassification);
 
 		} catch (Exception e) {
 
@@ -332,7 +332,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 			}
 
-			return getDetailsFromAthleteId(athleteClassification.getAthleteId());
+			return getDetailsFromAthleteId(athleteClassification.getAthleteId(), athleteClassification);
 
 		} catch (Exception e) {
 
@@ -367,7 +367,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 		List<Athelete> athletes = athleteRepository.findAllById(athletesId);
 
-		List<AthleteRequestDTO> detailsAthlete = getListDetailsFromAthleteList(athletes);
+		List<AthleteRequestDTO> detailsAthlete = getListDetailsFromAthleteList(athletes, list.getContent());
 
 		return new AthleteListResponseDTO(detailsAthlete, page, size, list.getTotalElements(), list.getTotalPages());
 	}
@@ -436,10 +436,14 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 		return count != athleteClassificationRepository.count();
 	}
 
-	private ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	// private ExecutorService executor =
+	// Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+	private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
 	// 🔥 OPTIMIZED BATCH FETCHING for 50TB database
-	private List<AthleteRequestDTO> getListDetailsFromAthleteList(List<Athelete> athletes) {
+	private List<AthleteRequestDTO> getListDetailsFromAthleteList(List<Athelete> athletes,
+			List<AthleteClassification> classifications) {
 		if (athletes == null || athletes.isEmpty()) {
 			return new ArrayList<>();
 		}
@@ -477,7 +481,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 		CompletableFuture<Map<String, AthleteClassification>> classificationFuture = CompletableFuture
 				.supplyAsync(
-						() -> athleteClassificationRepository.findByAthleteIdIn(athleteIds).stream()
+						() -> classifications.stream()
 								.collect(Collectors.toMap(AthleteClassification::getAthleteId, Function.identity())),
 						executor);
 
@@ -624,7 +628,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 		return dtoList;
 	}
 
-	private AthleteRequestDTO getDetailsFromAthleteId(String athleteId) {
+	private AthleteRequestDTO getDetailsFromAthleteId(String athleteId, AthleteClassification classification) {
 		Athelete athleteDetails = athleteRepository.findById(athleteId)
 				.orElseThrow(() -> new NoSuchElementException("Athlete not found"));
 
@@ -632,7 +636,7 @@ public class AthleteClassificationServiceImpl implements AthleteClassificationSe
 
 		athlete.add(athleteDetails);
 
-		return getListDetailsFromAthleteList(athlete).get(0);
+		return getListDetailsFromAthleteList(athlete, List.of(classification)).get(0);
 	}
 
 	@PreDestroy
