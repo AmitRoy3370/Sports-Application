@@ -571,7 +571,7 @@ public class ScoutServiceImpl implements ScoutService {
 
 			try {
 
-				List<Team> teams = teamRepository.findByScoutsContainingIgnoreCaseIn(scoutsId);
+				List<Team> teams = teamRepository.findByScoutsIn(scoutsId);
 
 				if (teams == null || teams.isEmpty()) {
 					return Collections.emptyMap();
