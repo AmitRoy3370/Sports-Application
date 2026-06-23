@@ -80,6 +80,24 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		try {
 
+			TeamOwner owner = teamOwnerRepository.findByAtheleteId(teamOwner.getAtheleteId());
+
+			if (owner != null) {
+
+				throw new ArithmeticException();
+
+			}
+
+		} catch (ArithmeticException e) {
+
+			throw new ArithmeticException("This team owner already exist...");
+
+		} catch (Exception e) {
+
+		}
+
+		try {
+
 			Athelete athelete = atheleteRepository.findById(teamOwner.getAtheleteId()).get();
 
 			if (athelete == null) {
@@ -151,6 +169,29 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 
 		}
 
+		try {
+
+			TeamOwner owner = teamOwnerRepository.findByAtheleteId(teamOwner.getAtheleteId());
+
+			if (owner == null) {
+
+				/*
+				 * if (!owner.getAtheleteId().equals(teamOwner.getAtheleteId())) {
+				 * 
+				 * throw new ArithmeticException();
+				 * 
+				 * }
+				 */
+
+				throw new Exception();
+
+			}
+
+		} catch (Exception e) {
+
+			throw new ArithmeticException("This team owner already exist...");
+
+		}
 		try {
 
 			Athelete athelete = atheleteRepository.findById(teamOwner.getAtheleteId()).get();
@@ -299,6 +340,10 @@ public class TeamOwnerServiceImpl implements TeamOwnerService {
 			throw new NoSuchElementException("Your matches are not valid...");
 
 		}
+
+		TeamOwner owner = teamOwnerRepository.findByAtheleteId(teamOwner.getAtheleteId());
+
+		teamOwner.setId(owner.getId());
 
 		teamOwner = teamOwnerRepository.save(teamOwner);
 
