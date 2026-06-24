@@ -13,7 +13,7 @@ public class TeamJoinRequestResponse {
 
 	private String senderId, senderName; // TeamOwner ID
 
-	private String receiverId; // Athlete / Coach / Scout ID
+	private String receiverId, receiverName; // Athlete / Coach / Scout ID
 
 	private TeamJoinRequestRole roleType; // "ATHLETE", "COACH", or "SCOUT"
 
@@ -25,7 +25,7 @@ public class TeamJoinRequestResponse {
 	private double price;
 
 	public TeamJoinRequestResponse(String id, String teamId, String teamName, String senderId, String senderName,
-			String receiverId, TeamJoinRequestRole roleType, Instant requestStartTime, Instant requestEndTime,
+			String receiverId, String receiverName, TeamJoinRequestRole roleType, Instant requestStartTime, Instant requestEndTime,
 			TeamJoinRequestStatus status, double price) {
 		super();
 		this.id = id;
@@ -34,6 +34,7 @@ public class TeamJoinRequestResponse {
 		this.senderId = senderId;
 		this.senderName = senderName;
 		this.receiverId = receiverId;
+		this.receiverName = receiverName;
 
 		this.roleType = roleType;
 		this.requestStartTime = requestStartTime;
@@ -134,12 +135,20 @@ public class TeamJoinRequestResponse {
 		this.price = price;
 	}
 
+	public String getReceiverName() {
+		return receiverName;
+	}
+
+	public void setReceiverName(String receiverName) {
+		this.receiverName = receiverName;
+	}
+
 	@Override
 	public String toString() {
 		return "TeamJoinRequestResponse [id=" + id + ", teamId=" + teamId + ", teamName=" + teamName + ", senderId="
-				+ senderId + ", senderName=" + senderName + ", receiverId=" + receiverId + ", roleType=" + roleType
-				+ ", requestStartTime=" + requestStartTime + ", requestEndTime=" + requestEndTime + ", status=" + status
-				+ ", price=" + price + "]";
+				+ senderId + ", senderName=" + senderName + ", receiverId=" + receiverId + ", receiverName="
+				+ receiverName + ", roleType=" + roleType + ", requestStartTime=" + requestStartTime
+				+ ", requestEndTime=" + requestEndTime + ", status=" + status + ", price=" + price + "]";
 	}
 
 }

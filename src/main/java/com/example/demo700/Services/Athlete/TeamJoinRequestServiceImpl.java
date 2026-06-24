@@ -1437,15 +1437,21 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			List<String> sendersId = list.stream().map(TeamJoinRequest::getSenderId).collect(Collectors.toList());
 
-			Set<String> set = new HashSet<>(sendersId);
+			Set<String> set = new HashSet<>();
 
-			/*List<String> receiversId = list.stream().map(TeamJoinRequest::getReceiverId).collect(Collectors.toList());
-
-			for (String id : receiversId) {
+			for (String id : sendersId) {
 
 				set.add(id);
 
-			}*/
+			}
+
+			List<String> receiversId = list.stream().map(TeamJoinRequest::getReceiverId).collect(Collectors.toList());
+
+			for (String i : receiversId) {
+
+				set.add(i);
+
+			}
 
 			return new ArrayList<>(set);
 
@@ -1468,13 +1474,13 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		Map<String, Team> teamMap = teamFuture.join();
 		Map<String, User> userMap = userFuture.join();
-		
-		for(TeamJoinRequest request : list) {
-			
+
+		for (TeamJoinRequest request : list) {
+
 			try {
-				
+
 				TeamJoinRequestResponse response = new TeamJoinRequestResponse();
-				
+
 				response.setId(request.getId());
 				response.setPrice(request.getPrice());
 				response.setRequestStartTime(request.getRequestStartTime());
@@ -1483,18 +1489,19 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				response.setSenderId(request.getSenderId());
 				response.setReceiverId(request.getReceiverId());
 				response.setSenderName(userMap.get(request.getSenderId()).getName());
+				response.setReceiverName(userMap.get(request.getReceiverId()).getName());
 				response.setTeamId(request.getTeamId());
 				response.setTeamName(teamMap.get(request.getTeamId()).getTeamName());
 				response.setStatus(request.getStatus());
-				
+
 				responses.add(response);
-				
-			} catch(Exception e) {
-				
+
+			} catch (Exception e) {
+
 			}
-			
+
 		}
-		
+
 		return responses;
 
 	}
