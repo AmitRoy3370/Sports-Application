@@ -1417,6 +1417,166 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		List<TeamJoinRequestResponse> responses = new ArrayList<>();
 
+		CompletableFuture<List<String>> athletesIdFuture = CompletableFuture.supplyAsync(
+				() -> list.stream().filter(request -> request.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE) // ←
+																													// Filter
+																													// first
+						.map(TeamJoinRequest::getReceiverId).collect(Collectors.toList()),
+				executor);
+
+		CompletableFuture<List<String>> coachesIdFuture = CompletableFuture.supplyAsync(
+				() -> list.stream().filter(request -> request.getRoleType() == TeamJoinRequestRole.ROLE_COACH) // ←
+																												// Filter
+																												// first
+						.map(TeamJoinRequest::getReceiverId).collect(Collectors.toList()),
+				executor);
+
+		CompletableFuture<List<String>> scoutsIdFuture = CompletableFuture.supplyAsync(
+				() -> list.stream().filter(request -> request.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) // ←
+																												// Filter
+																												// first
+						.map(TeamJoinRequest::getReceiverId).collect(Collectors.toList()),
+				executor);
+
+		CompletableFuture<List<String>> doctorsIdFuture = CompletableFuture.supplyAsync(
+				() -> list.stream().filter(request -> request.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR) // ←
+																												// Filter
+																												// first
+						.map(TeamJoinRequest::getReceiverId).collect(Collectors.toList()),
+				executor);
+
+		CompletableFuture<Map<String, User>> athletesNameMapFuture = athletesIdFuture.thenApplyAsync(athletesId -> {
+
+			if (athletesId.isEmpty()) {
+
+				return new HashMap<>();
+
+			}
+
+			List<Athelete> athletes = atheleteRepository.findAllById(athletesId);
+
+			List<String> allUserId = athletes.stream().map(Athelete::getUserId).collect(Collectors.toList());
+
+			Map<String, User> userMap = userRepository.findAllById(allUserId).stream()
+					.collect(Collectors.toMap(User::getId, Function.identity()));
+
+			Map<String, User> responseMap = new HashMap<>();
+
+			for (Athelete athlete : athletes) {
+
+				responseMap.put(athlete.getId(), userMap.get(athlete.getUserId()));
+
+			}
+
+			return responseMap;
+
+		}, executor);
+
+		CompletableFuture<Map<String, User>> coachesMapFuture = coachesIdFuture.thenApplyAsync(coachesId -> {
+
+			if (coachesId.isEmpty()) {
+
+				return new HashMap<>();
+
+			}
+
+			List<Coach> coaches = coachRepository.findAllById(coachesId);
+
+			List<String> athletesId = coaches.stream().map(Coach::getAtheleteId).collect(Collectors.toList());
+
+			List<Athelete> athletes = atheleteRepository.findAllById(athletesId);
+
+			List<String> usersId = athletes.stream().map(Athelete::getUserId).collect(Collectors.toList());
+
+			Map<String, User> userMap = userRepository.findAllById(usersId).stream()
+					.collect(Collectors.toMap(User::getId, Function.identity()));
+
+			Map<String, User> responseMap = new HashMap<>();
+
+			Map<String, User> athleteMap = new HashMap<>();
+
+			for (Athelete i : athletes) {
+
+				athleteMap.put(i.getId(), userMap.get(i.getUserId()));
+
+			}
+
+			for (Coach i : coaches) {
+
+				responseMap.put(i.getId(), athleteMap.get(i.getAtheleteId()));
+
+			}
+
+			return responseMap;
+
+		}, executor);
+
+		CompletableFuture<Map<String, User>> scoutsMapFuture = scoutsIdFuture.thenApplyAsync(coachesId -> {
+
+			if (coachesId.isEmpty()) {
+
+				return new HashMap<>();
+
+			}
+
+			List<Scouts> coaches = scoutsRepository.findAllById(coachesId);
+
+			List<String> athletesId = coaches.stream().map(Scouts::getAtheleteId).collect(Collectors.toList());
+
+			List<Athelete> athletes = atheleteRepository.findAllById(athletesId);
+
+			List<String> usersId = athletes.stream().map(Athelete::getUserId).collect(Collectors.toList());
+
+			Map<String, User> userMap = userRepository.findAllById(usersId).stream()
+					.collect(Collectors.toMap(User::getId, Function.identity()));
+
+			Map<String, User> responseMap = new HashMap<>();
+
+			Map<String, User> athleteMap = new HashMap<>();
+
+			for (Athelete i : athletes) {
+
+				athleteMap.put(i.getId(), userMap.get(i.getUserId()));
+
+			}
+
+			for (Scouts i : coaches) {
+
+				responseMap.put(i.getId(), athleteMap.get(i.getAtheleteId()));
+
+			}
+
+			return responseMap;
+
+		}, executor);
+
+		CompletableFuture<Map<String, User>> doctorsMapFuture = doctorsIdFuture.thenApplyAsync(doctorsId -> {
+
+			if (doctorsId.isEmpty()) {
+
+				return new HashMap<>();
+
+			}
+
+			List<Doctor> doctors = doctorRepository.findAllById(doctorsId);
+
+			List<String> allUserId = doctors.stream().map(Doctor::getUserId).collect(Collectors.toList());
+
+			Map<String, User> userMap = userRepository.findAllById(allUserId).stream()
+					.collect(Collectors.toMap(User::getId, Function.identity()));
+
+			Map<String, User> responseMap = new HashMap<>();
+
+			for (Doctor athlete : doctors) {
+
+				responseMap.put(athlete.getId(), userMap.get(athlete.getUserId()));
+
+			}
+
+			return responseMap;
+
+		}, executor);
+
 		CompletableFuture<List<String>> teamIdFuture = CompletableFuture.supplyAsync(
 				() -> list.stream().map(TeamJoinRequest::getTeamId).collect(Collectors.toList()), executor);
 
@@ -1445,13 +1605,17 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 			}
 
-			List<String> receiversId = list.stream().map(TeamJoinRequest::getReceiverId).collect(Collectors.toList());
-
-			for (String i : receiversId) {
-
-				set.add(i);
-
-			}
+			/*
+			 * List<String> receiversId =
+			 * list.stream().map(TeamJoinRequest::getReceiverId).collect(Collectors.toList()
+			 * );
+			 * 
+			 * for (String i : receiversId) {
+			 * 
+			 * set.add(i);
+			 * 
+			 * }
+			 */
 
 			return new ArrayList<>(set);
 
@@ -1470,7 +1634,14 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 
 		}, executor);
 
-		CompletableFuture.allOf(teamIdFuture, teamFuture, userIdFuture, userFuture).join();
+		CompletableFuture.allOf(teamIdFuture, teamFuture, userIdFuture, userFuture, athletesIdFuture, coachesIdFuture,
+				scoutsIdFuture, doctorsIdFuture, athletesNameMapFuture, coachesMapFuture, scoutsMapFuture,
+				doctorsMapFuture).join();
+
+		Map<String, User> athleteMap = athletesNameMapFuture.join();
+		Map<String, User> coachesMap = coachesMapFuture.join();
+		Map<String, User> scoutsMap = scoutsMapFuture.join();
+		Map<String, User> doctorsMap = doctorsMapFuture.join();
 
 		Map<String, Team> teamMap = teamFuture.join();
 		Map<String, User> userMap = userFuture.join();
@@ -1489,7 +1660,31 @@ public class TeamJoinRequestServiceImpl implements TeamJoinRequestService {
 				response.setSenderId(request.getSenderId());
 				response.setReceiverId(request.getReceiverId());
 				response.setSenderName(userMap.get(request.getSenderId()).getName());
-				response.setReceiverName(userMap.get(request.getReceiverId()).getName());
+
+				try {
+
+					if (request.getRoleType() == TeamJoinRequestRole.ROLE_ATHLETE) {
+
+						response.setReceiverName(athleteMap.get(request.getReceiverId()).getName());
+
+					} else if (request.getRoleType() == TeamJoinRequestRole.ROLE_COACH) {
+
+						response.setReceiverName(coachesMap.get(request.getReceiverId()).getName());
+
+					} else if (request.getRoleType() == TeamJoinRequestRole.ROLE_SCOUT) {
+
+						response.setReceiverName(scoutsMap.get(request.getReceiverId()).getName());
+
+					} else if (request.getRoleType() == TeamJoinRequestRole.ROLE_DOCTOR) {
+
+						response.setReceiverName(doctorsMap.get(request.getReceiverId()).getName());
+
+					}
+
+				} catch (Exception e) {
+
+				}
+
 				response.setTeamId(request.getTeamId());
 				response.setTeamName(teamMap.get(request.getTeamId()).getTeamName());
 				response.setStatus(request.getStatus());
