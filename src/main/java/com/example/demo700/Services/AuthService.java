@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.demo700.DTOFiles.JwtResponse;
 import com.example.demo700.DTOFiles.LoginRequest;
 import com.example.demo700.DTOFiles.RegisterRequest;
+import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 
 public interface AuthService {
@@ -18,6 +19,7 @@ public interface AuthService {
 	User searchUserById(String userId);
 	User findByName(String name);
 	User findByEmail(String email);
+	List<User> findByRoles(Role role);
 	List<User> findByUserNamePrefix(String namePrefix);
 	
 }

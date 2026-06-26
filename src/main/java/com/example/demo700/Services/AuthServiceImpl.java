@@ -251,6 +251,29 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
+	public List<User> findByRoles(Role role) {
+		
+		try {
+			
+			List<User> list = userRepository.findByRolesContainingIgnoreCase(role);
+			
+			if(list.isEmpty()) {
+				
+				throw new Exception();
+				
+			}
+			
+			return list;
+			
+		} catch(Exception e) {
+			
+			throw new NoSuchElementException("No such user present of this role");
+			
+		}
+		
+	}
+	
+	@Override
 	public User searchUserById(String userId) {
 
 		if (userId == null) {

@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo700.DTOFiles.RegisterRequest;
+import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 import com.example.demo700.Repositories.UserRepository;
 import com.example.demo700.Services.AuthService;
@@ -78,6 +80,21 @@ public class AuthUpdationAndDeletionController {
 
 	}
 
+	@GetMapping("/role/{role}")
+	public ResponseEntity<?> findByRole(@PathVariable Role role) {
+		
+		try {
+			
+			return ResponseEntity.status(200).body(authService.findByRoles(role));
+			
+		} catch(Exception e) {
+			
+			return ResponseEntity.status(404).body(e.getMessage());
+			
+		}
+		
+	}
+ 	
 	@GetMapping("/seeAll")
 	public ResponseEntity<?> seeAllUser() {
 
