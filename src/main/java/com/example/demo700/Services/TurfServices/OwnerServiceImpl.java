@@ -397,6 +397,14 @@ public class OwnerServiceImpl implements TurfOwnerService {
 				}
 
 				try {
+					
+					response.setName(owner.getName());
+					
+				} catch(Exception e) {
+					
+				}
+				
+				try {
 
 					response.setVenueDetails(venueMap.get(owner.getUserId()));
 
