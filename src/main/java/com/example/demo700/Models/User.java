@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.demo700.ENUMS.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mongodb.lang.NonNull;
 
 import lombok.Data;
@@ -24,6 +25,7 @@ public class User {
 	@Indexed
 	private String email;
 	@NonNull
+	@JsonIgnore
 	private String password;
 
 	@Indexed

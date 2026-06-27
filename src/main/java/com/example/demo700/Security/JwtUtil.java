@@ -1,91 +1,48 @@
-/*package com.example.demo700.Security;
-
-import java.util.Date;
-
-import org.springframework.stereotype.Component;
-
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import java.security.Key;
-import io.jsonwebtoken.ExpiredJwtException;
-
-
-@Component
-public class JwtUtil {
-
-	private static final String SECRET_KEY = "this_is_my_super_secret_key_for_jwt_token_123456"; 
-
-	private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-
-	public String generateToken(String username) {
-		return Jwts.builder().setSubject(username).setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + 12000 * 60 * 60)) 
-				.signWith(key, SignatureAlgorithm.HS256).compact();
-	}
-
-	public String extractUsername(String token) {
-	    try {
-	        return Jwts.parserBuilder()
-	                .setSigningKey(key)
-	                .build()
-	                .parseClaimsJws(token)
-	                .getBody()
-	                .getSubject();
-	    } catch (ExpiredJwtException e) {
-	        System.out.println("Token expired: " + e.getMessage());
-	        return null;
-	    } catch (Exception e) {
-	        System.out.println("Invalid token: " + e.getMessage());
-	        return null;
-	    }
-	}
-
-	public boolean validateToken(String token) {
-		try {
-			Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-			return true;
-		} catch (JwtException | IllegalArgumentException e) {
-			return false;
-		}
-	}
-
-}*/
-
 package com.example.demo700.Security;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.example.demo700.ENUMS.Role;
 import com.example.demo700.Models.User;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
-import io.jsonwebtoken.ExpiredJwtException;
-
 
 @Component
 public class JwtUtil {
 
-	private static final String SECRET_KEY = "this_is_my_super_secret_key_for_jwt_token_123456"; 
+	private final Key key;
+	private final long expirationMs;
 
-	private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-
-	public String generateToken(String username) {
-		return Jwts.builder().setSubject(username).setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + 12000 * 60 * 60)) 
-				.signWith(key, SignatureAlgorithm.HS256).compact();
+	public JwtUtil(
+			@Value("${jwt.secret}") String secret,
+			@Value("${jwt.expiration-ms:2592000000}") long expirationMs) {
+		if (secret == null || secret.length() < 32) {
+			throw new IllegalStateException("jwt.secret must be at least 32 characters (set JWT_SECRET env var)");
+		}
+		this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+		this.expirationMs = expirationMs;
 	}
 
-	// FIXED: Generate token with roles
+	public String generateToken(String username) {
+		return Jwts.builder()
+				.setSubject(username)
+				.setIssuedAt(new Date())
+				.setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+				.signWith(key, SignatureAlgorithm.HS256)
+				.compact();
+	}
+
 	public String generateToken(User user) {
 		List<String> roles = user.getRoles().stream()
 				.map(Role::name)
@@ -93,28 +50,26 @@ public class JwtUtil {
 
 		return Jwts.builder()
 				.setSubject(user.getName())
-				.claim("roles", roles)  // ← ADD ROLES HERE
+				.claim("roles", roles)
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + 100L * 365 * 24 * 60 * 60 * 1000)) 
+				.setExpiration(new Date(System.currentTimeMillis() + expirationMs))
 				.signWith(key, SignatureAlgorithm.HS256)
 				.compact();
 	}
 
 	public String extractUsername(String token) {
-	    try {
-	        return Jwts.parserBuilder()
-	                .setSigningKey(key)
-	                .build()
-	                .parseClaimsJws(token)
-	                .getBody()
-	                .getSubject();
-	    } catch (ExpiredJwtException e) {
-	        System.out.println("Token expired: " + e.getMessage());
-	        return null;
-	    } catch (Exception e) {
-	        System.out.println("Invalid token: " + e.getMessage());
-	        return null;
-	    }
+		try {
+			return Jwts.parserBuilder()
+					.setSigningKey(key)
+					.build()
+					.parseClaimsJws(token)
+					.getBody()
+					.getSubject();
+		} catch (ExpiredJwtException e) {
+			return null;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	public boolean validateToken(String token) {
