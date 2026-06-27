@@ -33,3 +33,10 @@ build/
 .vscode/
 # Environment variables
 .env
+.env.local
+.env.production
+
+
+server_venv.txt
+git-token.txt
+

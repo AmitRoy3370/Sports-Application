@@ -223,15 +223,15 @@ public class AtheleteController {
 				}
 			}
 
-			if (response.getAthletes().isEmpty()) {
-				return ResponseEntity.status(404).body("No athletes found");
-			}
-
-			// Add navigation links
+			// Add navigation links (empty list is valid — return 200, not 404)
 			addNavigationLinks(response, request, searchType, searchValue);
 
 			// Add helpful metadata
-			response.setMessage("Auto-pagination applied. Use nextLink/prevLink for navigation.");
+			if (response.getAthletes().isEmpty()) {
+				response.setMessage("No athletes found");
+			} else {
+				response.setMessage("Auto-pagination applied. Use nextLink/prevLink for navigation.");
+			}
 			response.setSuggestedPageSize(String.valueOf(DEFAULT_SIZE));
 			response.setCurrentUrl(request.getRequestURI());
 
