@@ -21,7 +21,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 # Increase file upload handling and memory (JVM options)
-ENV JAVA_OPTS="-Xms512m -Xmx2g -Dspring.servlet.multipart.max-file-size=50000MB -Dspring.servlet.multipart.max-request-size=50000MB -Dserver.tomcat.max-swallow-size=50000MB"
+ENV JAVA_OPTS="-Xms512m -Xmx2g"
 
 # Expose port
 EXPOSE 8080

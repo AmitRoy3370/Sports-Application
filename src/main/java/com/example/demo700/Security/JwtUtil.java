@@ -34,22 +34,26 @@ public class JwtUtil {
 		this.expirationMs = expirationMs;
 	}
 
-	public String generateToken(String username) {
+	// ✅ Generate token using email (unique identifier)
+	public String generateToken(String email) {
 		return Jwts.builder()
-				.setSubject(username)
+				.setSubject(email) // ✅ Email as subject
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + expirationMs))
 				.signWith(key, SignatureAlgorithm.HS256)
 				.compact();
 	}
 
+	// ✅ Generate token from User object
 	public String generateToken(User user) {
 		List<String> roles = user.getRoles().stream()
 				.map(Role::name)
 				.collect(Collectors.toList());
 
 		return Jwts.builder()
-				.setSubject(user.getName())
+				.setSubject(user.getEmail()) // ✅ Email as subject
+				.claim("userId", user.getId())
+				.claim("name", user.getName())
 				.claim("roles", roles)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + expirationMs))
@@ -57,7 +61,8 @@ public class JwtUtil {
 				.compact();
 	}
 
-	public String extractUsername(String token) {
+	// ✅ Extract email from token (subject)
+	public String extractEmail(String token) {
 		try {
 			return Jwts.parserBuilder()
 					.setSigningKey(key)
@@ -72,6 +77,39 @@ public class JwtUtil {
 		}
 	}
 
+	// ✅ Extract username (name) from token claims
+	public String extractUsername(String token) {
+		try {
+			return Jwts.parserBuilder()
+					.setSigningKey(key)
+					.build()
+					.parseClaimsJws(token)
+					.getBody()
+					.get("name", String.class);
+		} catch (ExpiredJwtException e) {
+			return null;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// ✅ Extract userId from token claims
+	public String extractUserId(String token) {
+		try {
+			return Jwts.parserBuilder()
+					.setSigningKey(key)
+					.build()
+					.parseClaimsJws(token)
+					.getBody()
+					.get("userId", String.class);
+		} catch (ExpiredJwtException e) {
+			return null;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// ✅ Validate token
 	public boolean validateToken(String token) {
 		try {
 			Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -81,4 +119,27 @@ public class JwtUtil {
 		}
 	}
 
+	// ✅ Validate token with email
+	public boolean validateToken(String token, User user) {
+		try {
+			final String email = extractEmail(token);
+			return (email.equals(user.getEmail()) && !isTokenExpired(token));
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private boolean isTokenExpired(String token) {
+		try {
+			Date expiration = Jwts.parserBuilder()
+					.setSigningKey(key)
+					.build()
+					.parseClaimsJws(token)
+					.getBody()
+					.getExpiration();
+			return expiration.before(new Date());
+		} catch (Exception e) {
+			return true;
+		}
+	}
 }

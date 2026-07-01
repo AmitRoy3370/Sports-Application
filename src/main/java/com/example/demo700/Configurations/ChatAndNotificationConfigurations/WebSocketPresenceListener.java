@@ -18,10 +18,12 @@ public class WebSocketPresenceListener {
     public void handleConnect(SessionConnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String userId = accessor.getFirstNativeHeader("userId");
+        // Set by StompAuthChannelInterceptor after JWT validation
+        String userId = accessor.getSessionAttributes() != null
+                ? (String) accessor.getSessionAttributes().get("userId")
+                : null;
 
         if (userId != null) {
-            accessor.getSessionAttributes().put("userId", userId);
             presenceService.userConnected(userId);
             System.out.println(userId + " ONLINE");
         }
