@@ -3,7 +3,10 @@ package com.example.demo700.Controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +34,7 @@ public class AuthUpdationAndDeletionController {
 	private UserRepository userRepository;
 
 	@DeleteMapping("/delete")
+	@PreAuthorize("hasAuthority('ROLE_ADMIN') or #userTryingToDelete == authentication.principal.id")
 	public ResponseEntity<?> deleteUser(@RequestParam String userId, @RequestParam String userTryingToDelete) {
 
 		try {
@@ -96,19 +100,19 @@ public class AuthUpdationAndDeletionController {
 	}
  	
 	@GetMapping("/seeAll")
-	public ResponseEntity<?> seeAllUser() {
+	public ResponseEntity<?> seeAllUser(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "100") int size) {
 
 		try {
+			int safeSize = Math.min(Math.max(size, 1), 200);
+			Page<User> users = userRepository.findAll(PageRequest.of(Math.max(page, 0), safeSize));
 
-			List<User> list = authService.seeAllUser();
-
-			if (list.isEmpty()) {
-
-				throw new Exception();
-
+			if (users.isEmpty()) {
+				throw new Exception("No such user exist at here...");
 			}
 
-			return ResponseEntity.status(200).body(list);
+			return ResponseEntity.status(200).body(users.getContent());
 
 		} catch (Exception e) {
 
@@ -146,7 +150,7 @@ public class AuthUpdationAndDeletionController {
 		
 		try {
 			
-			User user = authService.findByName(name);
+			List<User> user = authService.findByName(name);
 			
 			if(user == null) {
 				

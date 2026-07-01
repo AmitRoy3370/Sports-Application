@@ -48,16 +48,16 @@ public class AuthServiceImpl implements AuthService {
 			throw new RuntimeException("Email address is not valid...");
 		}
 
-		try {
-			User user = userRepository.findByNameIgnoreCase(request.getName().trim());
-			if (user != null) {
+		/*try {
+			List<User> user = userRepository.findByNameIgnoreCase(request.getName().trim());
+			if (user != null || !user.isEmpty()) {
 				throw new ArithmeticException();
 			}
 		} catch (ArithmeticException e) {
 			throw new ArithmeticException("User name already exist...");
 		} catch (Exception e) {
 			// Name doesn't exist - continue
-		}
+		}*/
 
 		User u = new User();
 		u.setName(request.getName().trim());
@@ -209,13 +209,13 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public User findByName(String name) {
+	public List<User> findByName(String name) {
 		if (name == null) {
 			throw new NullPointerException("False request....");
 		}
 
-		User user = userRepository.findByNameIgnoreCase(name.trim());
-		if (user == null) {
+		List<User> user = userRepository.findByNameIgnoreCase(name.trim());
+		if (user == null || user.isEmpty()) {
 			throw new NoSuchElementException("No such user find at here...");
 		}
 		return user;
